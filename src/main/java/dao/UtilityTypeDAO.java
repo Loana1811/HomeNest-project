@@ -47,7 +47,6 @@ public class UtilityTypeDAO {
                         rs.getString("UtilityName"),
                         rs.getString("Unit"),
                         rs.getDouble("UnitPrice")
-                        
                 );
             }
         }
@@ -74,14 +73,24 @@ public class UtilityTypeDAO {
             ps.executeUpdate();
         }
     }
-    
+
     public void delete(int id) throws SQLException {
-    String sql = "DELETE FROM UtilityTypes WHERE UtilityTypeID = ?";
-    try (Connection conn = new DBContext().getConnection(); 
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, id);
-        ps.executeUpdate();
+        String sql = "DELETE FROM UtilityTypes WHERE UtilityTypeID = ?";
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
     }
-}
+
+    public List<Object[]> getAllTypeIdName() throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT UtilityTypeID, UtilityName FROM UtilityTypes";
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new Object[]{rs.getInt("UtilityTypeID"), rs.getString("UtilityName")});
+            }
+        }
+        return list;
+    }
 
 }

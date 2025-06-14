@@ -20,16 +20,15 @@ public class RoomDAO {
 
     public List<Object[]> getRoomsAppliedToUtility(int utilityTypeId) throws SQLException {
         List<Object[]> rooms = new ArrayList<>();
-        String sql =
-            "SELECT r.RoomID, r.RoomNumber,\n" +
-            "       CASE WHEN ur.UtilityTypeID IS NOT NULL THEN 1 ELSE 0 END AS IsChecked\n" +
-            "FROM Rooms r\n" +
-            "LEFT JOIN UtilityReadings ur\n" +
-            "  ON r.RoomID = ur.RoomID AND ur.UtilityTypeID = ?\n" +
-            "GROUP BY r.RoomID, r.RoomNumber, ur.UtilityTypeID";
+        String sql
+                = "SELECT r.RoomID, r.RoomNumber,\n"
+                + "       CASE WHEN ur.UtilityTypeID IS NOT NULL THEN 1 ELSE 0 END AS IsChecked\n"
+                + "FROM Rooms r\n"
+                + "LEFT JOIN UtilityReadings ur\n"
+                + "  ON r.RoomID = ur.RoomID AND ur.UtilityTypeID = ?\n"
+                + "GROUP BY r.RoomID, r.RoomNumber, ur.UtilityTypeID";
 
-        try (Connection conn = new DBContext().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, utilityTypeId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -41,5 +40,19 @@ public class RoomDAO {
             }
         }
         return rooms;
+
     }
+
+    // RoomDAO.java
+    public List<Object[]> getAllRoomIdName() throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT RoomID, RoomNumber FROM Rooms";
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new Object[]{rs.getInt("RoomID"), rs.getString("RoomNumber")});
+            }
+        }
+        return list;
+    }
+
 }
