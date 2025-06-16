@@ -5,6 +5,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,9 +22,19 @@ public class UtilityHistoryDAO {
 
     public List<UtilityHistoryView> getHistory() throws SQLException {
         List<UtilityHistoryView> list = new ArrayList<>();
-        String sql = "SELECT ur.UtilityTypeID, ut.UtilityName, ur.PriceUsed AS NewPrice, ur.OldPrice, ur.CreatedAt AS ChangeAt, ur.ChangedBy "
+        String sql
+                = "SELECT ur.UtilityTypeID, "
+                + "  ISNULL(ut.UtilityName, "
+                + "    CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
+                + "         THEN SUBSTRING(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) + 1, LEN(ur.ChangedBy)) "
+                + "         ELSE ur.ChangedBy END"
+                + "  ) AS UtilityName, "
+                + "  ur.OldPrice, ur.PriceUsed AS NewPrice, ur.CreatedAt AS ChangeAt, "
+                + "  CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
+                + "         THEN LEFT(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) - 1) "
+                + "         ELSE ur.ChangedBy END AS ChangedBy "
                 + "FROM UtilityReadings ur "
-                + "JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
+                + "LEFT JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
                 + "WHERE ur.OldPrice IS NOT NULL "
                 + "ORDER BY ur.CreatedAt DESC";
 
@@ -40,7 +51,28 @@ public class UtilityHistoryDAO {
                 ));
             }
         }
-
         return list;
     }
+
+    public void insertHistory(
+            int utilityTypeId, String utilityName,
+            double oldPrice, double newPrice,
+            String changedBy, Date date
+    ) throws SQLException {
+        String sql = "INSERT INTO UtilityReadings "
+                + "(UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, OldPrice, PriceUsed, ChangedBy, CreatedAt) "
+                + "VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?)";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, utilityTypeId);
+            ps.setInt(2, 1); 
+            ps.setDate(3, date);
+            ps.setDouble(4, oldPrice);
+            ps.setDouble(5, newPrice);
+            ps.setString(6, changedBy + "|" + utilityName);
+            ps.setDate(7, date);
+            ps.executeUpdate();
+        }
+    }
+
 }

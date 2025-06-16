@@ -21,14 +21,16 @@ public class UtilityTypeDAO {
 
     public List<UtilityType> getAll() throws SQLException {
         List<UtilityType> list = new ArrayList<>();
-        String sql = "SELECT UtilityTypeID, UtilityName, UnitPrice, Unit FROM UtilityTypes";
+        String sql = "SELECT UtilityTypeID, UtilityName, UnitPrice, Unit, IsSystem FROM UtilityTypes";
+
         try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new UtilityType(
                         rs.getInt("UtilityTypeID"),
                         rs.getString("UtilityName"),
-                        rs.getString("Unit"), // phải là unit trước
-                        rs.getDouble("UnitPrice") // sau đó mới đến price
+                        rs.getDouble("UnitPrice"),
+                        rs.getString("Unit"),
+                        rs.getBoolean("IsSystem")
                 ));
 
             }
@@ -45,9 +47,11 @@ public class UtilityTypeDAO {
                 return new UtilityType(
                         id,
                         rs.getString("UtilityName"),
+                        rs.getDouble("UnitPrice"),
                         rs.getString("Unit"),
-                        rs.getDouble("UnitPrice")
+                        rs.getBoolean("IsSystem")
                 );
+
             }
         }
         return null;
@@ -91,6 +95,47 @@ public class UtilityTypeDAO {
             }
         }
         return list;
+    }
+
+    public int getLastInsertedId() throws SQLException {
+        String sql = "SELECT TOP 1 UtilityTypeID FROM UtilityTypes ORDER BY UtilityTypeID DESC";
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return -1;
+    }
+
+    public boolean isUtilityTypeInUse(int utilityTypeId) throws SQLException {
+        String sql
+                = "SELECT COUNT(*) FROM ("
+                + " SELECT UtilityTypeID FROM UtilityReadings WHERE UtilityTypeID = ? AND (OldReading > 0 OR NewReading > 0) "
+                + " UNION "
+                + " SELECT UtilityTypeID FROM BillDetails WHERE UtilityTypeID = ? "
+                + ") AS Combined";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, utilityTypeId);
+            ps.setInt(2, utilityTypeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
+    }
+
+    public boolean isUtilityNameExists(String name) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM UtilityTypes WHERE UtilityName = ?";
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
     }
 
 }

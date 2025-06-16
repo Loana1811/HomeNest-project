@@ -43,7 +43,6 @@ public class RoomDAO {
 
     }
 
-    // RoomDAO.java
     public List<Object[]> getAllRoomIdName() throws SQLException {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT RoomID, RoomNumber FROM Rooms";

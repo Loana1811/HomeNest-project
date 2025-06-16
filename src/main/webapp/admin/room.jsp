@@ -25,7 +25,6 @@
         <div class="alert alert-danger" role="alert"><%= request.getAttribute("error") %></div>
     <% } %>
 
-    <!-- Action bar -->
     <div class="d-flex justify-content-between mb-3">
         <form action="${pageContext.request.contextPath}/admin/rooms" method="get" class="d-flex">
             <input type="text" name="search" value="<%= request.getParameter("search") != null ? request.getParameter("search") : "" %>" class="form-control me-2" placeholder="Search by name or type">
@@ -34,7 +33,6 @@
         <a href="${pageContext.request.contextPath}/admin/room-create.jsp" class="btn btn-success">+ Add Room</a>
     </div>
 
-    <!-- Room list table -->
     <table class="table table-bordered table-hover align-middle">
         <thead class="table-dark">
         <tr>

@@ -33,20 +33,17 @@ public class UtilityReadingServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         try {
-            // Lấy danh sách phòng và loại để build dropdown
             List<Object[]> rooms = roomDAO.getAllRoomIdName();
             List<Object[]> types = typeDAO.getAllTypeIdName();
             req.setAttribute("rooms", rooms);
             req.setAttribute("types", types);
 
-            // Đọc param sau reload
             String roomIdStr = req.getParameter("roomId");
             String typeIdStr = req.getParameter("typeId");
 
             req.setAttribute("selectedRoomId", roomIdStr);
             req.setAttribute("selectedTypeId", typeIdStr);
 
-            // Nếu đã chọn cả 2 thì tính oldIndex
             if (roomIdStr != null && !roomIdStr.isEmpty()
              && typeIdStr  != null && !typeIdStr.isEmpty()) {
                 int roomId = Integer.parseInt(roomIdStr);
@@ -62,28 +59,41 @@ public class UtilityReadingServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
-            throws ServletException, IOException {
-        try {
-            int roomId = Integer.parseInt(req.getParameter("roomId"));
-            int typeId = Integer.parseInt(req.getParameter("typeId"));
-            double newIndex = Double.parseDouble(req.getParameter("newIndex"));
+   @Override
+protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+        throws ServletException, IOException {
+    try {
+        int roomId = Integer.parseInt(req.getParameter("roomId"));
+        int typeId = Integer.parseInt(req.getParameter("typeId"));
+        double newIndex = Double.parseDouble(req.getParameter("newIndex"));
 
-            double oldIndex = dao.getLatestIndex(roomId, typeId);
-            double unitPrice = typeDAO.getById(typeId).getPrice();
+        double oldIndex = dao.getLatestIndex(roomId, typeId);
+        double unitPrice = typeDAO.getById(typeId).getPrice();
 
-            UtilityReading ur = new UtilityReading(
-                0, roomId, typeId, oldIndex,
-                newIndex, unitPrice,
-                "admin",
-                new java.sql.Date(System.currentTimeMillis())
-            );
+        if (newIndex <= oldIndex) {
+            req.setAttribute("error", "❌ New index must be greater than the old index!");
+            req.setAttribute("rooms", roomDAO.getAllRoomIdName());
+            req.setAttribute("types", typeDAO.getAllTypeIdName());
+            req.setAttribute("selectedRoomId", String.valueOf(roomId));
+            req.setAttribute("selectedTypeId", String.valueOf(typeId));
+            req.setAttribute("oldIndex", oldIndex);
 
-            dao.insert(ur);
-            resp.sendRedirect(req.getContextPath() + "/admin/record-reading");
-        } catch (Exception e) {
-            throw new ServletException(e);
+            req.getRequestDispatcher("/admin/utility-record.jsp").forward(req, resp);
+            return;
         }
+
+        UtilityReading ur = new UtilityReading(
+            0, roomId, typeId, oldIndex,
+            newIndex, unitPrice,
+            "admin",
+            new java.sql.Date(System.currentTimeMillis())
+        );
+
+        dao.insert(ur);
+        resp.sendRedirect(req.getContextPath() + "/admin/record-reading");
+    } catch (Exception e) {
+        throw new ServletException(e);
     }
 }
+}
+

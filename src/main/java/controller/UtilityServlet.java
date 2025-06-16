@@ -6,6 +6,7 @@ package controller;
 
 import dao.RoomDAO;
 import dao.UtilityHistoryDAO;
+import dao.UtilityReadingDAO;
 import dao.UtilityTypeDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -13,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import model.UtilityHistoryView;
 import model.UtilityType;
@@ -32,41 +34,83 @@ public class UtilityServlet extends HttpServlet {
 
         try {
             switch (action == null ? "list" : action) {
-                case "create":
-                    request.getRequestDispatcher("/admin/utility-create.jsp").forward(request, response);
+                case "create": {
+                    RoomDAO roomDAO = new RoomDAO();
+                    List<Object[]> roomsCreate = roomDAO.getAllRoomIdName();
+                    request.setAttribute("rooms", roomsCreate);
+                    request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
                     break;
-                case "edit":
+                }
+
+                case "edit": {
                     int editId = Integer.parseInt(request.getParameter("id"));
                     request.setAttribute("utility", dao.getById(editId));
 
-                    RoomDAO roomDAO = new RoomDAO();
-                    List<Object[]> rooms = roomDAO.getRoomsAppliedToUtility(editId);
-                    request.setAttribute("rooms", rooms); // để jsp dùng
+                    RoomDAO roomDAO2 = new RoomDAO();
+                    List<Object[]> rooms = roomDAO2.getRoomsAppliedToUtility(editId);
+                    request.setAttribute("rooms", rooms);
 
                     request.getRequestDispatcher("/admin/utility-edit.jsp").forward(request, response);
                     break;
+                }
 
-                case "delete":
+                case "delete": {
                     int deleteId = Integer.parseInt(request.getParameter("id"));
-                    dao.delete(deleteId);
-                    response.sendRedirect("utility?action=list");
-                    break;
-                default: // list
-                    List<UtilityType> utilities = dao.getAll();
-                    request.setAttribute("utilities", utilities);
+                    UtilityType utility = dao.getById(deleteId);
+
+                    if (utility.isSystem()) {
+                        request.setAttribute("error", "❌ This is a default system utility and cannot be deleted.");
+                    } else {
+                        new UtilityReadingDAO().deleteZeroReadingsByUtilityType(deleteId);
+
+                        if (dao.isUtilityTypeInUse(deleteId)) {
+                            request.setAttribute("error", "❌ This utility has been used in actual readings or billing and cannot be deleted.");
+                        } else {
+                            dao.delete(deleteId);
+                            response.sendRedirect("utility?action=list");
+                            return;
+                        }
+                    }
+
+                    loadUtilityLists(request);
                     request.getRequestDispatcher("/admin/utility-list.jsp").forward(request, response);
                     break;
+                }
 
-                case "history":
+                case "history": {
                     List<UtilityHistoryView> history = new UtilityHistoryDAO().getHistory();
                     request.setAttribute("historyList", history);
                     request.getRequestDispatcher("/admin/utility-history.jsp").forward(request, response);
                     break;
+                }
 
+                case "list":
+                default: {
+                    loadUtilityLists(request);
+                    request.getRequestDispatcher("/admin/utility-list.jsp").forward(request, response);
+                    break;
+                }
             }
         } catch (Exception e) {
             throw new ServletException(e);
         }
+    }
+
+    private void loadUtilityLists(HttpServletRequest request) throws Exception {
+        List<UtilityType> all = dao.getAll();
+        List<UtilityType> systemList = new ArrayList<>();
+        List<UtilityType> userList = new ArrayList<>();
+
+        for (UtilityType u : all) {
+            if (u.isSystem()) {
+                systemList.add(u);
+            } else {
+                userList.add(u);
+            }
+        }
+
+        request.setAttribute("systemList", systemList);
+        request.setAttribute("userList", userList);
     }
 
     @Override
@@ -79,10 +123,48 @@ public class UtilityServlet extends HttpServlet {
             String unit = request.getParameter("unit");
 
             if ("create".equals(action)) {
-                dao.insert(new UtilityType(0, name, unit, price));
+                if (dao.isUtilityNameExists(name)) {
+                    request.setAttribute("error", "❌ Utility name already exists. Please choose another name!");
+                    RoomDAO roomDAO = new RoomDAO();
+                    List<Object[]> roomsCreate = roomDAO.getAllRoomIdName();
+                    request.setAttribute("rooms", roomsCreate);
+                    request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
+                    return;
+                }
+
+                UtilityType newUtility = new UtilityType(0, name, price, unit, false);
+                dao.insert(newUtility);
+
+                int newId = dao.getLastInsertedId();
+                String[] selectedRoomIds = request.getParameterValues("roomIds");
+
+                if (selectedRoomIds != null) {
+                    UtilityReadingDAO urDao = new UtilityReadingDAO();
+                    for (String rid : selectedRoomIds) {
+                        urDao.assignUtilityToRoom(Integer.parseInt(rid), newId);
+                    }
+                }
+
             } else if ("update".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
-                dao.update(new UtilityType(id, name, unit, price));
+                UtilityType existing = dao.getById(id); 
+
+                double oldPrice = existing.getPrice();
+                double newPrice = Double.parseDouble(request.getParameter("price"));
+
+                dao.update(new UtilityType(id, name, newPrice, unit, existing.isSystem()));
+
+                if (Double.compare(oldPrice, newPrice) != 0) {
+                    new UtilityHistoryDAO().insertHistory(
+                            id, 
+                            existing.getName(),
+                            oldPrice,
+                            newPrice,
+                            "admin", 
+                            java.sql.Date.valueOf(java.time.LocalDate.now())
+                    );
+                }
+
             }
 
             response.sendRedirect("utility?action=list");
