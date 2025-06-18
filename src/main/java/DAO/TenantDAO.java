@@ -2,27 +2,22 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package DAO;
+package dao;
 
-import DB.DBContext;
-import Model.Customer;
-import Model.Tenant;
 import java.sql.Connection;
+import model.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.time.LocalDate;
-
-
+import utils.DBContext;
 
 /**
  *
- * @author Admin
+ * @author ThanhTruc
  */
 public class TenantDAO extends DBContext {
-
-    public ArrayList<Tenant> getAllTenants() {
+     public ArrayList<Tenant> getAllTenants() {
         ArrayList<Tenant> tenants = new ArrayList<>();
         String squery = "SELECT * FROM Tenants WHERE TenantID NOT IN (SELECT TenantID FROM Contracts)";
 

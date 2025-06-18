@@ -2,16 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Model;
+package model;
 
 import java.sql.Date;
 
 /**
  *
- * @author Admin
+ * @author ThanhTruc
  */
 public class Room {
-
     private int roomID;
     private String roomNumber;
     private String roomType; // Có thể bỏ nếu không còn trong DB
@@ -143,4 +142,5 @@ public class Room {
     public void setPostedDate(Date postedDate) {
         this.postedDate = postedDate;
     }
+   
 }

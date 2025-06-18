@@ -1,24 +1,32 @@
-package Model;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package model;
 
-import java.util.Date;
+import java.sql.Date;
 
+/**
+ *
+ * @author ThanhTruc
+ */
 public class Contract {
-
+    
     private int contractId;
     private int tenantId;
     private String tenantName;
     private int roomId;
     private String roomNumber;
-    private Date startDate;
-    private Date endDate;
+    private java.util.Date startDate;
+    private java.util.Date endDate;
     private String contractstatus;
-    private Date contractcreatedAt;
+    private java.util.Date contractcreatedAt;
     private double amount;
 
     public Contract() {
     }
 
-    public Contract(int contractId, int tenantId, int roomId, Date startDate, Date endDate, String contractstatus, Date contractcreatedAt) {
+    public Contract(int contractId, int tenantId, int roomId, java.util.Date startDate, java.util.Date endDate, String contractstatus, java.util.Date contractcreatedAt) {
         this.contractId = contractId;
         this.tenantId = tenantId;
         this.roomId = roomId;
@@ -71,19 +79,19 @@ public class Contract {
         this.roomNumber = roomNumber;
     }
 
-    public Date getStartDate() {
+    public java.util.Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(java.util.Date startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public java.util.Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(java.util.Date endDate) {
         this.endDate = endDate;
     }
 
@@ -95,11 +103,11 @@ public class Contract {
         this.contractstatus = contractstatus;
     }
 
-    public Date getContractcreatedAt() {
+    public java.util.Date getContractcreatedAt() {
         return contractcreatedAt;
     }
 
-    public void setContractcreatedAt(Date contractcreatedAt) {
+    public void setContractcreatedAt(java.util.Date contractcreatedAt) {
         this.contractcreatedAt = contractcreatedAt;
     }
 
@@ -111,5 +119,5 @@ public class Contract {
         this.amount = amount;
     }
 
-   
+    
 }

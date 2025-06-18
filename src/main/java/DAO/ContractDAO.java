@@ -2,11 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package DAO;
+package dao;
 
-import DB.DBContext;
-import Model.Contract;
-import Model.Customer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -15,13 +12,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import model.Contract;
+import utils.DBContext;
 
 /**
  *
- * @author Admin
+ * @author ThanhTruc
  */
 public class ContractDAO extends DBContext {
-
     public ArrayList<Contract> getAllContracts() {
         ArrayList<Contract> contracts = new ArrayList<>();
         String query = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, c.ContractCreatedAt, "
@@ -152,6 +150,5 @@ public class ContractDAO extends DBContext {
         return contracts;
     }
 
-   
 
 }

@@ -1,7 +1,15 @@
-package Model;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package model;
 
 import java.sql.Date;
 
+/**
+ *
+ * @author ThanhTruc
+ */
 public class Tenant {
     private int tenantID;
     private int customerID;
@@ -41,4 +49,5 @@ public class Tenant {
     public void setJoinDate(Date joinDate) {
         this.joinDate = joinDate;
     }
+    
 }
