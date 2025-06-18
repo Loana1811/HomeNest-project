@@ -1,162 +1,200 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package Controller;
 
 import DAO.ContractDAO;
-import DAO.RoomDAO;
-import DAO.TenantDAO;
 import Model.Contract;
-import Model.Customer;
-import Model.Room;
-import Model.Tenant;
 import java.io.IOException;
-import java.sql.Date;
-import java.util.List;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@WebServlet(name = "ContractServlet", urlPatterns = {"/Contracts"})
+/**
+ *
+ * @author Admin
+ */
+@WebServlet(name = "ContractServlet", urlPatterns = {"/contracts"})
 public class ContractServlet extends HttpServlet {
 
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try ( PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ContractServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet ContractServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        if (action == null || action.equals("list")) {
+        if ("list".equals(action) || action == null) {
             ContractDAO contractDAO = new ContractDAO();
             List<Contract> contracts = contractDAO.getAllContracts();
+            // Pagination logic (simple implementation)
+
             request.setAttribute("contracts", contracts);
-            request.getRequestDispatcher("/listContract.jsp").forward(request, response);
 
-        } else if (action.equals("create")) {
-            TenantDAO tenantDAO = new TenantDAO();
-            RoomDAO roomDAO = new RoomDAO();
-
-            List<Tenant> tenants = tenantDAO.getAllTenants();
-            List<Room> rooms = roomDAO.getAvailableRooms();
-
-            request.setAttribute("tenants", tenants);
-            request.setAttribute("rooms", rooms);
+            request.getRequestDispatcher("/listContracts.jsp").forward(request, response);
+        } else if ("create".equals(action)) {
             request.getRequestDispatcher("/createContract.jsp").forward(request, response);
-
-        } else if (action.equals("edit")) {
-            int id = Integer.parseInt(request.getParameter("id"));
-
-            ContractDAO contractDAO = new ContractDAO();
-            Contract contract = contractDAO.getContractById(id);
-
-            RoomDAO roomDAO = new RoomDAO();
-            List<Room> rooms = roomDAO.getAvailableRoomsIncludingCurrent(contract.getRoomId());
-
-            request.setAttribute("rooms", rooms);
-            request.setAttribute("contract", contract);
-            request.getRequestDispatcher("/editContract.jsp").forward(request, response);
-
-        } else if ("view".equals(action)) {
+        } else if ("edit".equals(action)) {
             String idParam = request.getParameter("id");
-            if (idParam == null || idParam.isEmpty()) {
-                response.sendRedirect("Contracts");
-                return;
+            if (idParam != null && idParam.matches("\\d+")) {
+                int id = Integer.parseInt(idParam);
+                try {
+                    ContractDAO contractDAO = new ContractDAO();
+                    Contract contract = contractDAO.getContractById(id);
+                    if (contract != null) {
+                        request.setAttribute("contract", contract);
+                        request.getRequestDispatcher("/editContract.jsp").forward(request, response);
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Contract not found");
+                    }
+                } catch (SQLException e) {
+                    throw new ServletException("Error fetching contract", e);
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid contract ID");
             }
-
-            int contractId = Integer.parseInt(idParam);
-
-            ContractDAO contractDAO = new ContractDAO();
-            TenantDAO tenantDAO = new TenantDAO();
-            RoomDAO roomDAO = new RoomDAO();
-
-            Contract contract = contractDAO.getContractById(contractId);
-            Tenant tenant = tenantDAO.getTenantById(contract.getTenantId());
-            Room room = roomDAO.getRoomById(contract.getRoomId());
-
-            // Lấy thông tin khách hàng từ CustomerID trong Tenant
-            Customer customer = tenantDAO.getCustomerById(tenant.getCustomerID());
-
-            request.setAttribute("contract", contract);
-            request.setAttribute("tenant", tenant);
-            request.setAttribute("room", room);
-            request.setAttribute("customer", customer); // thêm dòng này
-
-            request.getRequestDispatcher("viewDetail.jsp").forward(request, response);
-        } else if ("history".equals(action)) {
-            String tenantIdParam = request.getParameter("tenantId");
-
-            if (tenantIdParam == null || tenantIdParam.trim().isEmpty()) {
-                response.sendRedirect("Contracts?action=list");
-                return;
-            }
-
-            int tenantId = Integer.parseInt(tenantIdParam);
-
-            ContractDAO contractDAO = new ContractDAO();
-            List<Contract> historyContracts = contractDAO.getContractHistoryByTenantId(tenantId);
-
-            request.setAttribute("contracts", historyContracts);
-            request.getRequestDispatcher("/historyContract.jsp").forward(request, response);
         }
-
     }
 
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String action = request.getParameter("action");
 
         if ("create".equals(action)) {
-            try {
+            String tenantIdStr = request.getParameter("tenantId");
+            String roomIdStr = request.getParameter("roomId");
+            String startDateStr = request.getParameter("startDate");
+            String endDateStr = request.getParameter("endDate");
+
+            if (tenantIdStr != null && roomIdStr != null && startDateStr != null && endDateStr != null) {
+                try {
+                    int tenantId = Integer.parseInt(tenantIdStr);
+                    int roomId = Integer.parseInt(roomIdStr);
+                    java.sql.Date startDate = java.sql.Date.valueOf(startDateStr);
+                    java.sql.Date endDate = java.sql.Date.valueOf(endDateStr);
+
+                    // Validate dates: startDate should be before endDate
+                    if (startDate.after(endDate)) {
+                        request.setAttribute("error", "Ngày bắt đầu phải trước ngày kết thúc");
+                        request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+                        return;
+                    }
+
+                    // Use current date for CreatedAt, matching schema default
+                    java.sql.Date createdAt = new java.sql.Date(System.currentTimeMillis());
+                    Contract newContract = new Contract(tenantId, roomId, startDate, endDate, "Active", createdAt);
+                    ContractDAO contractDAO = new ContractDAO();
+                    contractDAO.addContract(newContract);
+                    response.sendRedirect(request.getContextPath() + "/contracts");
+                } catch (NumberFormatException e) {
+                    request.setAttribute("error", "Định dạng ID Người thuê hoặc ID Phòng không hợp lệ");
+                    request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+                } catch (IllegalArgumentException e) {
+                    request.setAttribute("error", "Định dạng ngày không hợp lệ");
+                    request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+                } catch (SQLException e) {
+                    request.setAttribute("error", "Lỗi cơ sở dữ liệu: " + e.getMessage());
+                    request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+                }
+            } else {
+                request.setAttribute("error", "Thiếu các trường bắt buộc");
+                request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+            }
+        } else if ("edit".equals(action)) {
+            String idStr = request.getParameter("id");
+            if (idStr != null && idStr.matches("\\d+")) {
+                int id = Integer.parseInt(idStr);
                 String tenantIdStr = request.getParameter("tenantId");
                 String roomIdStr = request.getParameter("roomId");
-
-                if (tenantIdStr == null || tenantIdStr.isEmpty() || roomIdStr == null || roomIdStr.isEmpty()) {
-                    request.setAttribute("error", "Please select both Tenant and Room.");
-                    // forward lại về form
-                    request.getRequestDispatcher("/createContract.jsp").forward(request, response);
-                    return;
-                }
-
-                int tenantId = Integer.parseInt(tenantIdStr);
-                int roomId = Integer.parseInt(roomIdStr);
-
-                Date startDate = Date.valueOf(request.getParameter("startDate"));
+                String startDateStr = request.getParameter("startDate");
                 String endDateStr = request.getParameter("endDate");
-                Date endDate = (endDateStr == null || endDateStr.isEmpty()) ? null : Date.valueOf(endDateStr);
+                String statusStr = request.getParameter("status");
 
-                ContractDAO contractDAO = new ContractDAO();
-                boolean success = contractDAO.addContract(tenantId, roomId, startDate, endDate);
+                if (tenantIdStr != null && roomIdStr != null && startDateStr != null && endDateStr != null && statusStr != null) {
+                    try {
+                        int tenantId = Integer.parseInt(tenantIdStr);
+                        int roomId = Integer.parseInt(roomIdStr);
+                        java.sql.Date startDate = java.sql.Date.valueOf(startDateStr);
+                        java.sql.Date endDate = java.sql.Date.valueOf(endDateStr);
 
-                if (success) {
-                    response.sendRedirect(request.getContextPath() + "/Contracts?action=list");
+                        Contract updatedContract = new Contract(tenantId, roomId, startDate, endDate, statusStr);
+                        updatedContract.setContractId(id); // Added to set ContractID
+                        ContractDAO contractDAO = new ContractDAO();
+                        contractDAO.updateContract(updatedContract);
+                        response.sendRedirect(request.getContextPath() + "/contracts?action=show&id=" + id);
+                    } catch (SQLException e) {
+                        throw new ServletException("Error updating contract", e);
+                    }
                 } else {
-                    request.setAttribute("error", "Failed to create contract.");
-                    doGet(request, response);
+                    request.setAttribute("error", "Missing required fields");
+                    request.getRequestDispatcher("/editContract.jsp").forward(request, response);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                request.setAttribute("error", "Invalid input or system error.");
-                doGet(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid contract ID");
             }
-
-        } else if ("delete".equals(action)) {
-            String contractIdStr = request.getParameter("contractId");
-
-            if (contractIdStr == null || contractIdStr.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing contractId for delete action.");
-                return;
-            }
-
-            int contractId = Integer.parseInt(contractIdStr);
-
-            ContractDAO contractDAO = new ContractDAO();
-            boolean deleted = contractDAO.deleteContract(contractId);
-
-            response.sendRedirect("Contracts");
         }
     }
 
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
     @Override
     public String getServletInfo() {
-        return "Contract Management Servlet";
-    }
+        return "Short description";
+    }// </editor-fold>
+
 }

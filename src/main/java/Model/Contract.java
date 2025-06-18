@@ -1,34 +1,70 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package Model;
 
 import java.util.Date;
 
+/**
+ *
+ * @author Admin
+ */
 public class Contract {
 
     private int contractId;
     private int tenantId;
     private String tenantName;
     private int roomId;
-    private String roomNumber;
     private Date startDate;
     private Date endDate;
-    private String contractstatus;
-    private Date contractcreatedAt;
+    private String status;
+    private Date createdAt;
     private double amount;
 
     public Contract() {
     }
 
-    public Contract(int contractId, int tenantId, int roomId, Date startDate, Date endDate, String contractstatus, Date contractcreatedAt) {
+//    public Contract(int contractId, int tenantId, String tenantName, int roomId, Date startDate, Date endDate, String status, Date createdAt, double amount) {
+//        this.contractId = contractId;
+//        this.tenantId = tenantId;
+//        this.tenantName = tenantName;
+//        this.roomId = roomId;
+//        this.startDate = startDate;
+//        this.endDate = endDate;
+//        this.status = status;
+//        this.createdAt = createdAt;
+//        this.amount = amount;
+//    }
+
+    public Contract(int contractId, int roomId, Date startDate, Date endDate, String status, Date createdAt) {
+        this.contractId = contractId;
+        this.roomId = roomId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.createdAt = createdAt;
+    }
+
+    public Contract(int contractId, int tenantId, int roomId, Date startDate, Date endDate, String status, Date createdAt) {
         this.contractId = contractId;
         this.tenantId = tenantId;
         this.roomId = roomId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.contractstatus = contractstatus;
-        this.contractcreatedAt = contractcreatedAt;
+        this.status = status;
+        this.createdAt = createdAt;
     }
     
-    
+
+    public Contract(int tenantId, int roomId, Date startDate, Date endDate, String status) {
+        this.tenantId = tenantId;
+        this.roomId = roomId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+    }
+
     
 
     public int getContractId() {
@@ -63,14 +99,6 @@ public class Contract {
         this.roomId = roomId;
     }
 
-    public String getRoomNumber() {
-        return roomNumber;
-    }
-
-    public void setRoomNumber(String roomNumber) {
-        this.roomNumber = roomNumber;
-    }
-
     public Date getStartDate() {
         return startDate;
     }
@@ -87,20 +115,20 @@ public class Contract {
         this.endDate = endDate;
     }
 
-    public String getContractstatus() {
-        return contractstatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setContractstatus(String contractstatus) {
-        this.contractstatus = contractstatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public Date getContractcreatedAt() {
-        return contractcreatedAt;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setContractcreatedAt(Date contractcreatedAt) {
-        this.contractcreatedAt = contractcreatedAt;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public double getAmount() {
@@ -110,6 +138,4 @@ public class Contract {
     public void setAmount(double amount) {
         this.amount = amount;
     }
-
-   
 }

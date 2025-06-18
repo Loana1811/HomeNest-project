@@ -3,17 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mycompany</groupId>
-    <artifactId>SWP301</artifactId>
+    <artifactId>SWP3011</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>SWP301</name>
+    <name>SWP3011</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
+   
+   
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
@@ -52,6 +54,7 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>
