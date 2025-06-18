@@ -4,6 +4,7 @@
  */
 package model;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 
 /**
@@ -11,14 +12,14 @@ import java.sql.Date;
  * @author kloane
  */
 public class UtilityHistoryView {
-private int utilityTypeId;
+    private int utilityTypeId;
     private String utilityName;
-    private double oldPrice;
-    private double newPrice;
+    private BigDecimal oldPrice;
+    private BigDecimal newPrice;
     private String changedBy;
     private Date createdAt;
 
-    public UtilityHistoryView(int utilityTypeId, String utilityName, double oldPrice, double newPrice, String changedBy, Date createdAt) {
+    public UtilityHistoryView(int utilityTypeId, String utilityName, BigDecimal oldPrice, BigDecimal newPrice, String changedBy, Date createdAt) {
     this.utilityTypeId = utilityTypeId;
     this.utilityName = utilityName;
     this.oldPrice = oldPrice;
@@ -36,11 +37,11 @@ private int utilityTypeId;
         return utilityName;
     }
 
-    public double getOldPrice() {
+    public BigDecimal getOldPrice() {
         return oldPrice;
     }
 
-    public double getNewPrice() {
+    public BigDecimal getNewPrice() {
         return newPrice;
     }
 
@@ -62,11 +63,11 @@ private int utilityTypeId;
         this.utilityName = utilityName;
     }
 
-    public void setOldPrice(double oldPrice) {
+    public void setOldPrice(BigDecimal oldPrice) {
         this.oldPrice = oldPrice;
     }
 
-    public void setNewPrice(double newPrice) {
+    public void setNewPrice(BigDecimal newPrice) {
         this.newPrice = newPrice;
     }
 
@@ -81,4 +82,5 @@ private int utilityTypeId;
    
     
 }
+
 

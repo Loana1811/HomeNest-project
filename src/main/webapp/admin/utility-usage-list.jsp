@@ -52,5 +52,8 @@
                 <% }%>
             </tbody>
         </table>
+            <a href="<%= ctx%>/admin/dashboard" class="btn btn-outline-secondary">
+                ⬅️ Back to Dashboard
+            </a>
     </body>
 </html>

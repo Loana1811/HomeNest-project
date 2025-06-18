@@ -43,22 +43,126 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
             body {
-                padding-top:56px;
+                padding-top: 56px;
+                background-color: #f1f4f8;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
+
+            /* Sidebar Styling */
             .sidebar {
-                width:240px;
-                min-height:100vh;
-                position:fixed;
-                top:56px;
-                left:0;
-                background:#f8f9fa;
-                padding:1rem;
+                width: 240px;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                bottom: 0;
+                background-color: #ffffff;
+                border-right: 1px solid #e0e0e0;
+                padding: 1rem;
+                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
             }
+
+            .sidebar h5 {
+                font-weight: 700;
+                margin-bottom: 1rem;
+            }
+
+            .sidebar .nav-link {
+                padding: 10px 14px;
+                margin-bottom: 6px;
+                color: #333;
+                border-radius: 8px;
+                font-weight: 500;
+                transition: all 0.2s;
+            }
+
+            .sidebar .nav-link:hover,
+            .sidebar .nav-link.active {
+                background: #0d6efd;
+                color: white;
+            }
+
+            /* Main content */
             main {
-                margin-left:260px;
-                padding:1rem;
+                margin-left: 260px;
+                padding: 2rem;
+            }
+
+            /* Card Stats */
+            .card-stat {
+                border-radius: 16px;
+                color: white;
+                padding: 1.25rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: start;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                transition: transform 0.2s;
+            }
+
+            .card-stat:hover {
+                transform: scale(1.02);
+            }
+
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #007bff, #0056b3);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #28a745, #218838);
+            }
+            .bg-gradient-warning {
+                background: linear-gradient(135deg, #ffc107, #e0a800);
+                color: #212529;
+            }
+            .bg-gradient-info {
+                background: linear-gradient(135deg, #17a2b8, #117a8b);
+            }
+
+            .card-stat h5 {
+                margin-bottom: 0.3rem;
+                font-weight: 500;
+            }
+
+            .card-stat h2 {
+                font-weight: 700;
+                font-size: 2.2rem;
+            }
+
+            /* Button */
+            .btn-gradient {
+                background: linear-gradient(135deg, #4a90e2, #357abd);
+                border: none;
+                color: white;
+                font-weight: 500;
+                padding: 0.6rem 1.4rem;
+                border-radius: 8px;
+            }
+
+            .btn-gradient:hover {
+                background: linear-gradient(135deg, #357abd, #4a90e2);
+                color: #eaf4ff;
+            }
+
+            /* Chart Card */
+            .card-chart {
+                border-radius: 14px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e0e0e0;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .sidebar {
+                    display: none;
+                }
+
+                main {
+                    margin-left: 0;
+                }
             }
         </style>
+
+
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -81,11 +185,9 @@
         <div class="sidebar">
             <h5 class="text-primary">Admin Menu</h5>
             <ul class="nav flex-column">
+                
                 <li class="nav-item">
-                    <a class="nav-link active" href="<%= ctx%>/admin/dashboard">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/utility?action=list">Utilities</a>
+                    <a class="nav-link" href="<%= ctx%>/admin/account">Accounts</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/room?action=list">Rooms</a>
@@ -97,13 +199,19 @@
                     <a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/utility?action=list">Utilities</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/record-reading">Record Usage</a>
                 </li>
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin/usage">
-                    View Usage List
-                </a>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
+                </li>
+
+
             </ul>
         </div>
+
 
         <main>
             <h2>📊 Admin Dashboard</h2>

@@ -19,6 +19,7 @@
     <head>
         <meta charset="UTF-8">
         <title>📥 Record Utility Usage</title>
+
         <% String error = (String) request.getAttribute("error"); %>
         <% if (error != null) {%>
     <div class="alert alert-danger"><%= error%></div>
@@ -40,10 +41,54 @@
                     + '&typeId=' + typeId;
         }
     </script>
+    <style>
+        .btn {
+            font-weight: 500;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            font-size: 1.05rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+        body {
+            background: #f8f9fc;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 2rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 24px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            margin-top: 2rem;
+        }
+
+        h3 {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+
 </head>
 <body class="container mt-4">
     <h3>📥 Record Utility Usage</h3>
     <form method="post" action="<%= ctx%>/admin/record-reading">
+        
+        
         <div class="mb-3">
             <label>Room</label>
             <select name="roomId" id="roomId" class="form-select" required>
@@ -95,8 +140,20 @@
                    required />
         </div>
 
-        <button type="submit" class="btn btn-primary">💾 Save</button>
-        <a href="<%= ctx%>/admin/utility?action=list" class="btn btn-secondary">Cancel</a>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+                💾 Save
+            </button>
+            <a href="<%= ctx%>/admin/utility?action=list" class="btn btn-outline-dark">
+                ❌ Cancel
+            </a>
+            <a href="<%= ctx%>/admin/dashboard" class="btn btn-outline-secondary">
+                ⬅️ Back to Dashboard
+            </a>
+        </div>
+
     </form>
+
 </body>
+
 </html>

@@ -28,7 +28,7 @@ public class UtilityTypeDAO {
                 list.add(new UtilityType(
                         rs.getInt("UtilityTypeID"),
                         rs.getString("UtilityName"),
-                        rs.getDouble("UnitPrice"),
+                        rs.getBigDecimal("UnitPrice"),
                         rs.getString("Unit"),
                         rs.getBoolean("IsSystem")
                 ));
@@ -47,7 +47,7 @@ public class UtilityTypeDAO {
                 return new UtilityType(
                         id,
                         rs.getString("UtilityName"),
-                        rs.getDouble("UnitPrice"),
+                        rs.getBigDecimal("UnitPrice"),
                         rs.getString("Unit"),
                         rs.getBoolean("IsSystem")
                 );
@@ -60,8 +60,8 @@ public class UtilityTypeDAO {
     public void insert(UtilityType u) throws SQLException {
         String sql = "INSERT INTO UtilityTypes (UtilityName, UnitPrice, Unit) VALUES (?, ?, ?)";
         try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, u.getName());
-            ps.setDouble(2, u.getPrice());
+            ps.setString(1, u.getUtilityName());
+            ps.setBigDecimal(2, u.getUnitPrice());
             ps.setString(3, u.getUnit());
             ps.executeUpdate();
         }
@@ -70,10 +70,10 @@ public class UtilityTypeDAO {
     public void update(UtilityType u) throws SQLException {
         String sql = "UPDATE UtilityTypes SET UtilityName = ?, UnitPrice = ?, Unit = ? WHERE UtilityTypeID = ?";
         try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, u.getName());
-            ps.setDouble(2, u.getPrice());
+            ps.setString(1, u.getUtilityName());
+            ps.setBigDecimal(2, u.getUnitPrice());
             ps.setString(3, u.getUnit());
-            ps.setInt(4, u.getId());
+            ps.setInt(4, u.getUtilityTypeID());
             ps.executeUpdate();
         }
     }
@@ -107,24 +107,20 @@ public class UtilityTypeDAO {
         return -1;
     }
 
-    public boolean isUtilityTypeInUse(int utilityTypeId) throws SQLException {
-        String sql
-                = "SELECT COUNT(*) FROM ("
-                + " SELECT UtilityTypeID FROM UtilityReadings WHERE UtilityTypeID = ? AND (OldReading > 0 OR NewReading > 0) "
-                + " UNION "
-                + " SELECT UtilityTypeID FROM BillDetails WHERE UtilityTypeID = ? "
-                + ") AS Combined";
+   public boolean isUtilityTypeInUse(int utilityTypeId) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE UtilityTypeID = ? AND (OldReading > 0 OR NewReading > 0)";
 
-        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, utilityTypeId);
-            ps.setInt(2, utilityTypeId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
+    try (Connection conn = new DBContext().getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+         
+        ps.setInt(1, utilityTypeId); // ✅ Chỉ cần set 1 tham số
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
         }
-        return false;
     }
+    return false;
+}
 
     public boolean isUtilityNameExists(String name) throws SQLException {
         String sql = "SELECT COUNT(*) FROM UtilityTypes WHERE UtilityName = ?";

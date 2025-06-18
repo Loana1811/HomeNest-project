@@ -9,10 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import utils.DBContext;
 
-/**
- *
- * @author kloane
- */
 public class DashboardDAO {
 
     public int countRooms() throws Exception {
@@ -30,13 +26,13 @@ public class DashboardDAO {
     }
 
     public int countUnpaidBills() throws Exception {
-        String sql = "SELECT COUNT(*) FROM Bills WHERE Status='Unpaid'";
+        // SỬA ĐÚNG THEO SCHEMA MỚI
+        String sql = "SELECT COUNT(*) FROM Bills WHERE BillStatus='Unpaid'";
         try ( Connection c = new DBContext().getConnection();  PreparedStatement ps = c.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
         }
     }
 
-    
     public int countReadingsLast30Days() throws Exception {
         String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE ReadingDate >= DATEADD(day, -30, GETDATE())";
         try ( Connection c = new DBContext().getConnection();  PreparedStatement ps = c.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
@@ -44,7 +40,6 @@ public class DashboardDAO {
         }
     }
 
-    
     public java.util.List<Object[]> getDailyElectricityUsageLastWeek() throws Exception {
         java.util.List<Object[]> list = new java.util.ArrayList<>();
         String sql
@@ -60,5 +55,4 @@ public class DashboardDAO {
         }
         return list;
     }
-
 }

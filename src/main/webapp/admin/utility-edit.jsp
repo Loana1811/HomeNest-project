@@ -1,9 +1,3 @@
-<%-- 
-    Document   : utility-edit
-    Created on : Jun 13, 2025, 8:03:57 AM
-    Author     : kloane
---%>
-
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ page import="model.UtilityType" %>
 <%@ page import="java.util.List" %>
@@ -24,12 +18,12 @@
     <h3 class="mb-3">🛠️ Edit Utility</h3>
 
     <form action="utility?action=update" method="post" onsubmit="return validateForm()">
-        <input type="hidden" name="id" value="<%= utility.getId() %>" />
-        <input type="hidden" name="name" value="<%= utility.getName() %>"/>
+        <input type="hidden" name="id" value="<%= utility.getUtilityTypeID() %>" />
+        <input type="hidden" name="name" value="<%= utility.getUtilityName()%>"/>
 
         <div class="mb-3">
             <label>Name</label>
-            <input type="text" class="form-control" value="<%= utility.getName() %>" readonly />
+            <input type="text" class="form-control" value="<%= utility.getUtilityName()%>" readonly />
         </div>
 
         <div class="mb-3">
@@ -43,7 +37,8 @@
 
         <div class="mb-3">
             <label>Old Price (VND)</label>
-            <input type="text" class="form-control bg-light" value="<%= String.format("%.0f", utility.getPrice()) %>" readonly />
+            <input type="text" class="form-control bg-light" 
+                   value="<%= String.format("%.0f", utility.getUnitPrice().doubleValue()) %>" readonly />
         </div>
 
         <div class="mb-3">

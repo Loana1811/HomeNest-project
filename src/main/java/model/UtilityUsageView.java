@@ -11,7 +11,8 @@ import java.sql.Date;
  * @author kloane
  */
 public class UtilityUsageView {
-   private int readingId;
+
+    private int readingId;
     private String roomNumber;
     private String utilityName;
     private double oldIndex;
@@ -97,4 +98,3 @@ public class UtilityUsageView {
 
 }
 
-  

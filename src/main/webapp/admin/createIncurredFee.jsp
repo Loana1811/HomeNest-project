@@ -2,7 +2,7 @@
 <%@ page import="java.util.List" %>
 <%
     List<Object[]> rooms = (List<Object[]>) request.getAttribute("rooms");
-    String[] units = {"kWh", "Khối", "Tháng", "Người", "Chiếc", "Lần", "Cái", "Bình", "m2", "Giờ"};
+    String[] units = {"kWh", "m3", "Month", "Person", "m2", "Time"};
 %>
 
 <!DOCTYPE html>

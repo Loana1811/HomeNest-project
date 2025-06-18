@@ -4,60 +4,65 @@
  */
 package model;
 
+import java.math.BigDecimal;
+
 /**
  *
- * @author kloane
+ * @author ThanhTruc
  */
 public class UtilityType {
-
-    private int id;
-    private String name;
-    private double price;
+    private int utilityTypeID;
+    private String utilityName;
+    private BigDecimal unitPrice;
     private String unit;
     private boolean isSystem;
 
-    public UtilityType(int id, String name, double price, String unit, boolean isSystem) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
+    public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit, boolean isSystem) {
+        this.utilityTypeID = utilityTypeID;
+        this.utilityName = utilityName;
+        this.unitPrice = unitPrice;
         this.unit = unit;
         this.isSystem = isSystem;
     }
 
-    public int getId() {
-        return id;
+    public int getUtilityTypeID() {
+        return utilityTypeID;
     }
 
-    public String getName() {
-        return name;
+    public void setUtilityTypeID(int utilityTypeID) {
+        this.utilityTypeID = utilityTypeID;
+    }
+
+    public String getUtilityName() {
+        return utilityName;
+    }
+
+    public void setUtilityName(String utilityName) {
+        this.utilityName = utilityName;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     public String getUnit() {
         return unit;
     }
 
-    public double getPrice() {
-        return price;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setUnit(String unit) {
         this.unit = unit;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public boolean isSystem() {
+    public boolean isIsSystem() {
         return isSystem;
     }
 
+    public void setIsSystem(boolean isSystem) {
+        this.isSystem = isSystem;
+    }
+    
 }
