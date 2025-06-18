@@ -3,73 +3,142 @@ package dao;
 import model.Block;
 import utils.DBContext;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockDAO {
+public class BlockDAO extends DBContext {
 
-    private final DBContext dbContext = new DBContext();
-
-    // Get all blocks
-   public List<Block> getAllBlocks() throws SQLException {
-    List<Block> blocks = new ArrayList<>();
-    String query = "SELECT * FROM Blocks ORDER BY BlockName";
-
-    try (Connection conn = dbContext.getConnection();
-         PreparedStatement ps = conn.prepareStatement(query);
-         ResultSet rs = ps.executeQuery()) {
-
-        while (rs.next()) {
-            Block block = new Block();
-            block.setBlockID(rs.getInt("BlockID"));
-            block.setBlockName(rs.getString("BlockName"));
-            block.setRoomCount(rs.getInt("RoomCount"));
-            block.setMaxRoom(rs.getInt("MaxRoom"));
-            block.setBlockStatus(rs.getString("BlockStatus"));
-
-            // ✅ Thêm vào list
-            blocks.add(block);
-        }
+    public BlockDAO() {
+        super(); // Gọi constructor từ DBContext
     }
 
-    return blocks;
-}
+    // Lấy tất cả block
+    public List<Block> getAllBlocks() {
+        List<Block> list = new ArrayList<>();
+        String sql = "SELECT BlockID, BlockName, MaxRoom, RoomCount, BlockStatus FROM Blocks";
 
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
-    // Get block by ID
-    public Block getBlockByID(int blockID) throws SQLException {
-        String query = "SELECT * FROM Blocks WHERE BlockID = ?";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, blockID);
+            while (rs.next()) {
+                list.add(new Block(
+                        rs.getInt("BlockID"),
+                        rs.getString("BlockName"),
+                        rs.getInt("MaxRoom"),
+                        rs.getInt("RoomCount"),
+                        rs.getString("BlockStatus")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Lấy block theo ID
+    public Block getBlockById(int id) {
+        String sql = "SELECT BlockID, BlockName, MaxRoom, RoomCount, BlockStatus FROM Blocks WHERE BlockID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Block block = new Block();
-                    block.setBlockID(rs.getInt("BlockID"));
-                    block.setBlockName(rs.getString("BlockName"));
-                    block.setRoomCount(rs.getInt("RoomCount"));
-                    block.setMaxRoom(rs.getInt("MaxRoom"));
-                    block.setBlockStatus(rs.getString("BlockStatus"));
-                    return block;
+                    return new Block(
+                            rs.getInt("BlockID"),
+                            rs.getString("BlockName"),
+                            rs.getInt("MaxRoom"),
+                            rs.getInt("RoomCount"),
+                            rs.getString("BlockStatus")
+                    );
                 }
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    // Optional: Create new block
-    public boolean createBlock(Block block) throws SQLException {
-       String query = "INSERT INTO Blocks (BlockName, RoomCount, MaxRoom, BlockStatus) VALUES (?, 0, ?, 'Available')";
+    public boolean addBlock(Block block) {
+        if (isBlockNameExists(block.getBlockName())) {
+            return false;
+        }
 
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        String sql = "INSERT INTO Blocks (BlockName, MaxRoom, RoomCount, BlockStatus) VALUES (?, ?, ?, ?)";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, block.getBlockName());
-            ps.setInt(2, block.getMaxRoom());
-            return ps.executeUpdate() > 0;
+            ps.setInt(2, block.getMaxRooms());
+            ps.setInt(3, block.getRoomCount());
+            ps.setString(4, block.getBlockStatus());
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public Block getBlockById(int blockID) throws SQLException {
-        return getBlockByID(blockID); // hoặc gọi lại hàm đã viết sẵn
+    // Cập nhật block
+    public void updateBlock(Block block) {
+        String sql = "UPDATE Blocks SET BlockName = ?, MaxRoom = ?, BlockStatus = ? WHERE BlockID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, block.getBlockName());
+            ps.setInt(2, block.getMaxRooms());
+            ps.setString(3, block.getBlockStatus());
+            ps.setInt(4, block.getBlockID());
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+    // Xóa block
+    public void deleteBlock(int id) {
+        String sql = "DELETE FROM Blocks WHERE BlockID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isBlockNameExists(String blockName) {
+        String sql = "SELECT 1 FROM Blocks WHERE BlockName = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, blockName);
+            try ( ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // có kết quả => tồn tại
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật số lượng phòng
+    public void updateRoomCount(int blockId) {
+        String sql = "UPDATE Blocks SET RoomCount = (SELECT COUNT(*) FROM Rooms WHERE BlockID = ?) WHERE BlockID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, blockId);
+            ps.setInt(2, blockId);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

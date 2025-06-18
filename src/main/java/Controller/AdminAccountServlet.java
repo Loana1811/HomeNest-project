@@ -33,11 +33,7 @@ public class AdminAccountServlet extends HttpServlet {
 
         if ("create".equals(action)) {
             List<Block> blockList = null;
-            try {
-                blockList = new BlockDAO().getAllBlocks();
-            } catch (SQLException ex) {
-                Logger.getLogger(AdminAccountServlet.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            blockList = new BlockDAO().getAllBlocks();
             request.setAttribute("blockList", blockList);
             request.getRequestDispatcher("/admin/createAccount.jsp").forward(request, response);
             return; // <-- Quan trọng, không chạy tiếp xuống dưới

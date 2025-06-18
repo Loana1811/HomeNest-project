@@ -6,9 +6,10 @@ package model;
 
 /**
  *
- * @author ThanhTruc
+ * @author Admin
  */
 public class Category {
+
     private int categoriesID;
     private String categoriesName;
     private String description;
@@ -17,6 +18,14 @@ public class Category {
         this.categoriesID = categoriesID;
         this.categoriesName = categoriesName;
         this.description = description;
+    }
+
+    public Category(String categoriesName, String description) {
+        this.categoriesName = categoriesName;
+        this.description = description;
+    }
+
+    public Category() {
     }
 
     public int getCategoriesID() {
@@ -42,5 +51,4 @@ public class Category {
     public void setDescription(String description) {
         this.description = description;
     }
-    
 }

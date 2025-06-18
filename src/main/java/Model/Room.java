@@ -28,6 +28,20 @@ public class Room {
     // Constructors
     public Room() {
     }
+    public Room(int roomID, String roomNumber, float rentPrice, float area, String location, String roomStatus, int blockID, int categoryID, String highlights, String imagePath, String description, Date postedDate) {
+        this.roomID = roomID;
+        this.roomNumber = roomNumber;
+        this.rentPrice = rentPrice;
+        this.area = area;
+        this.location = location;
+        this.roomStatus = roomStatus;
+        this.blockID = blockID;
+        this.categoryID = categoryID;
+        this.highlights = highlights;
+        this.imagePath = imagePath;
+        this.description = description;
+        this.postedDate = postedDate;
+    }
 
     public Room(int roomID, String roomNumber, double rentPrice, double area, String location,
             String roomStatus, int blockID, int categoryID,
