@@ -1,47 +1,53 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<html>
-    <head>
-        <title>Edit Contract</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <style>
-            .btn-teal {
-                background-color: #008080;
-                color: white;
-            }
-            .btn-teal:hover {
-                background-color: #006666;
-                color: white;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container mt-4">
-            <h1>Edit Contract</h1>
-            <form action="" method="post">
-              
-                <div class="mb-3">
-                    <label for="tenantId" class="form-label">Tenant ID:</label>
-                    <input type="text" class="form-control" id="tenantId" name="tenantId" value="${contract.tenantId}" required>
-                </div>
-                <div class="mb-3">
-                    <label for="roomId" class="form-label">Room ID:</label>
-                    <input type="text" class="form-control" id="roomId" name="roomId" value="${contract.roomId}" required>
-                </div>
-                <div class="mb-3">
-                    <label for="startDate" class="form-label">Start Date:</label>
-                    <input type="date" class="form-control" id="startDate" name="startDate" value="${contract.startDate}" required>
-                </div>
-                <div class="mb-3">
-                    <label for="endDate" class="form-label">End Date:</label>
-                    <input type="date" class="form-control" id="endDate" name="endDate" value="${contract.endDate}" required>
-                </div>
-                <div class="mb-3">
-                    <label for="status" class="form-label">Status:</label>
-                    <input type="text" class="form-control" id="status" name="status" value="${contract.status}" required>
-                </div>
-                <button type="submit" class="btn btn-teal">Edit</button>
-            </form>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    </body>
-</html>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<h2 class="text-center">Edit Contract</h2>
+<form action="${pageContext.request.contextPath}/Contracts" method="post">
+    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="contractId" value="${contract.contractId}">
+
+    <!-- Tenant (read-only) -->
+    <div class="mb-3">
+        <label>Tenant ID</label>
+        <input type="text" class="form-control" name="tenantId" value="${contract.tenantId}" readonly>
+    </div>
+
+    <!-- Room -->
+    <div class="mb-3">
+        <label for="roomId" class="form-label">Room</label>
+        <select class="form-select" name="roomId" required>
+            <c:forEach var="room" items="${rooms}">
+                <option value="${room.roomID}" ${room.roomID == contract.roomId ? "selected" : ""}>
+                    ${room.roomNumber}
+                </option>
+            </c:forEach>
+        </select>
+    </div>
+
+
+
+    <!-- Dates -->
+    <div class="mb-3">
+        <label>Start Date</label>
+        <input type="date" name="startDate" class="form-control" value="${contract.startDate}" required>
+    </div>
+    <div class="mb-3">
+        <label>End Date</label>
+        <input type="date" name="endDate" class="form-control" value="${contract.endDate}">
+    </div>
+
+    <!-- Status -->
+    <div class="mb-3">
+        <label>Status</label>
+        <select name="status" class="form-select" required>
+            <option value="Active" ${contract.contractstatus == 'Active' ? 'selected' : ''}>Active</option>
+            <option value="Expired" ${contract.contractstatus == 'Expired' ? 'selected' : ''}>Expired</option>
+            <option value="Terminated" ${contract.contractstatus == 'Terminated' ? 'selected' : ''}>Terminated</option>
+        </select>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-success">Update</button>
+        <a href="${pageContext.request.contextPath}/Contracts" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
