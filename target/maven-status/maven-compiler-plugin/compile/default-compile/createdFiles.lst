@@ -1,0 +1,9 @@
+Model\Customer.class
+DAO\ContractDAO.class
+Model\Room.class
+Model\Tenant.class
+DB\DBContext.class
+Controller\ContractServlet.class
+DAO\RoomDAO.class
+Model\Contract.class
+DAO\TenantDAO.class
