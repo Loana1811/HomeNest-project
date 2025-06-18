@@ -7,73 +7,92 @@
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background-color: #f9f9f9;
+                background-color: #f1fdfd;
             }
+
             .contract-container {
-                max-width: 900px;
-                margin: auto;
+                max-width: 960px;
+                margin: 40px auto;
                 background: #ffffff;
                 padding: 40px;
                 border: 1px solid #ccc;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                line-height: 1.7;
+                border-radius: 8px;
+                box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+                line-height: 1.8;
             }
+
             .contract-header {
                 text-align: center;
                 margin-bottom: 30px;
             }
-            .contract-header strong {
-                font-size: 1.1rem;
-            }
+
             .contract-title {
+                font-size: 1.6rem;
                 font-weight: bold;
-                font-size: 1.5rem;
-                margin-top: 10px;
+                color: #008080;
                 text-decoration: underline;
+                margin-top: 10px;
             }
+
             .contract-section h2 {
                 font-size: 1.2rem;
+                color: #008080;
                 margin-top: 30px;
-                font-weight: bold;
                 border-bottom: 1px dashed #aaa;
                 padding-bottom: 5px;
             }
+
             .info-columns {
                 display: flex;
                 justify-content: space-between;
                 flex-wrap: wrap;
             }
+
             .info-columns > div {
                 width: 48%;
             }
+
             .signature-section {
                 display: flex;
                 justify-content: space-between;
                 margin-top: 50px;
             }
+
             .signature-box {
                 text-align: center;
                 width: 45%;
             }
+
             .btn-teal {
                 background-color: #008080;
                 color: white;
             }
+
             .btn-teal:hover {
                 background-color: #006666;
+            }
+
+            .text-muted {
+                font-style: italic;
+            }
+
+            hr.dashed {
+                border: 1px dashed #000;
+                width: 200px;
+                margin: 10px auto;
             }
         </style>
     </head>
     <body>
-        <div class="container mt-4">
+        <div class="container">
             <div class="contract-container">
 
                 <div class="contract-header">
                     <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>
                     <strong>Độc lập - Tự do - Hạnh phúc</strong><br>
-                    <hr style="width: 200px; margin: 10px auto; border: 1px dashed #000;">
+                    <hr class="dashed">
                     <div class="contract-title">HỢP ĐỒNG CHO THUÊ NHÀ</div>
-                    <em>(Thuê ngắn hạn)</em>
+                    <div class="text-muted">(Thuê ngắn hạn)</div>
                 </div>
 
                 <div class="contract-section">
@@ -92,7 +111,7 @@
                             CCCD: ${customer.CCCD}<br>
                             SĐT: ${customer.phoneNumber}<br>
                             Giới tính: ${customer.gender}<br>
-                            Ngày sinh: ${customer.birthDate}<br>
+                            Ngày sinh: ${customer.birthDay}<br>
                             Địa chỉ: ${customer.address}<br>
                             Email: ${customer.email}<br>
                             Mã người thuê: ${tenant.tenantID}<br>
@@ -150,11 +169,13 @@
                 <div class="signature-section">
                     <div class="signature-box">
                         <strong>Bên Cho Thuê</strong><br><br>
-                        (Ký tên)<br>Donal<br>
+                        (Ký tên)<br>
+                        Donal
                     </div>
                     <div class="signature-box">
                         <strong>Bên Thuê</strong><br><br>
-                        (Ký tên)<br>${customer.customerFullName}<br>
+                        (Ký tên)<br>
+                        ${customer.customerFullName}
                     </div>
                 </div>
 

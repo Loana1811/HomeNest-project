@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author ThanhTruc
@@ -11,11 +13,11 @@ package model;
 public class UtilityType {
     private int utilityTypeID;
     private String utilityName;
-    private float unitPrice;
+    private BigDecimal unitPrice;
     private String unit;
     private boolean isSystem;
 
-    public UtilityType(int utilityTypeID, String utilityName, float unitPrice, String unit, boolean isSystem) {
+    public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit, boolean isSystem) {
         this.utilityTypeID = utilityTypeID;
         this.utilityName = utilityName;
         this.unitPrice = unitPrice;
@@ -39,11 +41,11 @@ public class UtilityType {
         this.utilityName = utilityName;
     }
 
-    public float getUnitPrice() {
+    public BigDecimal getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(float unitPrice) {
+    public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
     }
 

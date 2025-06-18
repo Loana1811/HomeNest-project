@@ -1,24 +1,68 @@
-package Controller;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
+package controller;
 
-import DAO.ContractDAO;
-import DAO.RoomDAO;
-import DAO.TenantDAO;
-import Model.Contract;
-import Model.Customer;
-import Model.Room;
-import Model.Tenant;
+import dao.RoomDAO;
+import dao.ContractDAO;
+import dao.TenantDAO;
 import java.io.IOException;
-import java.sql.Date;
-import java.util.List;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.Date;
+import java.util.List;
+import model.Contract;
+import model.Customer;
+import model.Room;
+import model.Tenant;
 
+/**
+ *
+ * @author Admin
+ */
 @WebServlet(name = "ContractServlet", urlPatterns = {"/Contracts"})
 public class ContractServlet extends HttpServlet {
 
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try ( PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ContractServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet ContractServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -28,7 +72,7 @@ public class ContractServlet extends HttpServlet {
             ContractDAO contractDAO = new ContractDAO();
             List<Contract> contracts = contractDAO.getAllContracts();
             request.setAttribute("contracts", contracts);
-            request.getRequestDispatcher("/listContract.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/listContract.jsp").forward(request, response);
 
         } else if (action.equals("create")) {
             TenantDAO tenantDAO = new TenantDAO();
@@ -39,7 +83,7 @@ public class ContractServlet extends HttpServlet {
 
             request.setAttribute("tenants", tenants);
             request.setAttribute("rooms", rooms);
-            request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
 
         } else if (action.equals("edit")) {
             int id = Integer.parseInt(request.getParameter("id"));
@@ -52,7 +96,7 @@ public class ContractServlet extends HttpServlet {
 
             request.setAttribute("rooms", rooms);
             request.setAttribute("contract", contract);
-            request.getRequestDispatcher("/editContract.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/editContract.jsp").forward(request, response);
 
         } else if ("view".equals(action)) {
             String idParam = request.getParameter("id");
@@ -79,7 +123,7 @@ public class ContractServlet extends HttpServlet {
             request.setAttribute("room", room);
             request.setAttribute("customer", customer); // thêm dòng này
 
-            request.getRequestDispatcher("viewDetail.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/viewDetail.jsp").forward(request, response);
         } else if ("history".equals(action)) {
             String tenantIdParam = request.getParameter("tenantId");
 
@@ -94,11 +138,19 @@ public class ContractServlet extends HttpServlet {
             List<Contract> historyContracts = contractDAO.getContractHistoryByTenantId(tenantId);
 
             request.setAttribute("contracts", historyContracts);
-            request.getRequestDispatcher("/historyContract.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/historyContract.jsp").forward(request, response);
         }
 
     }
 
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -138,6 +190,35 @@ public class ContractServlet extends HttpServlet {
                 doGet(request, response);
             }
 
+        } else if ("update".equals(action)) {
+            try {
+                int contractId = Integer.parseInt(request.getParameter("contractId"));
+                int tenantId = Integer.parseInt(request.getParameter("tenantId"));
+                int roomId = Integer.parseInt(request.getParameter("roomId"));
+                Date startDate = Date.valueOf(request.getParameter("startDate"));
+                String endDateStr = request.getParameter("endDate");
+                String status = request.getParameter("status");
+
+                Date endDate = (endDateStr == null || endDateStr.isEmpty()) ? null : Date.valueOf(endDateStr);
+
+                Contract contract = new Contract();
+                contract.setContractId(contractId);
+                contract.setTenantId(tenantId);
+                contract.setRoomId(roomId);
+                contract.setStartDate(startDate);
+                contract.setEndDate(endDate);
+                contract.setContractstatus(status);
+
+                ContractDAO contractDAO = new ContractDAO();
+                contractDAO.updateContract(contract);
+
+                response.sendRedirect(request.getContextPath() + "/Contracts?action=list");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "Invalid input or system error.");
+                doGet(request, response);
+            }
         } else if ("delete".equals(action)) {
             String contractIdStr = request.getParameter("contractId");
 
@@ -155,8 +236,14 @@ public class ContractServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
     @Override
     public String getServletInfo() {
-        return "Contract Management Servlet";
-    }
+        return "Short description";
+    }// </editor-fold>
+
 }

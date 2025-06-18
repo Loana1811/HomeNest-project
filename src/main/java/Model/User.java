@@ -11,24 +11,18 @@ import java.sql.Date;
  * @author ThanhTruc
  */
 public class User {
-    private int userID;
-   private String userFullName;
-   private String email;
-   private String phoneNumber;
-   private String password;
-   private Role role;
-   private String userStatus;
-   private Date userCreatedAt;
-   private Block block;
 
-    public User(int userID, String userFullName, String email, String phoneNumber, String password, String userStatus, Date userCreatedAt) {
-        this.userID = userID;
-        this.userFullName = userFullName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.password = password;
-        this.userStatus = userStatus;
-        this.userCreatedAt = userCreatedAt;
+    private int userID;
+    private String userFullName;
+    private String email;
+    private String phoneNumber;
+    private String password;
+    private Role role;
+    private String userStatus;
+    private Date userCreatedAt;
+    private Block block;
+
+    public User() {
     }
 
     public User(int userID, String userFullName, String email, String phoneNumber, String password, Role role, String userStatus, Date userCreatedAt, Block block) {
@@ -41,6 +35,17 @@ public class User {
         this.userStatus = userStatus;
         this.userCreatedAt = userCreatedAt;
         this.block = block;
+    }
+
+    public void setRoleID(int roleID) {
+        if (this.role == null) {
+            this.role = new Role();
+        }
+        this.role.setRoleID(roleID);
+    }
+
+    public int getRoleID() {
+        return role != null ? role.getRoleID() : 0;
     }
 
     public int getUserID() {
@@ -114,6 +119,16 @@ public class User {
     public void setBlock(Block block) {
         this.block = block;
     }
-   
-   
+    public Integer getBlockID() {
+        return (block != null) ? block.getBlockID() : null;
+    }
+
+    public void setBlockID(Integer blockID) {
+        if (blockID == null) {
+            this.block = null;
+        } else {
+            if (this.block == null) this.block = new Block();
+            this.block.setBlockID(blockID);
+        }
+    }
 }

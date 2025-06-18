@@ -12,36 +12,33 @@ import java.sql.Date;
  */
 public class Customer {
 
-     private int customerID;
+    private int customerID;
     private String customerFullName;
     private String phoneNumber;
     private String CCCD;
     private String gender;
-    private Date birthDate;
+    private Date birthDay;
     private String address;
     private String email;
     private String customerPassword;
     private String customerStatus;
 
-    // Constructors
-    public Customer() {
-    }
-
-    public Customer(int customerID, String customerFullName, String phoneNumber, String CCCD, String gender,
-            Date birthDate, String address, String email, String customerPassword, String customerStatus) {
+    public Customer(int customerID, String customerFullName, String phoneNumber, String CCCD, String gender, Date birthDay, String address, String email, String customerPassword, String customerStatus) {
         this.customerID = customerID;
         this.customerFullName = customerFullName;
         this.phoneNumber = phoneNumber;
         this.CCCD = CCCD;
         this.gender = gender;
-        this.birthDate = birthDate;
+        this.birthDay = birthDay;
         this.address = address;
         this.email = email;
         this.customerPassword = customerPassword;
         this.customerStatus = customerStatus;
     }
 
-    // Getters and Setters
+    public Customer() {
+    }
+
     public int getCustomerID() {
         return customerID;
     }
@@ -82,12 +79,12 @@ public class Customer {
         this.gender = gender;
     }
 
-    public Date getBirthDate() {
-        return birthDate;
+    public Date getBirthDay() {
+        return birthDay;
     }
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
+    public void setBirthDay(Date birthDay) {
+        this.birthDay = birthDay;
     }
 
     public String getAddress() {

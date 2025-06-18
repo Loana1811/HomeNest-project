@@ -11,7 +11,7 @@ import java.sql.Date;
  * @author ThanhTruc
  */
 public class Contract {
-    
+
     private int contractId;
     private int tenantId;
     private String tenantName;
@@ -35,9 +35,6 @@ public class Contract {
         this.contractstatus = contractstatus;
         this.contractcreatedAt = contractcreatedAt;
     }
-    
-    
-    
 
     public int getContractId() {
         return contractId;
@@ -119,5 +116,4 @@ public class Contract {
         this.amount = amount;
     }
 
-    
 }

@@ -8,10 +8,10 @@ import java.sql.Date;
 
 /**
  *
- * @author ThanhTruc
+ * @author kloane
  */
 public class Room {
-    private int roomID;
+      private int roomID;
     private String roomNumber;
     private String roomType; // Có thể bỏ nếu không còn trong DB
     private double rentPrice;
@@ -143,4 +143,6 @@ public class Room {
         this.postedDate = postedDate;
     }
    
+    
+    
 }

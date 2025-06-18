@@ -24,6 +24,12 @@ public class Block {
         this.blockStatus = blockStatus;
     }
 
+   
+    public Block() {
+    }
+
+    
+
     public int getBlockID() {
         return blockID;
     }
@@ -38,6 +44,30 @@ public class Block {
 
     public void setBlockName(String blockName) {
         this.blockName = blockName;
+    }
+
+    public int getMaxRoom() {
+        return maxRoom;
+    }
+
+    public void setMaxRoom(int maxRoom) {
+        this.maxRoom = maxRoom;
+    }
+
+    public int getRoomCount() {
+        return roomCount;
+    }
+
+    public void setRoomCount(int roomCount) {
+        this.roomCount = roomCount;
+    }
+
+    public String getBlockStatus() {
+        return blockStatus;
+    }
+
+    public void setBlockStatus(String blockStatus) {
+        this.blockStatus = blockStatus;
     }
 
 }

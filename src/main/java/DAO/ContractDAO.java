@@ -1,26 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dao;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import model.Contract;
 import utils.DBContext;
+import java.sql.*;
+import java.util.*;
 
-/**
- *
- * @author ThanhTruc
- */
 public class ContractDAO extends DBContext {
-    public ArrayList<Contract> getAllContracts() {
+
+   public ArrayList<Contract> getAllContracts() {
         ArrayList<Contract> contracts = new ArrayList<>();
         String query = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, c.ContractCreatedAt, "
                 + "cu.CustomerFullName as TenantName, r.RoomNumber "
@@ -51,7 +38,7 @@ public class ContractDAO extends DBContext {
         return contracts;
     }
 
-    public boolean addContract(int tenantId, int roomId, Date startDate, Date endDate) {
+    public boolean addContract(int tenantId, int roomId, java.sql.Date startDate, java.sql.Date endDate) {
         String query = "INSERT INTO Contracts (TenantID, RoomID, StartDate, EndDate, ContractStatus, ContractCreatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -149,6 +136,5 @@ public class ContractDAO extends DBContext {
         }
         return contracts;
     }
-
 
 }

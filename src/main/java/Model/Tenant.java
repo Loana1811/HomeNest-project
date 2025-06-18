@@ -11,7 +11,7 @@ import java.sql.Date;
  * @author ThanhTruc
  */
 public class Tenant {
-    private int tenantID;
+   private int tenantID;
     private int customerID;
     private Date joinDate;
 

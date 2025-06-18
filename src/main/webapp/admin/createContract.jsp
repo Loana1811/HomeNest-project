@@ -4,6 +4,63 @@
     <head>
         <title>Create New Contract</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color: #f8f9fa;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .container {
+                max-width: 700px;
+                background-color: white;
+                border-radius: 15px;
+                box-shadow: 0 4px 20px rgba(0, 128, 128, 0.2);
+                padding: 40px;
+            }
+
+            h2 {
+                color: rgb(0, 128, 128);
+                font-weight: bold;
+            }
+
+            .form-label {
+                color: rgb(0, 100, 100);
+                font-weight: 500;
+            }
+
+            .form-control, .form-select {
+                border: 2px solid rgb(0, 128, 128);
+                border-radius: 8px;
+                transition: border-color 0.3s, box-shadow 0.3s;
+            }
+
+            .form-control:focus, .form-select:focus {
+                border-color: rgb(0, 100, 100);
+                box-shadow: 0 0 0 0.2rem rgba(0, 128, 128, 0.25);
+            }
+
+            .btn-success {
+                background-color: rgb(0, 128, 128);
+                border-color: rgb(0, 128, 128);
+            }
+
+            .btn-success:hover {
+                background-color: rgb(0, 110, 110);
+                border-color: rgb(0, 110, 110);
+            }
+
+            .btn-secondary {
+                background-color: #6c757d;
+                border-color: #6c757d;
+            }
+
+            .alert-danger {
+                border: 1px solid #f5c6cb;
+                background-color: #f8d7da;
+                color: #721c24;
+                border-radius: 10px;
+            }
+        </style>
     </head>
     <body>
         <div class="container mt-5">
@@ -37,7 +94,7 @@
                         <option value="">-- Select Room --</option>
                         <c:forEach var="room" items="${rooms}">
                             <option value="${room.roomID}">
-                                Room ${room.roomNumber}- ${room.location}
+                                Room ${room.roomNumber} - ${room.location}
                             </option>
                         </c:forEach>
                     </select>

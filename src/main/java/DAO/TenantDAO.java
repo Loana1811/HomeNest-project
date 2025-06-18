@@ -5,18 +5,32 @@
 package dao;
 
 import java.sql.Connection;
-import model.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import model.Customer;
+import model.Tenant;
 import utils.DBContext;
 
 /**
  *
  * @author ThanhTruc
  */
-public class TenantDAO extends DBContext {
+public class TenantDAO  extends DBContext{
+   
+
+    public boolean isTenant(int customerID) throws SQLException {
+        String query = "SELECT 1 FROM Tenants WHERE CustomerID = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, customerID);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // true nếu có dòng kết quả
+            }
+        }
+    }
+    
      public ArrayList<Tenant> getAllTenants() {
         ArrayList<Tenant> tenants = new ArrayList<>();
         String squery = "SELECT * FROM Tenants WHERE TenantID NOT IN (SELECT TenantID FROM Contracts)";
@@ -68,7 +82,7 @@ public class TenantDAO extends DBContext {
                 customer.setPhoneNumber(rs.getString("PhoneNumber"));
                 customer.setCCCD(rs.getString("CCCD"));
                 customer.setGender(rs.getString("Gender"));
-                customer.setBirthDate(rs.getDate("BirthDate"));
+                customer.setBirthDay(rs.getDate("BirthDate"));
                 customer.setAddress(rs.getString("Address"));
                 customer.setEmail(rs.getString("Email"));
                 return customer;
