@@ -12,25 +12,30 @@ public class BlockDAO {
     private final DBContext dbContext = new DBContext();
 
     // Get all blocks
-    public List<Block> getAllBlocks() throws SQLException {
-        List<Block> blocks = new ArrayList<>();
-        String query = "SELECT * FROM Blocks ORDER BY BlockName";
+   public List<Block> getAllBlocks() throws SQLException {
+    List<Block> blocks = new ArrayList<>();
+    String query = "SELECT * FROM Blocks ORDER BY BlockName";
 
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(query);
+         ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
-                Block block = new Block();
-                block.setBlockID(rs.getInt("BlockID"));
-                block.setBlockName(rs.getString("BlockName"));
-                block.setRoomCount(rs.getInt("RoomCount"));
-                block.setMaxRoom(rs.getInt("MaxRoom")); // Đúng!
-                block.setBlockStatus(rs.getString("BlockStatus")); // Đúng!
+        while (rs.next()) {
+            Block block = new Block();
+            block.setBlockID(rs.getInt("BlockID"));
+            block.setBlockName(rs.getString("BlockName"));
+            block.setRoomCount(rs.getInt("RoomCount"));
+            block.setMaxRoom(rs.getInt("MaxRoom"));
+            block.setBlockStatus(rs.getString("BlockStatus"));
 
-            }
+            // ✅ Thêm vào list
+            blocks.add(block);
         }
-
-        return blocks;
     }
+
+    return blocks;
+}
+
 
     // Get block by ID
     public Block getBlockByID(int blockID) throws SQLException {

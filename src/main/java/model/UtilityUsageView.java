@@ -20,8 +20,20 @@ public class UtilityUsageView {
     private double priceUsed;
     private String changedBy;
     private java.sql.Date readingDate;
+    private String blockName;
 
-    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, String changedBy, Date readingDate) {
+//    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, String changedBy, Date readingDate) {
+//        this.readingId = readingId;
+//        this.roomNumber = roomNumber;
+//        this.utilityName = utilityName;
+//        this.oldIndex = oldIndex;
+//        this.newIndex = newIndex;
+//        this.priceUsed = priceUsed;
+//        this.changedBy = changedBy;
+//        this.readingDate = readingDate;
+//    }
+
+    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, String changedBy, Date readingDate, String blockName) {
         this.readingId = readingId;
         this.roomNumber = roomNumber;
         this.utilityName = utilityName;
@@ -30,6 +42,7 @@ public class UtilityUsageView {
         this.priceUsed = priceUsed;
         this.changedBy = changedBy;
         this.readingDate = readingDate;
+        this.blockName = blockName;
     }
 
     public int getReadingId() {
@@ -96,5 +109,11 @@ public class UtilityUsageView {
         this.readingDate = readingDate;
     }
 
-}
+    public String getBlockName() {
+        return blockName;
+    }
 
+    public void setBlockName(String blockName) {
+        this.blockName = blockName;
+    }
+}

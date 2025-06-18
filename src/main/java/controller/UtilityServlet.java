@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import model.UtilityHistoryView;
 import model.UtilityType;
 
@@ -37,8 +38,8 @@ public class UtilityServlet extends HttpServlet {
             switch (action == null ? "list" : action) {
                 case "create": {
                     RoomDAO roomDAO = new RoomDAO();
-                    List<Object[]> roomsCreate = roomDAO.getAllRoomIdName();
-                    request.setAttribute("rooms", roomsCreate);
+                    Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
+                    request.setAttribute("blockRoomMap", blockRoomMap);
                     request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
                     break;
                 }
@@ -114,60 +115,63 @@ public class UtilityServlet extends HttpServlet {
         request.setAttribute("userList", userList);
     }
 
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    String action = request.getParameter("action");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
 
-    try {
-        String name = request.getParameter("name");
-        BigDecimal price = new BigDecimal(request.getParameter("price")); // ✅ Giá mới
-        String unit = request.getParameter("unit");
+        try {
+            String name = request.getParameter("name");
+            BigDecimal price = new BigDecimal(request.getParameter("price")); // ✅ Giá mới
+            String unit = request.getParameter("unit");
 
-        if ("create".equals(action)) {
-            if (dao.isUtilityNameExists(name)) {
-                request.setAttribute("error", "❌ Utility name already exists. Please choose another name!");
-                RoomDAO roomDAO = new RoomDAO();
-                List<Object[]> roomsCreate = roomDAO.getAllRoomIdName();
-                request.setAttribute("rooms", roomsCreate);
-                request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
-                return;
-            }
+            if ("create".equals(action)) {
+                if (dao.isUtilityNameExists(name)) {
+                    request.setAttribute("error", "❌ Utility name already exists. Please choose another name!");
+                    RoomDAO roomDAO = new RoomDAO();
+//                List<Object[]> roomsCreate = roomDAO.getAllRoomIdName();
+//                request.setAttribute("rooms", roomsCreate);
+                    Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
+                    request.setAttribute("blockRoomMap", blockRoomMap);
 
-            UtilityType newUtility = new UtilityType(0, name, price, unit, false);
-            dao.insert(newUtility);
+                    request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
+                    return;
+                }
 
-            int newId = dao.getLastInsertedId();
-            String[] selectedRoomIds = request.getParameterValues("roomIds");
+                UtilityType newUtility = new UtilityType(0, name, price, unit, false);
+                dao.insert(newUtility);
 
-            if (selectedRoomIds != null) {
-                UtilityReadingDAO urDao = new UtilityReadingDAO();
-                for (String rid : selectedRoomIds) {
-                    urDao.assignUtilityToRoom(Integer.parseInt(rid), newId);
+                int newId = dao.getLastInsertedId();
+                String[] selectedRoomIds = request.getParameterValues("roomIds");
+
+                if (selectedRoomIds != null) {
+                    UtilityReadingDAO urDao = new UtilityReadingDAO();
+                    for (String rid : selectedRoomIds) {
+                        urDao.assignUtilityToRoom(Integer.parseInt(rid), newId);
+                    }
+                }
+
+            } else if ("update".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                UtilityType existing = dao.getById(id);
+
+                BigDecimal oldPrice = existing.getUnitPrice(); // ✅ kiểu đúng
+
+                dao.update(new UtilityType(id, name, price, unit, existing.isIsSystem()));
+
+                if (oldPrice.compareTo(price) != 0) {
+                    new UtilityHistoryDAO().insertHistory(
+                            id,
+                            existing.getUtilityName(),
+                            oldPrice.doubleValue(), // ✅ truyền đúng kiểu cho lịch sử
+                            price.doubleValue(),
+                            "admin",
+                            java.sql.Date.valueOf(java.time.LocalDate.now())
+                    );
                 }
             }
 
-        } else if ("update".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            UtilityType existing = dao.getById(id);
-
-            BigDecimal oldPrice = existing.getUnitPrice(); // ✅ kiểu đúng
-
-            dao.update(new UtilityType(id, name, price, unit, existing.isIsSystem()));
-
-            if (oldPrice.compareTo(price) != 0) {
-                new UtilityHistoryDAO().insertHistory(
-                        id,
-                        existing.getUtilityName(),
-                        oldPrice.doubleValue(), // ✅ truyền đúng kiểu cho lịch sử
-                        price.doubleValue(),
-                        "admin",
-                        java.sql.Date.valueOf(java.time.LocalDate.now())
-                );
-            }
+            response.sendRedirect("utility?action=list");
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
-
-        response.sendRedirect("utility?action=list");
-    } catch (Exception e) {
-        throw new ServletException(e);
     }
-}
 }

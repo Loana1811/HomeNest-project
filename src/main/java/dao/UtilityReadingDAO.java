@@ -81,7 +81,7 @@ public class UtilityReadingDAO {
 
     // Lấy chỉ số mới nhất của 1 phòng & utility
     public double getLatestIndex(int roomId, int utilityTypeId) throws SQLException {
-      String sql = "SELECT TOP 1 NewReading FROM UtilityReadings WHERE RoomID = ? AND UtilityTypeID = ? ORDER BY UtilityReadingCreatedAt DESC";
+        String sql = "SELECT TOP 1 NewReading FROM UtilityReadings WHERE RoomID = ? AND UtilityTypeID = ? ORDER BY UtilityReadingCreatedAt DESC";
 
         try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
@@ -96,44 +96,43 @@ public class UtilityReadingDAO {
 
     // Trả về danh sách sử dụng tiện ích (View)
     public List<UtilityUsageView> getAllUsages() throws SQLException {
-    List<UtilityUsageView> list = new ArrayList<>();
+        List<UtilityUsageView> list = new ArrayList<>();
 
-    String sql = "SELECT ur.ReadingID, r.RoomNumber, ut.UtilityName, " +
-                 "       ur.OldReading AS OldIndex, " +
-                 "       ur.NewReading AS NewIndex, " +
-                 "       ut.UnitPrice AS UnitPrice, " +
-                 "       (ur.NewReading - ur.OldReading) * ut.UnitPrice AS PriceUsed, " +
-                 "       ur.ChangedBy, " +
-                 "       ur.ReadingDate AS ReadingDate " +
-                 "FROM UtilityReadings ur " +
-                 "JOIN Rooms r ON ur.RoomID = r.RoomID " +
-                 "JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID " +
-                 "WHERE (ur.OldReading > 0 OR ur.NewReading > 0) " +         // ⚠️ bỏ bản ghi 0-0
-                 "AND (ur.ChangedBy NOT LIKE '%|%') " +                      // ⚠️ bỏ bản ghi history giá
-                 "ORDER BY ur.ReadingDate DESC";
+        String sql = "SELECT ur.ReadingID, r.RoomNumber, ut.UtilityName, "
+                + "       ur.OldReading AS OldIndex, "
+                + "       ur.NewReading AS NewIndex, "
+                + "       ut.UnitPrice AS UnitPrice, "
+                + "       (ur.NewReading - ur.OldReading) * ut.UnitPrice AS PriceUsed, "
+                + "       ur.ChangedBy, "
+                + "       ur.ReadingDate AS ReadingDate, "
+                + "       b.BlockName AS BlockName "
+                + "FROM UtilityReadings ur "
+                + "JOIN Rooms r ON ur.RoomID = r.RoomID "
+                + "JOIN Blocks b ON r.BlockID = b.BlockID "
+                + "JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
+                + "WHERE (ur.OldReading > 0 OR ur.NewReading > 0) "
+                + "AND (ur.ChangedBy NOT LIKE '%|%') "
+                + "ORDER BY b.BlockName, r.RoomNumber, ur.ReadingDate DESC";
 
-    try (
-        Connection conn = dbContext.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery()
-    ) {
-        while (rs.next()) {
-            list.add(new UtilityUsageView(
-                rs.getInt("ReadingID"),
-                rs.getString("RoomNumber"),
-                rs.getString("UtilityName"),
-                rs.getDouble("OldIndex"),
-                rs.getDouble("NewIndex"),
-                rs.getDouble("PriceUsed"),
-                rs.getString("ChangedBy"),
-                rs.getDate("ReadingDate")
-            ));
+        try (
+                 Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new UtilityUsageView(
+                        rs.getInt("ReadingID"),
+                        rs.getString("RoomNumber"),
+                        rs.getString("UtilityName"),
+                        rs.getDouble("OldIndex"),
+                        rs.getDouble("NewIndex"),
+                        rs.getDouble("PriceUsed"),
+                        rs.getString("ChangedBy"),
+                        rs.getDate("ReadingDate"),
+                         rs.getString("BlockName")
+                ));
+            }
         }
+
+        return list;
     }
-
-    return list;
-}
-
 
     // Gán utility cho phòng (init reading = 0)
     public void assignUtilityToRoom(int roomId, int utilityTypeId) throws SQLException {
