@@ -12,14 +12,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDAO {
+public class UserDAO  extends DBContext {
 
-    private final DBContext dbContext;
-    private final RoleDAO roleDAO;
+    private final RoleDAO roleDAO = new RoleDAO();
 
     public UserDAO() {
-        this.dbContext = new DBContext();
-        this.roleDAO = new RoleDAO();
     }
 
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
@@ -32,18 +29,17 @@ public class UserDAO {
         user.setUserStatus(rs.getString("UserStatus"));
         user.setUserCreatedAt(rs.getDate("UserCreatedAt"));
 
-        // Lấy RoleID từ ResultSet
         int roleId = rs.getInt("RoleID");
-        if (!rs.wasNull()) { // Kiểm tra xem RoleID có null không
-            Role role = roleDAO.getRoleById(roleId); // Gọi RoleDAO để lấy Role
+        if (!rs.wasNull()) {
+            Role role = roleDAO.getRoleById(roleId);
             user.setRole(role);
         } else {
-            user.setRole(null); // Nếu RoleID là null, set Role là null
+            user.setRole(null);
         }
 
         int blockId = rs.getInt("BlockID");
-        if (!rs.wasNull() && roleId == 2) { // chỉ set block nếu là Manager
-            BlockDAO blockDAO = new BlockDAO(); // tạo DAO
+        if (!rs.wasNull() && roleId == 2) {
+            BlockDAO blockDAO = new BlockDAO();
             user.setBlock(blockDAO.getBlockById(blockId));
         }
 
@@ -52,10 +48,9 @@ public class UserDAO {
 
     public List<User> getAllUsers() throws SQLException {
         List<User> users = new ArrayList<>();
-      String query = "SELECT * FROM Users ORDER BY UserCreatedAt DESC";
+        String query = "SELECT * FROM Users ORDER BY UserCreatedAt DESC";
 
-
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 users.add(mapResultSetToUser(rs));
@@ -70,7 +65,7 @@ public class UserDAO {
 
     public User getUserById(int userId) throws SQLException {
         String query = "SELECT * FROM Users WHERE UserID = ?";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -82,17 +77,17 @@ public class UserDAO {
     }
 
     public boolean addUser(User user) throws SQLException {
-       String query = "INSERT INTO Users (UserFullName, Email, PhoneNumber, Password, RoleID, UserStatus, BlockID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Users (UserFullName, Email, PhoneNumber, Password, RoleID, UserStatus, BlockID) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         String hashedPassword = hashMD5(user.getPassword());
-        int result = dbContext.execUpdateQuery(query,
+        int result = execUpdateQuery(query,
                 user.getUserFullName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
                 hashedPassword,
                 user.getRoleID(),
-                user.getUserStatus()!= null ? user.getUserStatus(): "Active",
-                user.getBlockID() // null nếu không có
+                user.getUserStatus() != null ? user.getUserStatus() : "Active",
+                user.getBlockID()
         );
         return result > 0;
     }
@@ -100,13 +95,11 @@ public class UserDAO {
     public boolean updateUser(User user) throws SQLException {
         StringBuilder queryBuilder = new StringBuilder("UPDATE Users SET UserFullName = ?, Email = ?, PhoneNumber = ?, RoleID = ?, UserStatus = ?");
 
-        // Nếu có BlockID và là Manager
         boolean hasBlock = (user.getRoleID() == 2);
         if (hasBlock) {
             queryBuilder.append(", BlockID = ?");
         }
 
-        // Nếu có password mới
         boolean hasPassword = (user.getPassword() != null && !user.getPassword().isEmpty());
         if (hasPassword) {
             queryBuilder.append(", Password = ?");
@@ -115,7 +108,7 @@ public class UserDAO {
         queryBuilder.append(" WHERE UserID = ?");
         String query = queryBuilder.toString();
 
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
             int paramIndex = 1;
             ps.setString(paramIndex++, user.getUserFullName());
@@ -125,11 +118,11 @@ public class UserDAO {
             ps.setString(paramIndex++, user.getUserStatus());
 
             if (hasBlock) {
-                ps.setObject(paramIndex++, user.getBlockID()); // Có thể là null nếu chưa set
+                ps.setObject(paramIndex++, user.getBlockID());
             }
 
             if (hasPassword) {
-                ps.setString(paramIndex++, user.getPassword()); // Đã hash từ trước
+                ps.setString(paramIndex++, user.getPassword());
             }
 
             ps.setInt(paramIndex, user.getUserID());
@@ -140,37 +133,34 @@ public class UserDAO {
 
     public boolean deleteUser(int userId) throws SQLException {
         String query = "DELETE FROM Users WHERE UserID = ?";
-        int result = dbContext.execUpdateQuery(query, userId);
+        int result = execUpdateQuery(query, userId);
         return result > 0;
     }
 
     public boolean deactivateUser(int userId) throws SQLException {
-     String query = "UPDATE Users SET UserStatus = 'Inactive' WHERE UserID = ?";
+        String query = "UPDATE Users SET UserStatus = 'Inactive' WHERE UserID = ?";
 
-        int result = 0;
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
-            result = ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         }
-        return result > 0;
     }
 
     public boolean activateUser(int userId) throws SQLException {
         String query = "UPDATE Users SET UserStatus = 'Active' WHERE UserID = ?";
-
-        int result = dbContext.execUpdateQuery(query, userId);
+        int result = execUpdateQuery(query, userId);
         return result > 0;
     }
 
     public User login(String phoneNumber, String password) throws SQLException {
         String query = "SELECT * FROM Users WHERE PhoneNumber = ? AND UserStatus = 'Active'";
 
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, phoneNumber);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     User user = mapResultSetToUser(rs);
-                    if (user.getPassword().equals(hashMD5(password))) { // Kiểm tra mật khẩu
+                    if (user.getPassword().equals(hashMD5(password))) {
                         return user;
                     }
                 }
@@ -197,4 +187,23 @@ public class UserDAO {
         }
     }
 
+    public boolean isEmailExists(String email) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Users WHERE Email = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, email);
+            try ( ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+
+    public boolean isNameExists(String fullName) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Users WHERE UserFullName = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, fullName);
+            try ( ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
 }

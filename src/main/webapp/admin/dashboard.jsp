@@ -190,7 +190,7 @@
                     <a class="nav-link" href="<%= ctx%>/admin/account">Accounts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/room?action=list">Rooms</a>
+                    <a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a>
@@ -206,6 +206,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/Contracts">Contract</a>
                 </li>
 
 

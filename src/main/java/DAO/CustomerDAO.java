@@ -7,36 +7,28 @@ import utils.DBContext;
 import java.sql.*;
 import java.util.*;
 
-public class CustomerDAO {
-
-    private final DBContext dbContext;
-
-    public CustomerDAO() {
-        this.dbContext = new DBContext();
-    }
+public class CustomerDAO extends DBContext{
 
     // Map một dòng ResultSet thành Customer object
     private Customer mapResultSetToCustomer(ResultSet rs) throws SQLException {
         Customer customer = new Customer();
         customer.setCustomerID(rs.getInt("CustomerID"));
-        customer.setCustomerFullName(rs.getString("CustomerFullName")); // Đúng!
+        customer.setCustomerFullName(rs.getString("CustomerFullName"));
         customer.setPhoneNumber(rs.getString("PhoneNumber"));
         customer.setCCCD(rs.getString("CCCD"));
         customer.setGender(rs.getString("Gender"));
         customer.setBirthDay(rs.getDate("BirthDate"));
         customer.setAddress(rs.getString("Address"));
         customer.setEmail(rs.getString("Email"));
-        customer.setCustomerStatus(rs.getString("CustomerStatus")); // Đúng!
+        customer.setCustomerStatus(rs.getString("CustomerStatus"));
         customer.setCustomerPassword(rs.getString("CustomerPassword"));
-
         return customer;
     }
 
-    // Lấy toàn bộ customers
     public List<Customer> getAllCustomers() throws SQLException {
         List<Customer> customers = new ArrayList<>();
         String query = "SELECT * FROM Customers";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 customers.add(mapResultSetToCustomer(rs));
             }
@@ -44,10 +36,9 @@ public class CustomerDAO {
         return customers;
     }
 
-    // Thêm customer mới
     public boolean createCustomer(Customer customer) throws SQLException {
         String query = "INSERT INTO Customers (CustomerFullName, PhoneNumber, CCCD, Gender, BirthDate, Address, Email, CustomerStatus, CustomerPassword) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        int result = dbContext.execUpdateQuery(query,
+        int result = execUpdateQuery(query,
                 customer.getCustomerFullName(),
                 customer.getPhoneNumber(),
                 customer.getCCCD(),
@@ -55,16 +46,15 @@ public class CustomerDAO {
                 customer.getBirthDay(),
                 customer.getAddress(),
                 customer.getEmail(),
-                customer.getCustomerStatus()!= null ? customer.getCustomerStatus(): "Potential",
+                customer.getCustomerStatus() != null ? customer.getCustomerStatus() : "Potential",
                 customer.getCustomerPassword()
         );
         return result > 0;
     }
 
-    // Lấy customer theo ID
     public Customer getCustomerById(int customerId) throws SQLException {
-        String query = "SELECT * FROM Customers WHERE CustomerID = ? ";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        String query = "SELECT * FROM Customers WHERE CustomerID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, customerId);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -77,58 +67,35 @@ public class CustomerDAO {
 
     public boolean updateCustomer(Customer customer) throws SQLException {
         String query = "UPDATE Customers SET CustomerFullName = ?, PhoneNumber = ?, CCCD = ?, Gender = ?, BirthDate = ?, Address = ?, Email = ?, CustomerStatus = ? WHERE CustomerID = ?";
-
-        System.out.println("DEBUG - Updating customer ID: " + customer.getCustomerID());
-        System.out.println("DEBUG - New status: " + customer.getCustomerStatus());
-
-        try {
-            int result = dbContext.execUpdateQuery(query,
-                    customer.getCustomerFullName(),
-                    customer.getPhoneNumber(),
-                    customer.getCCCD(),
-                    customer.getGender(),
-                    customer.getBirthDay(),
-                    customer.getAddress(),
-                    customer.getEmail(),
-                    customer.getCustomerStatus(),
-                    customer.getCustomerID()
-            );
-
-            System.out.println("DEBUG - Customer update result: " + result);
-            return result > 0;
-        } catch (SQLException e) {
-            System.out.println("DEBUG - SQL Exception in updateCustomer: " + e.getMessage());
-            throw e;
-        }
-    }
-
-// Thêm method updateCustomerStatus riêng cho việc disable
-    public boolean updateCustomerStatus(int customerID, String status) throws SQLException {
-        String query = "UPDATE Customers SET CustomerStatus = ? WHERE CustomerID = ?";
-
-        System.out.println("DEBUG - Updating customer status - ID: " + customerID + ", Status: " + status);
-
-        try {
-            int result = dbContext.execUpdateQuery(query, status, customerID);
-            System.out.println("DEBUG - Status update result: " + result);
-            return result > 0;
-        } catch (SQLException e) {
-            System.out.println("DEBUG - SQL Exception in updateCustomerStatus: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    // Xoá customer
-    public boolean deleteCustomer(int customerId) throws SQLException {
-        String query = "DELETE FROM Customers WHERE CustomerID = ?";
-        int result = dbContext.execUpdateQuery(query, customerId);
+        int result = execUpdateQuery(query,
+                customer.getCustomerFullName(),
+                customer.getPhoneNumber(),
+                customer.getCCCD(),
+                customer.getGender(),
+                customer.getBirthDay(),
+                customer.getAddress(),
+                customer.getEmail(),
+                customer.getCustomerStatus(),
+                customer.getCustomerID()
+        );
         return result > 0;
     }
 
-    // Kiểm tra số điện thoại đã tồn tại chưa
+    public boolean updateCustomerStatus(int customerID, String status) throws SQLException {
+        String query = "UPDATE Customers SET CustomerStatus = ? WHERE CustomerID = ?";
+        int result = execUpdateQuery(query, status, customerID);
+        return result > 0;
+    }
+
+    public boolean deleteCustomer(int customerId) throws SQLException {
+        String query = "DELETE FROM Customers WHERE CustomerID = ?";
+        int result = execUpdateQuery(query, customerId);
+        return result > 0;
+    }
+
     public boolean isPhoneNumberExists(String phoneNumber) throws SQLException {
         String query = "SELECT COUNT(*) FROM Customers WHERE PhoneNumber = ?";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, phoneNumber);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -139,10 +106,9 @@ public class CustomerDAO {
         return false;
     }
 
-    // Đếm tổng số customer
     public int getTotalCustomerCount() throws SQLException {
         String query = "SELECT COUNT(*) FROM Customers";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -150,7 +116,6 @@ public class CustomerDAO {
         return 0;
     }
 
-    // Hash password với MD5
     public String hashMD5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -169,11 +134,9 @@ public class CustomerDAO {
         }
     }
 
-    // Kiểm tra customer có hợp đồng hoặc là tenant không
     public boolean hasContractOrTenant(int customerId) throws SQLException {
-        // Kiểm tra bảng Tenants
         String sql1 = "SELECT 1 FROM Tenants WHERE CustomerID = ?";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql1)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql1)) {
             ps.setInt(1, customerId);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -181,9 +144,8 @@ public class CustomerDAO {
                 }
             }
         }
-        // Kiểm tra bảng Contracts
         String sql2 = "SELECT 1 FROM Contracts c JOIN Tenants t ON c.TenantID = t.TenantID WHERE t.CustomerID = ?";
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql2)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql2)) {
             ps.setInt(1, customerId);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -194,35 +156,32 @@ public class CustomerDAO {
         return false;
     }
 
-    // Lấy toàn bộ thông tin chi tiết customer (dùng cho viewDetails)
     public List<Map<String, Object>> getFullCustomerDetails(int customerID) throws SQLException {
-        String sql
-    = "SELECT c.CustomerID, c.CustomerFullName AS CustomerName, c.PhoneNumber, c.Email, c.CustomerStatus AS CustomerStatus, "
-    + "t.TenantID, t.JoinDate, "
-    + "ct.ContractID, ct.RoomID, ct.StartDate, ct.EndDate, ct.ContractStatus AS ContractStatus, ct.ContractCreatedAt AS ContractCreatedAt, "
-    + "r.RoomNumber, r.Location, r.RoomStatus AS RoomStatus, "
-    + "rq.RequestID, rq.RequestDate, rq.RequestStatus AS RequestStatus, "
-    + "b.BillID, b.BillDate, b.TotalAmount, b.BillStatus AS BillStatus, "
-    + "bd.BillDetailID, bd.RoomRent, bd.ElectricityCost, bd.WaterCost, bd.WifiCost, "
-    + "ir.IncurredFeeID, ift.FeeName, ir.Amount, "
-    + "ur.ReadingID, ut.UtilityName, ur.ReadingDate, ur.OldReading, ur.NewReading, ur.PriceUsed "
-    + "FROM Customers c "
-    + "LEFT JOIN Tenants t ON c.CustomerID = t.CustomerID "
-    + "LEFT JOIN Contracts ct ON t.TenantID = ct.TenantID "
-    + "LEFT JOIN Rooms r ON ct.RoomID = r.RoomID "
-    + "LEFT JOIN Bills b ON ct.ContractID = b.ContractID "
-    + "LEFT JOIN BillDetails bd ON b.BillID = bd.BillID "
-    + "LEFT JOIN IncurredFees ir ON b.BillID = ir.BillID "
-    + "LEFT JOIN IncurredFeeTypes ift ON ir.IncurredFeeTypeID = ift.IncurredFeeTypeID "
-    + "LEFT JOIN RentalRequests rq ON c.CustomerID = rq.CustomerID "
-    + "LEFT JOIN UtilityReadings ur ON r.RoomID = ur.RoomID "
-    + "LEFT JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
-    + "WHERE c.CustomerID = ? "
-    + "ORDER BY ct.ContractID DESC, b.BillDate DESC";
-
+        String sql = "SELECT c.CustomerID, c.CustomerFullName AS CustomerName, c.PhoneNumber, c.Email, c.CustomerStatus AS CustomerStatus, "
+                + "t.TenantID, t.JoinDate, "
+                + "ct.ContractID, ct.RoomID, ct.StartDate, ct.EndDate, ct.ContractStatus AS ContractStatus, ct.ContractCreatedAt AS ContractCreatedAt, "
+                + "r.RoomNumber, r.Location, r.RoomStatus AS RoomStatus, "
+                + "rq.RequestID, rq.RequestDate, rq.RequestStatus AS RequestStatus, "
+                + "b.BillID, b.BillDate, b.TotalAmount, b.BillStatus AS BillStatus, "
+                + "bd.BillDetailID, bd.RoomRent, bd.ElectricityCost, bd.WaterCost, bd.WifiCost, "
+                + "ir.IncurredFeeID, ift.FeeName, ir.Amount, "
+                + "ur.ReadingID, ut.UtilityName, ur.ReadingDate, ur.OldReading, ur.NewReading, ur.PriceUsed "
+                + "FROM Customers c "
+                + "LEFT JOIN Tenants t ON c.CustomerID = t.CustomerID "
+                + "LEFT JOIN Contracts ct ON t.TenantID = ct.TenantID "
+                + "LEFT JOIN Rooms r ON ct.RoomID = r.RoomID "
+                + "LEFT JOIN Bills b ON ct.ContractID = b.ContractID "
+                + "LEFT JOIN BillDetails bd ON b.BillID = bd.BillID "
+                + "LEFT JOIN IncurredFees ir ON b.BillID = ir.BillID "
+                + "LEFT JOIN IncurredFeeTypes ift ON ir.IncurredFeeTypeID = ift.IncurredFeeTypeID "
+                + "LEFT JOIN RentalRequests rq ON c.CustomerID = rq.CustomerID "
+                + "LEFT JOIN UtilityReadings ur ON r.RoomID = ur.RoomID "
+                + "LEFT JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
+                + "WHERE c.CustomerID = ? "
+                + "ORDER BY ct.ContractID DESC, b.BillDate DESC";
 
         List<Map<String, Object>> list = new ArrayList<>();
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerID);
             try ( ResultSet rs = ps.executeQuery()) {
                 ResultSetMetaData meta = rs.getMetaData();
@@ -239,11 +198,9 @@ public class CustomerDAO {
         return list;
     }
 
-// Số customer status = Converted
     public int getConvertedCustomerCount() throws SQLException {
         String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Converted'";
-
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -251,11 +208,9 @@ public class CustomerDAO {
         return 0;
     }
 
-// Số customer status = Potential
     public int getPotentialCustomerCount() throws SQLException {
         String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Potential'";
-
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -263,16 +218,50 @@ public class CustomerDAO {
         return 0;
     }
 
-// Số customer status = Inactive
     public int getInactiveCustomerCount() throws SQLException {
         String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Inactive'";
-
-        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
         }
         return 0;
     }
+    public boolean isEmailExists(String email) throws SQLException {
+    String query = "SELECT COUNT(*) FROM Customers WHERE Email = ?";
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+        ps.setString(1, email);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    }
+    return false;
+}
 
+// Kiểm tra tên đã tồn tại chưa
+public boolean isNameExists(String fullName) throws SQLException {
+    String query = "SELECT COUNT(*) FROM Customers WHERE CustomerFullName = ?";
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+        ps.setString(1, fullName);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    }
+    return false;
+}
+
+// Lấy số lượng khách hàng đang "Active"
+public int getActiveCustomerCount() throws SQLException {
+    String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Active'";
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+    }
+    return 0;
+}
 }
