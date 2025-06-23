@@ -138,7 +138,36 @@ public class ContractServlet extends HttpServlet {
                 doGet(request, response);
             }
 
-        } else if ("delete".equals(action)) {
+        } else if ("update".equals(action)) {
+            try {
+                int contractId = Integer.parseInt(request.getParameter("contractId"));
+                int tenantId = Integer.parseInt(request.getParameter("tenantId"));
+                int roomId = Integer.parseInt(request.getParameter("roomId"));
+                Date startDate = Date.valueOf(request.getParameter("startDate"));
+                String endDateStr = request.getParameter("endDate");
+                String status = request.getParameter("status");
+
+                Date endDate = (endDateStr == null || endDateStr.isEmpty()) ? null : Date.valueOf(endDateStr);
+
+                Contract contract = new Contract();
+                contract.setContractId(contractId);
+                contract.setTenantId(tenantId);
+                contract.setRoomId(roomId);
+                contract.setStartDate(startDate);
+                contract.setEndDate(endDate);
+                contract.setContractstatus(status);
+
+                ContractDAO contractDAO = new ContractDAO();
+                contractDAO.updateContract(contract);
+
+                response.sendRedirect(request.getContextPath() + "/Contracts?action=list");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "Invalid input or system error.");
+                doGet(request, response);
+            }
+        }  else if ("delete".equals(action)) {
             String contractIdStr = request.getParameter("contractId");
 
             if (contractIdStr == null || contractIdStr.isEmpty()) {

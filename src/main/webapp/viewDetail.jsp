@@ -160,7 +160,7 @@
 
                 <div class="text-center mt-4">
                     <button onclick="window.print()" class="btn btn-teal">In hợp đồng</button>
-                    <a href="contracts/generatePdf?id=${contract.contractId}" class="btn btn-teal ms-2" target="_blank">Xem PDF</a>
+                    <a href="contracts/generatePdf?id=${contract.contractId}" class="btn btn-teal">Xem PDF</a>                 
                     <a href="Contracts" class="btn btn-secondary ms-2">Quay lại</a>
                 </div>
 
