@@ -4,12 +4,14 @@
  */
 package Controller;
 
+import DAO.CustomerDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import utils.GoogleUtils;
 import utils.GoogleUser;
 import DAO.UserDAO;
+import Model.Customer;
 import Model.User;
 import jakarta.servlet.annotation.WebServlet;
 import java.io.PrintWriter;
@@ -73,33 +75,42 @@ public class LoginGoogleServlet extends HttpServlet {
             // B2: Lấy thông tin người dùng Google
             GoogleUser googleUser = GoogleUtils.getUserInfo(accessToken);
 
-            // B3: Kiểm tra người dùng đã tồn tại trong DB chưa
-            UserDAO dao = new UserDAO();
-            User user = dao.getUserByEmail(googleUser.getEmail());
+            // B3: Kiểm tra người dùng đã tồn tại trong bảng Customers chưa
+            CustomerDAO dao = new CustomerDAO();
+            Customer customer = dao.getCustomerByEmail(googleUser.getEmail());
 
-            if (user == null) {
-                // B4: Nếu chưa có thì tạo user mới
-                user = new User();
-                user.setEmail(googleUser.getEmail());
-                user.setUserFullName(googleUser.getName());
-                user.setRoleId(2); // mặc định là User với RoleID = 2
-                dao.insertUserFromGoogle(user);
+            if (customer == null) {
+                // B4: Nếu chưa có thì tạo customer mới
+                customer = new Customer();
+                customer.setEmail(googleUser.getEmail());
+                customer.setCustomerFullName(googleUser.getName());
+                customer.setCustomerPassword(CustomerDAO.hashMd5("GOOGLE_AUTH")); // Mật khẩu giả định
+                customer.setCustomerStatus("Potential");
 
-                // lấy lại user sau khi insert để có ID và roleName
-                user = dao.getUserByEmail(googleUser.getEmail());
+                System.out.println("Tên: " + customer.getCustomerFullName());
+                System.out.println("Email: " + customer.getEmail());
+                System.out.println("Mật khẩu: " + customer.getCustomerPassword());
+                System.out.println("Trạng thái: " + customer.getCustomerStatus());
+                
+                dao.insertCustomerFromGoogle(customer);
+
+                // Lấy lại thông tin sau khi insert để có ID
+                customer = dao.getCustomerByEmail(googleUser.getEmail());
             }
 
-            // B5: Lưu user vào session
+            // B5: Lưu vào session
             HttpSession session = req.getSession();
-            session.setAttribute("user", user);
+            session.setAttribute("customer", customer);
+            session.setAttribute("customerId", customer.getCustomerID());
 
-            // B6: Điều hướng đến trang chính
+            // B6: Điều hướng
             resp.sendRedirect(req.getContextPath() + "/Contracts");
 
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect("error.jsp");
         }
+
     }
 
     /**

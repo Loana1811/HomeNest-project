@@ -4,7 +4,10 @@
  */
 package Controller;
 
+import DAO.CustomerDAO;
+import DAO.PasswordResetDAO;
 import DAO.UserDAO;
+import Model.Customer;
 import Model.User;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -79,38 +82,82 @@ public class ForgotPasswordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");
-        UserDAO dao = new UserDAO();
-        User user = null;
+        String token = UUID.randomUUID().toString();
 
-        try {
-            user = dao.getUserByEmail(email);
-        } catch (SQLException ex) {
-            Logger.getLogger(ForgotPasswordServlet.class.getName()).log(Level.SEVERE, null, ex);
+        if (email == null || email.isEmpty()) {
+            request.setAttribute("error", "Vui lòng nhập email.");
+            request.getRequestDispatcher("forgot_password.jsp").forward(request, response);
+            return;
         }
 
-        if (user == null) {
-            request.setAttribute("error", "Email không tồn tại.");
-        } else {
-            String token = UUID.randomUUID().toString();
-            try {
-                dao.saveResetToken(email, token);
-            } catch (SQLException ex) {
-                Logger.getLogger(ForgotPasswordServlet.class.getName()).log(Level.SEVERE, null, ex);
+        boolean found = false;
+
+        try {
+            PasswordResetDAO resetDAO = new PasswordResetDAO();
+
+            // 1. Kiểm tra trong bảng Users
+            UserDAO userDAO = new UserDAO();
+            User user = userDAO.getUserByEmail(email);
+
+            if (user != null) {
+                resetDAO.saveResetToken(email, token);
+                sendResetEmail(request, email, token);
+                request.setAttribute("success", "Đã gửi link đặt lại mật khẩu đến email người dùng.");
+                found = true;
+            } else {
+                // 2. Nếu không có trong Users, kiểm tra trong Customers
+                CustomerDAO customerDAO = new CustomerDAO();
+                Customer customer = customerDAO.getCustomerByEmail(email);
+
+                if (customer != null) {
+                    resetDAO.saveResetToken(email, token);
+                    sendResetEmail(request, email, token);
+                    request.setAttribute("success", "Đã gửi link đặt lại mật khẩu đến email khách hàng.");
+                    found = true;
+                }
             }
 
-            // Tạo đường dẫn chính xác đến /reset-password
-            String baseURL = request.getScheme() + "://" + request.getServerName()
-                    + ":" + request.getServerPort() + request.getContextPath();
-            String resetLink = baseURL + "/reset-password?token=" + token;
+            if (!found) {
+                request.setAttribute("error", "Email không tồn tại trong hệ thống.");
+            }
 
-            MailUtils.send(email, "Đặt lại mật khẩu",
-                    "Nhấn vào link để đặt lại mật khẩu: <a href=\"" + resetLink + "\">Đặt lại mật khẩu</a>");
-
-            request.setAttribute("success", "Đã gửi link đặt lại mật khẩu về email.");
+        } catch (SQLException ex) {
+            Logger.getLogger(ForgotPasswordServlet.class.getName()).log(Level.SEVERE, null, ex);
+            request.setAttribute("error", "Lỗi hệ thống.");
         }
 
         request.getRequestDispatcher("forgot_password.jsp").forward(request, response);
     }
+
+   private void sendResetEmail(HttpServletRequest request, String email, String token) {
+    String baseURL = request.getScheme() + "://" + request.getServerName()
+            + ":" + request.getServerPort() + request.getContextPath();
+    String resetLink = baseURL + "/reset-password?token=" + token;
+
+    String subject = "Password Reset Request";
+
+    String content = "<div style=\"font-family:Segoe UI, Tahoma, sans-serif; max-width:600px; margin:auto; padding:20px; "
+                   + "border:1px solid #ddd; border-radius:10px; background-color:#f9f9f9;\">"
+                   + "<h2 style=\"color:rgb(0,128,128);\">Reset Your Password</h2>"
+                   + "<p>Hello,</p>"
+                   + "<p>We received a request to reset your password. To proceed, please click the button below:</p>"
+                   + "<p style=\"text-align:center; margin: 20px 0;\">"
+                   + "<a href=\"" + resetLink + "\" "
+                   + "style=\"display:inline-block; padding:12px 20px; background-color:rgb(0,128,128); color:white; "
+                   + "text-decoration:none; border-radius:5px; font-weight:bold;\">Reset Password</a></p>"
+                   + "<p>If the button doesn't work, you can also use the following link:</p>"
+                   + "<p style=\"word-wrap:break-word;\"><a href=\"" + resetLink + "\">" + resetLink + "</a></p>"
+                   + "<hr style=\"margin:20px 0;\">"
+                   + "<p style=\"color:#666; font-size:14px;\">"
+                   + "⚠️ This link is valid for a limited time only and can be used once. "
+                   + "Do not share this link with anyone for security reasons."
+                   + "</p>"
+                   + "<p style=\"font-size:13px; color:#999;\">If you did not request a password reset, please ignore this email.</p>"
+                   + "</div>";
+
+    MailUtils.send(email, subject, content);
+}
+
 
     /**
      * Returns a short description of the servlet.

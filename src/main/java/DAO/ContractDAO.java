@@ -147,7 +147,6 @@ public class ContractDAO extends DBContext {
                 contracts.add(c);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return contracts;
     }

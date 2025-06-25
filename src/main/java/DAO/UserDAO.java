@@ -47,7 +47,7 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    public String hashMd5(String input) {
+    public static String hashMd5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hashedBytes = md.digest(input.getBytes());
@@ -175,35 +175,8 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public void saveResetToken(String email, String token) throws SQLException {
-        String sql = "INSERT INTO PasswordResetTokens (Token, Email, ExpiryTime) VALUES (?, ?, DATEADD(MINUTE, 30, GETDATE()))";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, token);
-            ps.setString(2, email);
-            ps.executeUpdate();
-        }
-    }
 
-    public boolean isValidToken(String token) throws SQLException {
-        String sql = "SELECT * FROM PasswordResetTokens WHERE Token = ? AND ExpiryTime > GETDATE()";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, token);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-        }
-    }
 
-    public String getEmailByToken(String token) throws SQLException {
-        String sql = "SELECT Email FROM PasswordResetTokens WHERE Token = ?";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, token);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getString("Email");
-            }
-        }
-        return null;
-    }
 
     public void updatePassword(String email, String newHashedPassword) throws SQLException {
         String sql = "UPDATE Users SET Password = ? WHERE Email = ?";
@@ -214,12 +187,5 @@ public class UserDAO extends DBContext {
         }
     }
 
-    public void deleteToken(String token) throws SQLException {
-        String sql = "DELETE FROM PasswordResetTokens WHERE Token = ?";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, token);
-            ps.executeUpdate();
-        }
-    }
-
+  
 }
