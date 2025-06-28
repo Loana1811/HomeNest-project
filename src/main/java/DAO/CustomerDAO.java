@@ -29,7 +29,7 @@ public class CustomerDAO extends DBContext {
                     c.setPhoneNumber(rs.getString("PhoneNumber"));
                     c.setCCCD(rs.getString("CCCD"));
                     c.setGender(rs.getString("Gender"));
-                    c.setBirthDate(rs.getDate("BirthDate"));
+                    c.setBirthDay(rs.getDate("BirthDate"));
                     c.setAddress(rs.getString("Address"));
                     c.setEmail(rs.getString("Email"));
                     c.setCustomerPassword(rs.getString("CustomerPassword"));
@@ -66,7 +66,7 @@ public class CustomerDAO extends DBContext {
                     c.setPhoneNumber(rs.getString("PhoneNumber"));
                     c.setCCCD(rs.getString("CCCD"));
                     c.setGender(rs.getString("Gender"));
-                    c.setBirthDate(rs.getDate("BirthDate"));
+                    c.setBirthDay(rs.getDate("BirthDate"));
                     c.setAddress(rs.getString("Address"));
                     c.setEmail(rs.getString("Email"));
                     c.setCustomerPassword(rs.getString("CustomerPassword"));
@@ -95,7 +95,7 @@ public class CustomerDAO extends DBContext {
             ps.setString(2, customer.getPhoneNumber());
             ps.setString(3, customer.getCCCD());
             ps.setString(4, customer.getGender());
-            ps.setDate(5, customer.getBirthDate());
+            ps.setDate(5, customer.getBirthDay());
             ps.setString(6, customer.getAddress());
             ps.setString(7, customer.getEmail());
             ps.setString(8, UserDAO.hashMd5(customer.getCustomerPassword()));

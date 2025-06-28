@@ -53,6 +53,41 @@ public class ContractDAO extends DBContext {
         return contracts;
     }
 
+    public ArrayList<Contract> getContractHistoryByTenantId(int tenantId) {
+        ArrayList<Contract> contracts = new ArrayList<>();
+        String query = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, c.ContractCreatedAt, "
+                + "cu.CustomerFullName as TenantName, r.RoomNumber "
+                + "FROM Contracts c "
+                + "JOIN Tenants t ON c.TenantID = t.TenantID "
+                + "JOIN Customers cu ON t.CustomerID = cu.CustomerID "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "WHERE c.TenantID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, tenantId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Contract contract = new Contract(
+                        rs.getInt("ContractID"),
+                        rs.getInt("TenantID"),
+                        rs.getInt("RoomID"),
+                        rs.getDate("StartDate"),
+                        rs.getDate("EndDate"),
+                        rs.getString("ContractStatus"),
+                        rs.getDate("ContractCreatedAt")
+                );
+                contract.setTenantName(rs.getString("TenantName"));
+                contract.setRoomNumber(rs.getString("RoomNumber"));
+                contracts.add(contract);
+            }
+            System.out.println("✔ Retrieved contract history for tenantId = " + tenantId);
+        } catch (SQLException ex) {
+            System.out.println("✘ SQL error: " + ex.getMessage());
+        }
+        return contracts;
+    }
+
     public boolean addContract(int tenantId, int roomId, Date startDate, Date endDate) {
         String query = "INSERT INTO Contracts (TenantID, RoomID, StartDate, EndDate, ContractStatus, ContractCreatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -124,33 +159,5 @@ public class ContractDAO extends DBContext {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public List<Contract> getContractHistoryByTenantId(int tenantId) {
-        List<Contract> contracts = new ArrayList<>();
-        String sql = "SELECT ContractID, TenantID, RoomID, StartDate, EndDate, ContractStatus, ContractCreatedAt "
-                + "FROM Contracts WHERE TenantID = ? AND EndDate IS NOT NULL AND EndDate < GETDATE() "
-                + "ORDER BY EndDate DESC";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, tenantId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Contract c = new Contract();
-                c.setContractId(rs.getInt("ContractID"));
-                c.setTenantId(rs.getInt("TenantID"));
-                c.setRoomId(rs.getInt("RoomID"));
-                c.setStartDate(rs.getDate("StartDate"));
-                c.setEndDate(rs.getDate("EndDate"));
-                c.setContractstatus(rs.getString("ContractStatus"));
-                c.setContractcreatedAt(rs.getTimestamp("ContractCreatedAt"));
-                contracts.add(c);
-            }
-        } catch (SQLException e) {
-        }
-        return contracts;
-    }
-
-   
-
+    }  
 }

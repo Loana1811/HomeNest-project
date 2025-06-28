@@ -92,7 +92,7 @@
                             CCCD: ${customer.CCCD}<br>
                             SĐT: ${customer.phoneNumber}<br>
                             Giới tính: ${customer.gender}<br>
-                            Ngày sinh: ${customer.birthDate}<br>
+                            Ngày sinh: ${customer.birthDay}<br>
                             Địa chỉ: ${customer.address}<br>
                             Email: ${customer.email}<br>
                             Mã người thuê: ${tenant.tenantID}<br>
@@ -118,8 +118,8 @@
 
                 <div class="contract-section">
                     <h2>4. Giá Thuê & Thanh Toán</h2>
-                    Giá thuê: ${contract.amount} VND / tháng<br>
-                    Tiền đặt cọc: ${contract.amount} VND (1 tháng tiền thuê)<br>
+                    Giá thuê: ${room.rentPrice} VND / tháng<br>
+                    Tiền đặt cọc: ${room.rentPrice} VND (1 tháng tiền thuê)<br>
                     Phương thức thanh toán: Vào ngày 1 hàng tháng, bằng tiền mặt hoặc chuyển khoản
                 </div>
 

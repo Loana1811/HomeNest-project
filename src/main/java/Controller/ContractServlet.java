@@ -30,18 +30,20 @@ public class ContractServlet extends HttpServlet {
             request.setAttribute("contracts", contracts);
             request.getRequestDispatcher("/listContract.jsp").forward(request, response);
 
-        } else if (action.equals("create")) {
+        } else if (action.equals(
+                "create")) {
             TenantDAO tenantDAO = new TenantDAO();
             RoomDAO roomDAO = new RoomDAO();
 
-            List<Tenant> tenants = tenantDAO.getAllTenants();
-            List<Room> rooms = roomDAO.getAvailableRooms();
+            // Dùng method mới thay vì getAllTenants () và  getAvailableRoomsIncludingCurrent
+            List<Tenant> tenants = tenantDAO.getAllTenantsForNewContract();
+            List<Room> rooms = roomDAO.getAvailableRoomsForNewContract();
 
             request.setAttribute("tenants", tenants);
             request.setAttribute("rooms", rooms);
             request.getRequestDispatcher("/createContract.jsp").forward(request, response);
-
-        } else if (action.equals("edit")) {
+        } else if (action.equals(
+                "edit")) {
             int id = Integer.parseInt(request.getParameter("id"));
 
             ContractDAO contractDAO = new ContractDAO();
@@ -167,7 +169,7 @@ public class ContractServlet extends HttpServlet {
                 request.setAttribute("error", "Invalid input or system error.");
                 doGet(request, response);
             }
-        }  else if ("delete".equals(action)) {
+        } else if ("delete".equals(action)) {
             String contractIdStr = request.getParameter("contractId");
 
             if (contractIdStr == null || contractIdStr.isEmpty()) {

@@ -80,16 +80,22 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String email = request.getParameter("_username");
         String password = request.getParameter("_password");
         String remember = request.getParameter("remember");
 
-        String hashedPassword = UserDAO.hashMd5(password);
-        System.out.println("Email: " + email);
-        System.out.println("Password (raw): " + password);
-        System.out.println("Password (hashed): " + CustomerDAO.hashMd5(password));
+        // (b) Kiểm tra input null hoặc rỗng
+        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            request.setAttribute("error", "Vui lòng nhập đầy đủ email và mật khẩu.");
+            request.getRequestDispatcher("Login.jsp").forward(request, response);
+            return;
+        }
 
-// 1. Kiểm tra trong bảng Users
+        // Hash mật khẩu
+        String hashedPassword = UserDAO.hashMd5(password);
+
+        // 1. Kiểm tra trong bảng Users
         UserDAO userDao = new UserDAO();
         User user = userDao.loginUser(email, hashedPassword);
 
@@ -99,10 +105,14 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("roleId", user.getRoleId());
 
+            // (c) Remember me - lưu cookie
             if ("on".equals(remember)) {
                 Cookie usernameCookie = new Cookie("username", email);
                 usernameCookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
                 usernameCookie.setHttpOnly(true);
+                usernameCookie.setPath("/"); // áp dụng cho toàn bộ project
+                // Nếu bạn dùng HTTPS:
+                // usernameCookie.setSecure(true);
                 response.addCookie(usernameCookie);
             }
 
@@ -110,7 +120,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-// 2. Kiểm tra trong bảng Customers
+        // 2. Kiểm tra trong bảng Customers
         CustomerDAO customerDao = new CustomerDAO();
         Customer customer = null;
         try {
@@ -124,10 +134,13 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("customer", customer);
             session.setAttribute("customerId", customer.getCustomerID());
 
+            // (c) Remember me - lưu cookie
             if ("on".equals(remember)) {
                 Cookie usernameCookie = new Cookie("username", email);
-                usernameCookie.setMaxAge(30 * 24 * 60 * 60);
+                usernameCookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
                 usernameCookie.setHttpOnly(true);
+                usernameCookie.setPath("/");
+                // usernameCookie.setSecure(true);
                 response.addCookie(usernameCookie);
             }
 
@@ -137,7 +150,6 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("error", "Sai tên đăng nhập hoặc mật khẩu!");
             request.getRequestDispatcher("Login.jsp").forward(request, response);
         }
-
     }
 
     /**

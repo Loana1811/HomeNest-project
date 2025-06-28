@@ -9,6 +9,7 @@ import Model.Room;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -102,6 +103,36 @@ public class RoomDAO extends DBContext {
         }
 
         return room;
+    }
+
+    public List<Room> getAvailableRoomsForNewContract() {
+        List<Room> rooms = new ArrayList<>();
+        String query = "SELECT * FROM Rooms WHERE RoomID NOT IN (SELECT RoomID FROM Contracts WHERE ContractStatus = 'Active')";
+
+        try (
+                 PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Room room = new Room();
+                room.setRoomID(rs.getInt("RoomID"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                room.setRentPrice(rs.getDouble("RentPrice"));
+                room.setArea(rs.getDouble("Area"));
+                room.setLocation(rs.getString("Location"));
+                room.setRoomStatus(rs.getString("RoomStatus"));
+                room.setBlockID(rs.getInt("BlockID"));
+                room.setCategoryID(rs.getInt("CategoryID"));
+                room.setHighlights(rs.getString("Highlights"));
+                room.setImagePath(rs.getString("ImagePath"));
+                room.setDescription(rs.getString("Description"));
+                room.setPostedDate(rs.getDate("PostedDate"));
+
+                rooms.add(room);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rooms;
     }
 
 }

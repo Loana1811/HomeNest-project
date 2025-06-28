@@ -4,7 +4,7 @@
 <html>
     <%@ include file="WEB-INF/include/header.jsp" %>
     <head>
-        
+
         <title>List of Contracts</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
@@ -39,9 +39,10 @@
                                 <td>${contract.contractcreatedAt}</td>
                                 <td>
                                     <a href="<%= request.getContextPath()%>/Contracts?action=view&id=${contract.contractId}" class="btn btn-info btn-sm">View</a>
-                                    <a href="<%= request.getContextPath()%>/Contracts?action=history&tenantId=${tenant.tenantID}" class="btn btn-sm btn-info">
+                                    <a href="<%= request.getContextPath()%>/Contracts?action=history&tenantId=${contract.tenantId}" class="btn btn-sm btn-info">
                                         View Contract History
-                                    </a>                                                                 
+                                    </a>
+
                                     <!-- Nút xoá dùng form để tránh lỗi GET không an toàn -->
                                     <form action="Contracts" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this contract?');">
                                         <input type="hidden" name="action" value="delete">

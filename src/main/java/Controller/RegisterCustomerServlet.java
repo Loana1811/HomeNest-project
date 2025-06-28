@@ -140,7 +140,7 @@ public class RegisterCustomerServlet extends HttpServlet {
         customer.setPhoneNumber(phone);
         customer.setCCCD(cccd);
         customer.setGender(gender);
-        customer.setBirthDate(Date.valueOf(birth));
+        customer.setBirthDay(Date.valueOf(birth));
         customer.setAddress(address);
         customer.setEmail(email);
         customer.setCustomerPassword(password); // nên mã hóa bằng MD5 hoặc SHA trước khi lưu
