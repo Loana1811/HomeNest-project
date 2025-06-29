@@ -43,12 +43,12 @@ public class CustomerDAO extends DBContext {
 
     public void insertCustomerFromGoogle(Customer c) throws SQLException {
         String sql = "INSERT INTO Customers (CustomerFullName, Email, PhoneNumber, CCCD, Gender, BirthDate, Address, CustomerPassword, CustomerStatus) "
-                + "VALUES (?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?)";
+                + "VALUES (?, ?, '', '', '', '', '', ?, 'Potential')";
+
         try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCustomerFullName());     // ?
             ps.setString(2, c.getEmail());                // ?
-            ps.setString(3, c.getCustomerPassword());     // ?
-            ps.setString(4, c.getCustomerStatus());       // ?
+            ps.setString(3, c.getCustomerPassword());     // ?  
             ps.executeUpdate();
         }
     }
@@ -87,6 +87,17 @@ public class CustomerDAO extends DBContext {
         }
     }
 
+    // Kiểm tra khách hàng có bị trùng Email, Phone hoặc CCCD không
+    public boolean isDuplicate(Customer customer) throws SQLException {
+        String sql = "SELECT 1 FROM Customers WHERE PhoneNumber = ? OR Email = ? OR CCCD = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customer.getPhoneNumber());
+            ps.setString(2, customer.getEmail());
+            ps.setString(3, customer.getCCCD());
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // true nếu trùng
+        }
+    }
     public boolean insertCustomer(Customer customer) {
         String sql = "INSERT INTO Customers(CustomerFullName, PhoneNumber, CCCD, Gender , BirthDate, Address, Email, CustomerPassword, CustomerStatus) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Potential')";

@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.regex.Pattern;
@@ -78,7 +79,9 @@ public class RegisterCustomerServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-// ... trong phương thức doPost()
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String name = request.getParameter("fullname");
         String phone = request.getParameter("phone");
         String cccd = request.getParameter("cccd");
@@ -91,31 +94,24 @@ public class RegisterCustomerServlet extends HttpServlet {
 
         String error = null;
 
-// Định nghĩa pattern
         Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9])\\S{8,20}$");
         Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
-        Pattern PHONE_PATTERN = Pattern.compile("^0\\d{9}$"); // Ví dụ: 10 chữ số bắt đầu bằng 0
-        Pattern CCCD_PATTERN = Pattern.compile("^\\d{12}$"); // CCCD đúng 10 số
+        Pattern PHONE_PATTERN = Pattern.compile("^0\\d{9}$");
+        Pattern CCCD_PATTERN = Pattern.compile("^\\d{12}$");
 
-// Kiểm tra xác nhận mật khẩu
         if (!password.equals(confirm)) {
             error = "Mật khẩu xác nhận không khớp.";
-        } // Kiểm tra định dạng mật khẩu
-        else if (!PASSWORD_PATTERN.matcher(password).matches()) {
+        } else if (!PASSWORD_PATTERN.matcher(password).matches()) {
             error = "Mật khẩu phải từ 8–20 ký tự, gồm chữ hoa, thường, số, ký tự đặc biệt và không chứa khoảng trắng.";
-        } // Kiểm tra định dạng email
-        else if (!EMAIL_PATTERN.matcher(email).matches()) {
+        } else if (!EMAIL_PATTERN.matcher(email).matches()) {
             error = "Email không hợp lệ.";
-        } // Kiểm tra định dạng số điện thoại
-        else if (!PHONE_PATTERN.matcher(phone).matches()) {
+        } else if (!PHONE_PATTERN.matcher(phone).matches()) {
             error = "Số điện thoại không hợp lệ (phải gồm 10 số, bắt đầu bằng 0).";
-        } // Kiểm tra CCCD đúng 10 số
-        else if (!CCCD_PATTERN.matcher(cccd).matches()) {
-            error = "CCCD phải đúng 10 chữ số.";
-        } // Kiểm tra ngày sinh không ở tương lai và >= 16 tuổi
-        else {
+        } else if (!CCCD_PATTERN.matcher(cccd).matches()) {
+            error = "CCCD phải đúng 12 chữ số.";
+        } else {
             try {
-                LocalDate birthDate = LocalDate.parse(birth); // từ yyyy-MM-dd
+                LocalDate birthDate = LocalDate.parse(birth);
                 LocalDate today = LocalDate.now();
 
                 if (birthDate.isAfter(today)) {
@@ -134,7 +130,7 @@ public class RegisterCustomerServlet extends HttpServlet {
             return;
         }
 
-// Nếu hợp lệ → tạo đối tượng Customer
+        // Tạo đối tượng Customer
         Customer customer = new Customer();
         customer.setCustomerFullName(name);
         customer.setPhoneNumber(phone);
@@ -143,9 +139,23 @@ public class RegisterCustomerServlet extends HttpServlet {
         customer.setBirthDay(Date.valueOf(birth));
         customer.setAddress(address);
         customer.setEmail(email);
-        customer.setCustomerPassword(password); // nên mã hóa bằng MD5 hoặc SHA trước khi lưu
+        customer.setCustomerPassword(password);
 
         CustomerDAO dao = new CustomerDAO();
+
+        try {
+            if (dao.isDuplicate(customer)) {
+                request.setAttribute("error", "Email, số điện thoại hoặc CCCD đã tồn tại.");
+                request.getRequestDispatcher("register_customer.jsp").forward(request, response);
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi kiểm tra dữ liệu trùng.");
+            request.getRequestDispatcher("register_customer.jsp").forward(request, response);
+            return;
+        }
+
         boolean success = dao.insertCustomer(customer);
 
         if (success) {
