@@ -7,7 +7,7 @@ import utils.DBContext;
 import java.sql.*;
 import java.util.*;
 
-public class CustomerDAO extends DBContext{
+public class CustomerDAO extends DBContext {
 
     // Map một dòng ResultSet thành Customer object
     private Customer mapResultSetToCustomer(ResultSet rs) throws SQLException {
@@ -227,41 +227,221 @@ public class CustomerDAO extends DBContext{
         }
         return 0;
     }
+
     public boolean isEmailExists(String email) throws SQLException {
-    String query = "SELECT COUNT(*) FROM Customers WHERE Email = ?";
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-        ps.setString(1, email);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+        String query = "SELECT COUNT(*) FROM Customers WHERE Email = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, email);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
         }
+        return false;
     }
-    return false;
-}
 
 // Kiểm tra tên đã tồn tại chưa
-public boolean isNameExists(String fullName) throws SQLException {
-    String query = "SELECT COUNT(*) FROM Customers WHERE CustomerFullName = ?";
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-        ps.setString(1, fullName);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+    public boolean isNameExists(String fullName) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Customers WHERE CustomerFullName = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, fullName);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
         }
+        return false;
     }
-    return false;
-}
 
 // Lấy số lượng khách hàng đang "Active"
-public int getActiveCustomerCount() throws SQLException {
-    String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Active'";
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-        if (rs.next()) {
-            return rs.getInt(1);
+    public int getActiveCustomerCount() throws SQLException {
+        String query = "SELECT COUNT(*) FROM Customers WHERE CustomerStatus = 'Active'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public Customer getCustomerByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM Customers WHERE Email = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer c = new Customer();
+                    c.setCustomerID(rs.getInt("CustomerID"));
+                    c.setCustomerFullName(rs.getString("CustomerFullName"));
+                    c.setPhoneNumber(rs.getString("PhoneNumber"));
+                    c.setCCCD(rs.getString("CCCD"));
+                    c.setGender(rs.getString("Gender"));
+                    c.setBirthDay(rs.getDate("BirthDate"));
+                    c.setAddress(rs.getString("Address"));
+                    c.setEmail(rs.getString("Email"));
+                    c.setCustomerPassword(rs.getString("CustomerPassword"));
+                    c.setCustomerStatus(rs.getString("CustomerStatus"));
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean insertCustomerFromGoogle(Customer c) throws SQLException {
+        // Nếu email đã tồn tại → không thêm
+        if (isGoogleEmailExists(c.getEmail())) {
+            System.out.println("Tài khoản Google này đã tồn tại trong hệ thống.");
+            return false;
+        }
+
+        String sql = "INSERT INTO Customers (CustomerFullName, Email, PhoneNumber, CCCD, Gender, BirthDate, Address, CustomerPassword, CustomerStatus) "
+                + "VALUES (?, ?, NULL, NULL, NULL, NULL, NULL, ?, 'Potential')";
+
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCustomerFullName());
+            ps.setString(2, c.getEmail());
+            //ps.setString(3, c.getPhoneNumber());
+            ps.setString(3, c.getCustomerPassword()); // đã hash MD5 trước đó
+            return ps.executeUpdate() > 0;
         }
     }
-    return 0;
-}
+
+    public boolean isGoogleEmailExists(String email) throws SQLException {
+        String sql = "SELECT 1 FROM Customers WHERE Email = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // true nếu email đã tồn tại
+        }
+    }
+
+        public Customer checkLogin(String email, String hashedPassword) throws SQLException {
+        String sql = "SELECT * FROM Customers WHERE Email = ? AND CustomerPassword = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, hashedPassword);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer c = new Customer();
+                    c.setCustomerID(rs.getInt("CustomerID"));
+                    c.setCustomerFullName(rs.getString("CustomerFullName"));
+                    c.setPhoneNumber(rs.getString("PhoneNumber"));
+                    c.setCCCD(rs.getString("CCCD"));
+                    c.setGender(rs.getString("Gender"));
+                    c.setBirthDay(rs.getDate("BirthDate"));
+                    c.setAddress(rs.getString("Address"));
+                    c.setEmail(rs.getString("Email"));
+                    c.setCustomerPassword(rs.getString("CustomerPassword"));
+                    c.setCustomerStatus(rs.getString("CustomerStatus"));
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updatePassword(String email, String newHashedPassword) throws SQLException {
+        String sql = "UPDATE Customers SET CustomerPassword = ? WHERE Email = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newHashedPassword);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        }
+    }
+
+    // Kiểm tra khách hàng có bị trùng Email, Phone hoặc CCCD không
+    public boolean isDuplicate(Customer customer) throws SQLException {
+        String sql = "SELECT 1 FROM Customers WHERE PhoneNumber = ? OR Email = ? OR CCCD = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customer.getPhoneNumber());
+            ps.setString(2, customer.getEmail());
+            ps.setString(3, customer.getCCCD());
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // true nếu trùng
+        }
+    }
+
+    public boolean insertCustomer(Customer customer) {
+        String sql = "INSERT INTO Customers(CustomerFullName, PhoneNumber, CCCD, Gender , BirthDate, Address, Email, CustomerPassword, CustomerStatus) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Potential')";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customer.getCustomerFullName());
+            ps.setString(2, customer.getPhoneNumber());
+            ps.setString(3, customer.getCCCD());
+            ps.setString(4, customer.getGender());
+            ps.setDate(5, customer.getBirthDay());
+            ps.setString(6, customer.getAddress());
+            ps.setString(7, customer.getEmail());
+            ps.setString(8, UserDAO.hashMd5(customer.getCustomerPassword()));
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static String hashMd5(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] bytes = md.digest(input.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean logEmail(int customerID, Integer userID, String email, String subject, String message, String status, String errorMessage) throws SQLException {
+        String query = "INSERT INTO EmailLogs (CustomerID, UserID, Email, Subject, Message, Status, ErrorMessage) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        int result = execUpdateQuery(query,
+                customerID == 0 ? null : customerID,
+                userID,
+                email,
+                subject,
+                message,
+                status,
+                errorMessage
+        );
+        return result > 0;
+    }
+
+    public boolean isCCCDExists(String cccd) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Customers WHERE CCCD = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, cccd);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hasContractOrRentalRequest(int customerID) throws SQLException {
+        String sql = "SELECT COUNT(*) "
+                + "FROM Customers c "
+                + "LEFT JOIN Tenants t ON c.CustomerID = t.CustomerID "
+                + "LEFT JOIN Contracts ct ON t.TenantID = ct.TenantID "
+                + "LEFT JOIN RentalRequests rq ON c.CustomerID = rq.CustomerID "
+                + "WHERE c.CustomerID = ? AND (ct.ContractID IS NOT NULL OR rq.RequestID IS NOT NULL)";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, customerID);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
 }

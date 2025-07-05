@@ -187,7 +187,7 @@
             <ul class="nav flex-column">
                 
                 <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/account">Accounts</a>
+                    <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a>

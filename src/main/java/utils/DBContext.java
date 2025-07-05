@@ -18,14 +18,14 @@ import java.util.logging.Logger;
  * @author kloane
  */
 public class DBContext {
-    // Public database connection object
 
+    // Public database connection object
     public Connection conn;
 
     // Update these constants based on your SQL Server config
     private final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=RentalManagement;encrypt=false";
     private final String DB_USER = "sa";
-     private final String DB_PWD = "123";
+    private final String DB_PWD = "123";
 
     public DBContext() {
         try {
@@ -84,6 +84,16 @@ public class DBContext {
             }
 
             return ps.executeUpdate();
+        }
+    }
+
+    public static void unregisterDriver() {
+        try {
+            java.sql.DriverManager.deregisterDriver(new com.microsoft.sqlserver.jdbc.SQLServerDriver());
+            System.out.println("✅ [DBContext] JDBC Driver unregistered.");
+        } catch (SQLException e) {
+            System.err.println("❌ [DBContext] Error unregistering JDBC Driver: " + e.getMessage());
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 }

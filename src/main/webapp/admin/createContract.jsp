@@ -81,8 +81,9 @@
                         <option value="">-- Select Tenant --</option>
                         <c:forEach var="tenant" items="${tenants}">
                             <option value="${tenant.tenantID}">
-                                Tenant ID: ${tenant.tenantID}, Customer ID: ${tenant.customerID}, Join Date: ${tenant.joinDate}
+                                Tenant ID: ${tenant.tenantID}, Name: ${tenant.customerFullName}, CCCD: ${tenant.CCCD}
                             </option>
+
                         </c:forEach>
                     </select>
                 </div>

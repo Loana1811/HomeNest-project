@@ -1,556 +1,375 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@page import="model.User"%>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Edit User</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <title>Edit Manager</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
         <style>
-            :root {
-                --primary: #3498db;
-                --secondary: #2c3e50;
-                --success: #28a745;
-                --danger: #dc3545;
-                --warning: #ffc107;
-                --info: #17a2b8;
-                --light: #f8f9fa;
-                --dark: #343a40;
-            }
-
             body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
                 min-height: 100vh;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-
-            .container {
-                max-width: 700px;
-                margin-top: 30px;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .form-header {
-                text-align: center;
-                margin-bottom: 40px;
+            .edit-container {
+                max-width: 600px;
+                margin: 40px auto;
+                background: #fff;
+                border-radius: 18px;
+                box-shadow: 0 8px 32px rgba(102,166,255,0.1);
+                padding: 38px 36px 30px 36px;
                 position: relative;
+                animation: slideIn 0.6s;
             }
-
-            .form-header::before {
-                content: '';
-                position: absolute;
-                bottom: -10px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 80px;
-                height: 4px;
-                background: linear-gradient(90deg, var(--primary), var(--info));
-                border-radius: 2px;
-            }
-
-            .form-header h2 {
-                color: var(--dark);
-                font-weight: 700;
-                font-size: 2.5rem;
-                margin-bottom: 10px;
-                background: linear-gradient(135deg, var(--primary), var(--info));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-
-            .form-header p {
-                color: #6c757d;
-                font-size: 1.1rem;
-                margin: 0;
-            }
-
-            .form-section {
-                background: rgba(248, 249, 250, 0.8);
-                padding: 25px;
-                border-radius: 15px;
-                margin-bottom: 25px;
-                border-left: 4px solid var(--primary);
-            }
-
-            .section-title {
-                color: var(--dark);
-                font-weight: 600;
-                font-size: 1.3rem;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .form-floating {
-                margin-bottom: 20px;
-            }
-
-            .form-floating > .form-control,
-            .form-floating > .form-select {
-                height: 60px;
-                border: 2px solid #e9ecef;
-                border-radius: 12px;
-                font-size: 16px;
-                transition: all 0.3s ease;
-            }
-
-            .form-floating > .form-control:focus,
-            .form-floating > .form-select:focus {
-                border-color: var(--primary);
-                box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.15);
-                transform: translateY(-2px);
-            }
-
-            .form-floating > label {
-                font-weight: 500;
-                color: #6c757d;
-                padding-left: 1rem;
-            }
-
-            .required {
-                color: var(--danger);
-                font-weight: bold;
-            }
-
-            .role-badge {
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 14px;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-left: 10px;
-            }
-
-            .role-admin {
-                background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.1));
-                color: #721c24;
-                border: 1px solid rgba(220, 53, 69, 0.3);
-            }
-
-            .role-manager {
-                background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.1));
-                color: #856404;
-                border: 1px solid rgba(255, 193, 7, 0.3);
-            }
-
-            .status-badge {
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 14px;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-
-            .status-active {
-                background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(40, 167, 69, 0.1));
-                color: #155724;
-                border: 1px solid rgba(40, 167, 69, 0.3);
-            }
-
-            .status-inactive {
-                background: linear-gradient(135deg, rgba(108, 117, 125, 0.2), rgba(108, 117, 125, 0.1));
-                color: #383d41;
-                border: 1px solid rgba(108, 117, 125, 0.3);
-            }
-
-            .btn-group-custom {
-                display: flex;
-                gap: 15px;
-                justify-content: center;
-                margin-top: 30px;
-                flex-wrap: wrap;
-            }
-
-            .btn {
-                padding: 12px 30px;
-                border-radius: 25px;
-                font-weight: 600;
-                font-size: 16px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                transition: all 0.3s ease;
-                border: none;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .btn::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                transition: left 0.5s;
-            }
-
-            .btn:hover::before {
-                left: 100%;
-            }
-
-            .btn-primary {
-                background: linear-gradient(135deg, var(--primary), var(--info));
-                color: white;
-                min-width: 150px;
-            }
-
-            .btn-primary:hover {
-                background: linear-gradient(135deg, var(--info), var(--primary));
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-            }
-
-            .btn-secondary {
-                background: linear-gradient(135deg, #6c757d, #495057);
-                color: white;
-                min-width: 120px;
-            }
-
-            .btn-secondary:hover {
-                background: linear-gradient(135deg, #495057, #6c757d);
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
-            }
-
-            .alert {
-                border-radius: 12px;
-                border: none;
-                padding: 15px 20px;
-                margin-bottom: 25px;
-                font-weight: 500;
-            }
-
-            .alert-danger {
-                background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
-                color: var(--danger);
-                border-left: 4px solid var(--danger);
-            }
-
-            .user-info-card {
-                background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(23, 162, 184, 0.05));
-                border-radius: 15px;
-                padding: 20px;
-                margin-bottom: 25px;
-                border: 1px solid rgba(52, 152, 219, 0.2);
-            }
-
-            .info-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 0;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            }
-
-            .info-item:last-child {
-                border-bottom: none;
-            }
-
-            .info-label {
-                font-weight: 600;
-                color: var(--dark);
-            }
-
-            .info-value {
-                color: #6c757d;
-            }
-
-            @media (max-width: 768px) {
-                .container {
-                    margin: 20px;
-                    padding: 25px;
-                }
-
-                .form-header h2 {
-                    font-size: 2rem;
-                }
-
-                .btn-group-custom {
-                    flex-direction: column;
-                    align-items: center;
-                }
-
-                .btn {
-                    width: 100%;
-                    max-width: 200px;
-                }
-            }
-
-            .animate-form {
-                animation: slideInUp 0.6s ease-out;
-            }
-
-            @keyframes slideInUp {
+            @keyframes slideIn {
                 from {
-                    opacity: 0;
+                    opacity:0;
                     transform: translateY(30px);
                 }
                 to {
-                    opacity: 1;
+                    opacity:1;
                     transform: translateY(0);
                 }
             }
-
-            .password-note {
-                background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
-                border: 1px solid rgba(255, 193, 7, 0.3);
-                border-radius: 10px;
-                padding: 15px;
-                margin-top: 15px;
-                color: #856404;
+            .edit-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .edit-header h2 {
+                color: #2471a3;
+                font-weight: 800;
+                letter-spacing: 1px;
+                margin-bottom: 6px;
+            }
+            .edit-header p {
+                color: #5a5a5a;
+                font-size: 1.1rem;
+            }
+            .form-section {
+                margin-bottom: 20px;
+            }
+            .form-floating > label {
+                font-weight: 500;
+            }
+            .required {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .btn-custom {
+                min-width: 140px;
+                font-weight: 600;
+                border-radius: 25px;
+                padding: 10px 32px;
+                font-size: 1rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .btn-primary {
+                background: linear-gradient(90deg,#2471a3,#66a6ff);
+                border: none;
+            }
+            .btn-primary:hover {
+                background: linear-gradient(90deg,#66a6ff,#2471a3);
+            }
+            .btn-secondary {
+                background: #888;
+                border: none;
+            }
+            .alert-info {
+                margin-bottom: 18px;
+            }
+            .role-badge {
+                margin-left: 7px;
+                font-size: 13px;
+                padding: 3px 12px;
+                border-radius: 14px;
+                background: #e1f5fe;
+                color: #1a237e;
+                font-weight: 600;
+                letter-spacing: 0.5px;
             }
         </style>
     </head>
     <body>
-        <div class="container animate-form">
-            <div class="form-header">
-                <h2><i class="fas fa-user-cog"></i> Edit User</h2>
-                <p>Update system user information and permissions</p>
+        <div class="edit-container">
+            <div class="edit-header">
+                <h2>Edit Manager</h2>
+                <p>Update manager account information</p>
             </div>
 
             <c:if test="${not empty error}">
-                <div class="alert alert-danger" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    ${error}
+                <div class="alert alert-danger">${error}</div>
+            </c:if>
+            <c:if test="${user.role.roleName eq 'Admin'}">
+                <div class="alert alert-info">
+                    Admin account cannot be edited. (View only)
                 </div>
             </c:if>
 
-            <!-- Current User Info Display -->
-            <c:if test="${not empty user}">
-                <div class="user-info-card">
-                    <div class="section-title">
-                        <i class="fas fa-id-card"></i>
-                        Current User Information
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">User ID:</span>
-                        <span class="info-value">#${user.userID}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Current Role:</span>
-                        <span class="info-value">
-                            ${user.role.roleName}
-                            <span class="role-badge role-${user.role.roleName.toLowerCase()}">
-                                ${user.role.roleName}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Current Status:</span>
-                        <span class="info-value">
-                            <span class="status-badge status-${user.userStatus.toLowerCase()}">
-                                ${user.userStatus}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Created:</span>
-                        <span class="info-value">${user.userCreatedAt}</span>
-                    </div>
+            <form 
+                id="editUserForm"
+                action="${pageContext.request.contextPath}/admin/account" 
+                method="post" 
+                novalidate
+                <c:if test="${user.role.roleName eq 'Admin'}">onsubmit="return false;"</c:if>
+                    >
+                    <input type="hidden" name="action" value="edit"/>
+                    <input type="hidden" name="userID" value="${user.userID}"/>
+                <input type="hidden" name="roleID" value="${user.role.roleID}"/>
+                <input type="hidden" id="originalStatus" value="${user.userStatus}"/>
 
-                </div>
-            </c:if>
-
-            <!-- Edit Form -->
-            <form action="${pageContext.request.contextPath}/admin/account" method="post">
-
-                <input type="hidden" name="action" value="edit">
-                <input type="hidden" name="userID" value="${user.userID}">
-
-                <!-- Personal Information Section -->
+                <!-- Full Name -->
                 <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-user"></i>
-                        Personal Information
-                    </div>
-
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="fullName" name="fullName" 
-                               value="${user.fullName}" required>
-                        <label for="fullName">Full Name <span class="required">*</span></label>
-                        <div class="invalid-feedback">
-                            Please provide a valid full name.
+                    <div class="form-floating mb-3">
+                        <input type="text" 
+                               id="userFullName" 
+                               name="fullName" 
+                               class="form-control"
+                               placeholder="Full Name" 
+                               value="${user.userFullName}"
+                               <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
+                                   required />
+                               <label for="userFullName">Full Name <span class="required">*</span></label>
+                               <div class="invalid-feedback"></div>
                         </div>
                     </div>
-
-                    <div class="form-floating">
-                        <input type="email" class="form-control" id="email" name="email" 
-                               value="${user.email}" required>
-                        <label for="email">Email Address <span class="required">*</span></label>
-                        <div class="invalid-feedback">
-                            Please provide a valid email address.
+                    <!-- Email -->
+                    <div class="form-section">
+                        <div class="form-floating mb-3">
+                            <input type="email"
+                                   id="email"
+                                   name="email"
+                                   class="form-control"
+                                   placeholder="Email"
+                                   value="${user.email}"
+                            <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
+                                required />
+                            <label for="email">Email <span class="required">*</span></label>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
-
-                    <div class="form-floating">
-                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" 
-                               value="${user.phoneNumber}" pattern="[0-9]{10,11}" required>
-                        <label for="phoneNumber">Phone Number <span class="required">*</span></label>
-                        <div class="invalid-feedback">
-                            Please provide a valid phone number (10-11 digits).
+                    <!-- Phone Number -->
+                    <div class="form-section">
+                        <div class="form-floating mb-3">
+                            <input type="text"
+                                   id="phoneNumber"
+                                   name="phoneNumber"
+                                   class="form-control"
+                                   placeholder="Phone Number"
+                                   value="${user.phoneNumber}"
+                            <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
+                                required />
+                            <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                            <div class="invalid-feedback"></div>
                         </div>
+                    </div>
+                    <!-- Role (readonly, just for info) -->
+                    <div class="form-section">
+                        <div class="form-floating mb-3">
+                            <input type="text"
+                                   class="form-control"
+                                   id="role"
+                                   name="role"
+                                   value="${user.role.roleName}" 
+                            readonly
+                            style="background-color:#eaf4fa;"/>
+                        <label for="role">Role</label>
                     </div>
                 </div>
 
-                <!-- Role & Status Section -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-cog"></i>
-                        Role & Status Configuration
-                    </div>
-
-                    <div class="form-floating">
-                        <select class="form-select" id="roleID" name="roleID" required>
-                            <option value="">Select Role</option>
-                            <option value="1" ${user.roleID == 1 ? 'selected' : ''}>Admin</option>
-                            <option value="2" ${user.roleID == 2 ? 'selected' : ''}>Manager</option>
-                        </select>
-                        <label for="roleID">User Role <span class="required">*</span></label>
-                        <div class="invalid-feedback">
-                            Please select a user role.
-                        </div>
-                    </div>
-                    <div class="form-floating" id="blockSection" style="<c:out value='${user.roleID == 2 ? "" : "display: none;"}'/>">
-                        <select class="form-select" id="blockID" name="blockID" <c:if test="${user.roleID == 2}">required</c:if>>
+                <c:if test="${user.role.roleName eq 'Manager'}">
+                    <div class="form-section">
+                        <div class="form-floating mb-3">
+                            <select id="blockID" name="blockID" class="form-select" required>
                                 <option value="">Select Block</option>
-                            <c:forEach items="${blockList}" var="block">
-                                <option value="${block.blockID}" <c:if test="${user.blockID == block.blockID}">selected</c:if>>
-                                    ${block.blockName}
-                                </option>
-                            </c:forEach>
-                        </select>
-                        <label for="blockID">Managed Block (Manager only)</label>
-                    </div>
-
-
-                    <div class="form-floating">
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="">Select Status</option>
-                            <option value="Active" ${user.status == 'Active' ? 'selected' : ''}>Active</option>
-                            <option value="Inactive" ${user.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
-
-                        </select>
-                        <label for="status">Account Status <span class="required">*</span></label>
-                        <div class="invalid-feedback">
-                            Please select an account status.
+                                <c:forEach var="block" items="${blockList}">
+                                    <option value="${block.blockID}" 
+                                            <c:if test="${user.block != null && user.block.blockID == block.blockID}">selected</c:if>>
+                                        ${block.blockName}
+                                    </option>
+                                </c:forEach>
+                            </select>
+                            <label for="blockID">Block <span class="required">*</span></label>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
+                </c:if>
 
-                    <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="password"
-                               placeholder="Leave blank to keep current password" />
-                        <label for="password">New Password (optional)</label>
+                <!-- Status -->
+                <div class="form-section">
+                    <div class="form-floating mb-3">
+                        <select id="status" name="status" class="form-select" <c:if test="${user.role.roleName eq 'Admin'}">disabled</c:if>>
+                            <option value="Active" <c:if test="${user.userStatus eq 'Active'}">selected</c:if>>Active</option>
+                            <option value="Inactive" <c:if test="${user.userStatus eq 'Inactive'}">selected</c:if>>Inactive</option>
+                            </select>
+                            <label for="status">Status</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
                     </div>
-
 
                     <!-- Action Buttons -->
-                    <div class="btn-group-custom">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>
-                            Update User
-                        </button>
-                        <a href="${pageContext.request.contextPath}/viewListAccount" class="btn btn-secondary">
-                            <i class="fas fa-times me-2"></i>
-                            Cancel
-                        </a>
-                    </div>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="submit" class="btn btn-primary btn-custom"
+                        <c:if test="${user.role.roleName eq 'Admin'}">disabled</c:if>
+                            >Save</button>
+                        <a href="${pageContext.request.contextPath}/admin/account" class="btn btn-secondary btn-custom">
+                        Cancel
+                    </a>
+                </div>
             </form>
         </div>
 
-        <!-- Bootstrap JS -->
+        <!-- Reason Modal -->
+        <div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reasonModalLabel">Reason for Status Change</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="statusChangeReason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="statusChangeReason" name="reason" rows="3" required placeholder="Enter reason for status change"></textarea>
+                            <div class="invalid-feedback">Reason is required and must be at least 5 characters.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script><!-- comment -->
 
-        <!-- Form Validation Script -->
+
         <script>
-            // Bootstrap form validation
-            (function () {
-                'use strict';
-                window.addEventListener('load', function () {
-                    var forms = document.getElementsByClassName('needs-validation');
-                    var validation = Array.prototype.filter.call(forms, function (form) {
-                        form.addEventListener('submit', function (event) {
-                            if (form.checkValidity() === false) {
-                                event.preventDefault();
-                                event.stopPropagation();
-                            }
-                            form.classList.add('was-validated');
-                        }, false);
-                    });
-                }, false);
-            })();
+                           document.addEventListener("DOMContentLoaded", function () {
+                               const form = document.getElementById('editUserForm');
+                               const statusSelect = document.getElementById('status');
+                               const originalStatus = document.getElementById('originalStatus').value;
+                               let selectedStatus = statusSelect.value;
+                               const reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
+                               const reasonInput = document.getElementById('statusChangeReason');
+                               const confirmButton = document.getElementById('confirmStatusChange');
 
-            // Phone number validation
-            document.getElementById('phoneNumber').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                e.target.value = value;
-            });
+                               // Show modal when status changes
+                               statusSelect.addEventListener('change', function (e) {
+                                   selectedStatus = e.target.value;
+                                   if (selectedStatus !== originalStatus && selectedStatus !== '') {
+                                       reasonModal.show();
+                                   }
+                               });
 
-            // Role change warning
-            document.getElementById('roleID').addEventListener('change', function (e) {
-                const currentRole = '${user.role.roleName}';
-                const selectedOption = e.target.options[e.target.selectedIndex];
-                const newRole = selectedOption.text;
+                               // Handle confirm status change
+                               confirmButton.addEventListener('click', function () {
+                                   const reason = reasonInput.value.trim();
+                                   if (reason.length < 5) {
+                                       reasonInput.classList.add('is-invalid');
+                                       return;
+                                   }
+                                   reasonInput.classList.remove('is-invalid');
+                                   // Remove any existing reason field to avoid duplicates
+                                   const existingReasonField = form.querySelector('input[name="reason"]');
+                                   if (existingReasonField) {
+                                       existingReasonField.remove();
+                                   }
+                                   // Add reason to form as hidden input
+                                   const reasonField = document.createElement('input');
+                                   reasonField.type = 'hidden';
+                                   reasonField.name = 'reason';
+                                   reasonField.value = reason;
+                                   form.appendChild(reasonField);
+                                   reasonModal.hide();
+                               });
 
-                if (currentRole !== newRole && newRole !== 'Select Role') {
-                    if (!confirm(`Are you sure you want to change this user's role from ${currentRole} to ${newRole}? This will affect their system permissions.`)) {
-                        e.target.value = '${user.roleID}';
-                    }
-                }
-            });
+                               // Reset reason input when modal is hidden, but keep selected status
+                               document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
+                                   reasonInput.value = '';
+                                   reasonInput.classList.remove('is-invalid');
+                                   // Only revert status if no reason was confirmed
+                                   if (!form.querySelector('input[name="reason"]')) {
+                                       statusSelect.value = originalStatus;
+                                       selectedStatus = originalStatus;
+                                   }
+                               });
 
-            // Status change warning
-            document.getElementById('status').addEventListener('change', function (e) {
-                const currentStatus = '${user.status}';
-                const newStatus = e.target.value;
+                               form.addEventListener('submit', function (e) {
+                                   let isValid = true;
 
-                if (currentStatus !== newStatus && newStatus !== '') {
-                    if (newStatus === 'Inactive') {
-                        if (!confirm('Are you sure you want to deactivate this user? They will not be able to log in until reactivated.')) {
-                            e.target.value = currentStatus;
-                        }
-                    }
-                }
-            });
+                                   // Full Name
+                                   const fullName = document.getElementById('userFullName');
+                                   if (fullName.value.trim() === "") {
+                                       showError(fullName, "Full name is required.");
+                                       isValid = false;
+                                   } else {
+                                       hideError(fullName);
+                                   }
 
-            // Form submission confirmation
-            document.querySelector('form').addEventListener('submit', function (e) {
-                if (!confirm('Are you sure you want to update this user\'s information?')) {
-                    e.preventDefault();
-                }
-            });
+                                   // Email
+                                   const email = document.getElementById('email');
+                                   if (!/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value.trim())) {
+                                       showError(email, "Email is not valid.");
+                                       isValid = false;
+                                   } else {
+                                       hideError(email);
+                                   }
 
-            function toggleBlockSection() {
-                var role = document.getElementById('roleID').value;
-                var blockSection = document.getElementById('blockSection');
-                if (role === '2') {
-                    blockSection.style.display = '';
-                    document.getElementById('blockID').setAttribute('required', 'required');
-                } else {
-                    blockSection.style.display = 'none';
-                    document.getElementById('blockID').removeAttribute('required');
-                    document.getElementById('blockID').value = '';
-                }
-            }
+                                   // Phone number
+                                   const phone = document.getElementById('phoneNumber');
+                                   if (!/^\d{10,11}$/.test(phone.value.trim())) {
+                                       showError(phone, "Phone number must be 10-11 digits.");
+                                       isValid = false;
+                                   } else {
+                                       hideError(phone);
+                                   }
 
-            document.getElementById('roleID').addEventListener('change', toggleBlockSection);
+                                   // Block (for Manager role)
+                                   const blockSelect = document.getElementById('blockID');
+                                   if (blockSelect && !blockSelect.value) {
+                                       showError(blockSelect, "Block is required for Manager.");
+                                       isValid = false;
+                                   } else if (blockSelect) {
+                                       hideError(blockSelect);
+                                   }
 
-            // Gọi 1 lần khi load để đúng trạng thái nếu sửa Manager
-            window.onload = function () {
-                toggleBlockSection();
-            };
+                                   // Status
+                                   if (!statusSelect.value) {
+                                       showError(statusSelect, "Status is required.");
+                                       isValid = false;
+                                   } else if (statusSelect.value !== originalStatus && !form.querySelector('input[name="reason"]')) {
+                                       showError(statusSelect, "Reason is required for status change.");
+                                       reasonModal.show();
+                                       isValid = false;
+                                   } else {
+                                       hideError(statusSelect);
+                                   }
+
+                                   if (!isValid) {
+                                       e.preventDefault();
+                                       e.stopPropagation();
+                                   }
+                               });
+
+                               function showError(input, msg) {
+                                   input.classList.add('is-invalid');
+                                   const err = input.parentElement.querySelector('.invalid-feedback');
+                                   if (err)
+                                       err.innerText = msg;
+                               }
+
+                               function hideError(input) {
+                                   input.classList.remove('is-invalid');
+                                   const err = input.parentElement.querySelector('.invalid-feedback');
+                                   if (err)
+                                       err.innerText = "";
+                               }
+                           });
         </script>
     </body>
 </html>

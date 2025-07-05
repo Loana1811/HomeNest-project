@@ -160,36 +160,62 @@ public class ContractServlet extends HttpServlet {
             try {
                 String tenantIdStr = request.getParameter("tenantId");
                 String roomIdStr = request.getParameter("roomId");
+                String startDateStr = request.getParameter("startDate");
+                String endDateStr = request.getParameter("endDate");
 
-                if (tenantIdStr == null || tenantIdStr.isEmpty() || roomIdStr == null || roomIdStr.isEmpty()) {
-                    request.setAttribute("error", "Please select both Tenant and Room.");
-                    // forward lại về form
-                    request.getRequestDispatcher("/createContract.jsp").forward(request, response);
+                // Kiểm tra dữ liệu rỗng
+                if (tenantIdStr == null || tenantIdStr.isEmpty()
+                        || roomIdStr == null || roomIdStr.isEmpty()
+                        || startDateStr == null || startDateStr.isEmpty()
+                        || endDateStr == null || endDateStr.isEmpty()) {
+
+                    request.setAttribute("error", "Please fill in all required fields.");
+                    loadContractFormData(request);
+                    request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
                     return;
                 }
 
                 int tenantId = Integer.parseInt(tenantIdStr);
                 int roomId = Integer.parseInt(roomIdStr);
+                Date startDate = Date.valueOf(startDateStr);
+                Date endDate = Date.valueOf(endDateStr); // endDate là bắt buộc
 
-                Date startDate = Date.valueOf(request.getParameter("startDate"));
-                String endDateStr = request.getParameter("endDate");
-                Date endDate = (endDateStr == null || endDateStr.isEmpty()) ? null : Date.valueOf(endDateStr);
+                // Kiểm tra ngày bắt đầu không sau ngày kết thúc
+                if (startDate.after(endDate)) {
+                    request.setAttribute("error", "Start date cannot be after end date.");
+                    loadContractFormData(request);
+                    request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
+                    return;
+                }
 
+                // Kiểm tra khoảng cách ít nhất 30 ngày
+                long diffMillis = endDate.getTime() - startDate.getTime();
+                long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+                if (diffDays < 30) {
+                    request.setAttribute("error", "The contract must be at least 30 days long.");
+                    loadContractFormData(request);
+                    request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
+                    return;
+                }
+
+                // Gọi DAO để thêm hợp đồng
                 ContractDAO contractDAO = new ContractDAO();
                 boolean success = contractDAO.addContract(tenantId, roomId, startDate, endDate);
 
                 if (success) {
                     response.sendRedirect(request.getContextPath() + "/Contracts?action=list");
                 } else {
-                    request.setAttribute("error", "Failed to create contract.");
-                    doGet(request, response);
+                    request.setAttribute("error", "Failed to create contract. Please try again.");
+                    loadContractFormData(request);
+                    request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 request.setAttribute("error", "Invalid input or system error.");
-                doGet(request, response);
+                loadContractFormData(request);
+                request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
             }
-
         } else if ("update".equals(action)) {
             try {
                 int contractId = Integer.parseInt(request.getParameter("contractId"));
@@ -232,8 +258,25 @@ public class ContractServlet extends HttpServlet {
             ContractDAO contractDAO = new ContractDAO();
             boolean deleted = contractDAO.deleteContract(contractId);
 
+            if (!deleted) {
+                // Đặt thông báo lỗi vào session
+                request.getSession().setAttribute("deleteError", "❌ Không thể xóa hợp đồng đã bắt đầu hoặc đã kết thúc.");
+            }
+
             response.sendRedirect("Contracts");
         }
+
+    }
+
+    private void loadContractFormData(HttpServletRequest request) {
+        TenantDAO tenantDAO = new TenantDAO();
+        RoomDAO roomDAO = new RoomDAO();
+
+        List<Tenant> tenants = tenantDAO.getAllTenants();
+        List<Room> rooms = roomDAO.getAvailableRooms(); // hoặc getAllRooms() nếu bạn không lọc
+
+        request.setAttribute("tenants", tenants);
+        request.setAttribute("rooms", rooms);
     }
 
     /**

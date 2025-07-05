@@ -3,19 +3,20 @@ package model;
 import java.sql.Timestamp;
 
 public class Notification {
-
     private int notificationID;
-    private int customerID;         // FK → Customers
+    private int customerID;
     private String title;
     private String message;
     private boolean isRead;
     private Timestamp notificationCreatedAt;
-    private Integer sentBy;         
+    private Integer sentBy;
 
-    public Notification() {}
+    // Constructor mặc định
+    public Notification() {
+    }
 
-    public Notification(int notificationID, int customerID, String title, String message,
-                        boolean isRead, Timestamp notificationCreatedAt, Integer sentBy) {
+    // Constructor đầy đủ
+    public Notification(int notificationID, int customerID, String title, String message, boolean isRead, Timestamp notificationCreatedAt, Integer sentBy) {
         this.notificationID = notificationID;
         this.customerID = customerID;
         this.title = title;
@@ -25,6 +26,7 @@ public class Notification {
         this.sentBy = sentBy;
     }
 
+    // Getters và Setters
     public int getNotificationID() {
         return notificationID;
     }
@@ -57,11 +59,11 @@ public class Notification {
         this.message = message;
     }
 
-    public boolean isIsRead() {
+    public boolean getIsRead() { // Thay đổi từ isRead() thành getIsRead()
         return isRead;
     }
 
-    public void setIsRead(boolean isRead) {
+    public void setRead(boolean isRead) {
         this.isRead = isRead;
     }
 
@@ -80,6 +82,4 @@ public class Notification {
     public void setSentBy(Integer sentBy) {
         this.sentBy = sentBy;
     }
-
-   
 }
