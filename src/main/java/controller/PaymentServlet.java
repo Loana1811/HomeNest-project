@@ -20,6 +20,15 @@ public class PaymentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String billIdRaw = request.getParameter("billId");
+
+        if (billIdRaw == null || billIdRaw.trim().isEmpty()) {
+            // ✅ Quay về trang list nếu thiếu billId (hoặc có thể set thông báo lỗi)
+            HttpSession session = request.getSession();
+            session.setAttribute("error", "⚠️ Không xác định được hóa đơn cần thu tiền.");
+            response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
+            return;
+        }
+
         forwardBack(request, response, billIdRaw);
     }
 
@@ -83,11 +92,21 @@ public class PaymentServlet extends HttpServlet {
                 // Lấy tổng tiền hóa đơn (không trừ cọc)
                 BillDAO billDAO = new BillDAO();
                 Bill bill = billDAO.getBillById(billId);
-                BigDecimal totalAmount = BigDecimal.valueOf(bill.getTotalAmount());
+              BigDecimal totalAmount = bill.getTotalAmount();
 
-                if (totalPaid.compareTo(totalAmount) >= 0) {
-                    billDAO.updateBillStatus(billId, "PAID");
-                }
+
+                String status;
+             // Sau khi update status
+if (totalPaid.compareTo(totalAmount) >= 0) {
+    billDAO.updateBillStatus(billId, "PAID");
+} else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
+    billDAO.updateBillStatus(billId, "PARTIAL");
+}
+
+// 🔁 Reload lại bill để phản ánh đúng trạng thái mới
+bill = billDAO.getBillById(billId);
+
+
 
                 // Tính còn nợ
                 BigDecimal remaining = totalAmount.subtract(totalPaid);
@@ -98,8 +117,10 @@ public class PaymentServlet extends HttpServlet {
                     msg = "✅ Khách đã thanh toán đầy đủ.";
                 }
 
-                request.setAttribute("success", msg);
-                forwardBack(request, response, billId);
+// ✅ Redirect chứ KHÔNG dùng forwardBack nữa
+                HttpSession session = request.getSession();
+                session.setAttribute("success", msg);
+                response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,18 +135,23 @@ public class PaymentServlet extends HttpServlet {
     private void forwardBack(HttpServletRequest request, HttpServletResponse response, Object billIdRaw)
             throws ServletException, IOException {
         try {
-            int billId;
             if (billIdRaw == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu billId khi reload");
+                // ✅ Thay vì báo lỗi 400, ta quay về trang danh sách hóa đơn
+                HttpSession session = request.getSession();
+                session.setAttribute("error", "⚠️ Không xác định được hóa đơn cần hiển thị.");
+                response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
                 return;
             }
 
+            int billId;
             if (billIdRaw instanceof Integer) {
                 billId = (Integer) billIdRaw;
             } else {
                 String billIdStr = String.valueOf(billIdRaw).trim();
                 if (billIdStr.isEmpty()) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "billId rỗng");
+                    HttpSession session = request.getSession();
+                    session.setAttribute("error", "⚠️ Mã hóa đơn không hợp lệ.");
+                    response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
                     return;
                 }
                 billId = Integer.parseInt(billIdStr);
@@ -136,7 +162,9 @@ public class PaymentServlet extends HttpServlet {
 
             Bill bill = billDAO.getBillById(billId);
             if (bill == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hóa đơn");
+                HttpSession session = request.getSession();
+                session.setAttribute("error", "❌ Không tìm thấy hóa đơn.");
+                response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
                 return;
             }
 
@@ -147,17 +175,24 @@ public class PaymentServlet extends HttpServlet {
                     totalPaid = totalPaid.add(p.getAmountPaid());
                 }
             }
+BigDecimal amountRemaining = bill.getTotalAmount().subtract(totalPaid);
 
             request.setAttribute("bill", bill);
             request.setAttribute("totalPaid", totalPaid);
+            request.setAttribute("amountRemaining", amountRemaining);
             request.getRequestDispatcher("/admin/payment.jsp").forward(request, response);
 
         } catch (NumberFormatException ex) {
             ex.printStackTrace();
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "billId không hợp lệ");
+            HttpSession session = request.getSession();
+            session.setAttribute("error", "⚠️ billId không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
         } catch (Exception ex) {
             ex.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Không thể load lại form: " + ex.getMessage());
+            HttpSession session = request.getSession();
+            session.setAttribute("error", "❌ Không thể load lại form: " + ex.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
         }
     }
+
 }

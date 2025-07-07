@@ -364,131 +364,278 @@ public class BillServlet extends HttpServlet {
 //req.setAttribute("success", "Hóa đơn đã được lưu thành công!");
 //    req.getRequestDispatcher("/admin/bill-list.jsp").forward(req, resp);
 //}
+            if ("list".equals(action) || action == null) {
+                String selectedMonth = req.getParameter("month");
+                if (selectedMonth == null) {
+                    selectedMonth = LocalDate.now().toString().substring(0, 7);
+                }
 
-if ("list".equals(action) || action == null) {
-    String selectedMonth = req.getParameter("month");
-    if (selectedMonth == null) {
-        selectedMonth = LocalDate.now().toString().substring(0, 7);
-    }
+                String success = req.getParameter("success"); // ✅ NEW
+                if (success != null) {
+                    req.setAttribute("success", success); // ✅ NEW
+                }
 
-    String success = req.getParameter("success"); // ✅ NEW
-    if (success != null) {
-        req.setAttribute("success", success); // ✅ NEW
-    }
+                List<Map<String, Object>> billSummary = billDAO.getBillSummaryByMonth(selectedMonth);
 
-    List<Map<String, Object>> billSummary = billDAO.getBillSummaryByMonth(selectedMonth);
-
-    req.setAttribute("selectedMonth", selectedMonth);
-    req.setAttribute("billSummary", billSummary);
-    req.getRequestDispatcher("/admin/bill-list.jsp").forward(req, resp);
-    return; // ✅ nên có return ở đây
-}
-
-
-if ("edit".equals(action)) {
-    int billId = Integer.parseInt(req.getParameter("billId"));
-    Bill bill = billDAO.getBillById(billId);
-    BillDetail detail = detailDAO.getBillDetailById(billId);
-    Contract contract = contractDAO.getContractById(bill.getContractID());
-    Room room = roomDAO.getRoomById(contract.getRoomId());
-
-    // Đặt lại tháng để truy vấn các tiện ích, phụ phí đúng
-    String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
-
-    // Lấy tiện ích và phụ phí đã ghi theo tháng
-    List<UtilityReading> readings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
-
-    List<IncurredFee> fees = feeDAO.getFeesByBillId(billId);
-    List<IncurredFeeType> feeTypeList = incurredFeeTypeDAO.getAll();
-
-    // Lấy danh sách loại tiện ích map theo ID
-    Map<Integer, UtilityType> utilityTypeMap = new HashMap<>();
-    for (UtilityType ut : utilityTypeDAO.getAll()) {
-        utilityTypeMap.put(ut.getUtilityTypeID(), ut);
-    }
-
-    // Gán vào request để JSP sử dụng
-    req.setAttribute("bill", bill);
-    req.setAttribute("detail", detail);
-    req.setAttribute("contract", contract);
-    req.setAttribute("rooms", room);
-    req.setAttribute("readings", readings);
-    req.setAttribute("fees", fees);
-    req.setAttribute("feeTypeList", feeTypeList);
-    req.setAttribute("utilityTypeMap", utilityTypeMap);
-    req.setAttribute("editMode", true);
-    req.setAttribute("selectedMonth", billMonth);
-
-    req.getRequestDispatcher("/admin/bill-edit.jsp").forward(req, resp);
-    return;
-}
-
-if ("view".equals(action)) {
-    int billId = Integer.parseInt(req.getParameter("billId"));
-    Bill bill = billDAO.getBillById(billId);
-    BillDetail detail = detailDAO.getBillDetailById(billId);
-
-    Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
-    Room room = roomDAO.getRoomById(contract.getRoomId());
-
-    String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
-
-    // Lấy readings thực tế từ DB
-    List<UtilityReading> dbReadings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
-    Map<Integer, UtilityReading> readingMap = new HashMap<>();
-    for (UtilityReading ur : dbReadings) {
-        readingMap.put(ur.getUtilityTypeID(), ur);
-    }
-
-    // Lấy danh sách tiện ích cố định
-    List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
-    Map<Integer, UtilityType> utilityTypeMap = new HashMap<>();
-    List<UtilityReading> finalReadings = new ArrayList<>();
-
-    for (UtilityType ut : utilityTypes) {
-        utilityTypeMap.put(ut.getUtilityTypeID(), ut);
-
-        UtilityReading ur = readingMap.get(ut.getUtilityTypeID());
-        if (ur != null) {
-            finalReadings.add(ur);
-        } else {
-            // Nếu tiện ích theo tháng mà không có trong DB, tạo giả để hiển thị
-            if ("month".equalsIgnoreCase(ut.getUnit())) {
-                UtilityReading dummy = new UtilityReading();
-                dummy.setUtilityTypeID(ut.getUtilityTypeID());
-                dummy.setRoomID(room.getRoomID());
-                dummy.setOldReading(BigDecimal.ZERO);
-                dummy.setNewReading(BigDecimal.ONE); // đã dùng 1
-                dummy.setPriceUsed(ut.getUnitPrice()); // lấy đúng đơn giá
-                dummy.setChangedBy("default");
-                dummy.setReadingDate(Date.valueOf(bill.getBillDate().toLocalDate()));
-                finalReadings.add(dummy);
+                req.setAttribute("selectedMonth", selectedMonth);
+                req.setAttribute("billSummary", billSummary);
+                req.getRequestDispatcher("/admin/bill-list.jsp").forward(req, resp);
+                return; // ✅ nên có return ở đây
             }
-        }
-    }
 
-    List<IncurredFee> fees = feeDAO.getFeesByBillId(billId);
+            if ("edit".equals(action)) {
+                int billId = Integer.parseInt(req.getParameter("billId"));
+                Bill bill = billDAO.getBillById(billId);
+                BillDetail detail = detailDAO.getBillDetailById(billId);
+                Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
+                Room room = roomDAO.getRoomById(contract.getRoomId());
 
-    Map<Integer, IncurredFeeType> feeTypeMap = new HashMap<>();
-    for (IncurredFeeType ft : incurredFeeTypeDAO.getAll()) {
-        feeTypeMap.put(ft.getIncurredFeeTypeID(), ft);
-    }
+                String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
 
-    req.setAttribute("bill", bill);
-    req.setAttribute("detail", detail);
-    req.setAttribute("contract", contract);
-    req.setAttribute("room", room);
-    req.setAttribute("readings", finalReadings); // dùng readings đã merge
-    req.setAttribute("fees", fees);
-    req.setAttribute("utilityTypeMap", utilityTypeMap);
-    req.setAttribute("feeTypeMap", feeTypeMap);
+                // ✅ Tính isLastMonth
+                boolean isLastMonth = false;
+                if (contract.getEndDate() != null) {
+                    LocalDate contractEndDate = contract.getEndDate().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                    String contractEndMonth = contractEndDate.toString().substring(0, 7);
+                    isLastMonth = billMonth.equals(contractEndMonth);
+                }
 
-    req.getRequestDispatcher("/admin/bill-view.jsp").forward(req, resp);
-    return;
-}
+                req.setAttribute("isLastMonth", isLastMonth);
+                req.setAttribute("selectedMonth", billMonth);
 
+                // ✅ Dữ liệu readings từ DB
+                List<UtilityReading> dbReadings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
+                Map<Integer, UtilityReading> readingMap = new HashMap<>();
+                for (UtilityReading ur : dbReadings) {
+                    readingMap.put(ur.getUtilityTypeID(), ur);
+                }
 
+                // ✅ Load tất cả loại tiện ích
+                List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
+                Map<Integer, UtilityType> utilityTypeMap = new HashMap<>();
+                List<UtilityReading> finalReadings = new ArrayList<>();
 
+                for (UtilityType ut : utilityTypes) {
+                    utilityTypeMap.put(ut.getUtilityTypeID(), ut);
+                    UtilityReading ur = readingMap.get(ut.getUtilityTypeID());
+                    if (ur != null) {
+                        finalReadings.add(ur); // đã có dữ liệu
+                    } else if ("month".equalsIgnoreCase(ut.getUnit())) {
+                        // ✅ Nếu là tiện ích cố định (wifi, rác), tự tạo bản ghi hiển thị
+                        UtilityReading dummy = new UtilityReading();
+                        dummy.setUtilityTypeID(ut.getUtilityTypeID());
+                        dummy.setRoomID(room.getRoomID());
+                        dummy.setOldReading(BigDecimal.ZERO);
+                        dummy.setNewReading(BigDecimal.ONE);
+                        dummy.setPriceUsed(ut.getUnitPrice());
+                        dummy.setChangedBy("default");
+                        dummy.setReadingDate(Date.valueOf(bill.getBillDate().toLocalDate()));
+                        finalReadings.add(dummy);
+                    }
+                }
+
+                // Phụ phí
+                List<IncurredFee> fees = feeDAO.getFeesByBillId(billId);
+                List<IncurredFeeType> feeTypeList = incurredFeeTypeDAO.getAll();
+                Map<Integer, BigDecimal> feeMap = new HashMap<>();
+                for (IncurredFee fee : fees) {
+                    feeMap.put(fee.getIncurredFeeTypeID(), fee.getAmount());
+                }
+
+                // Đưa vào request
+                req.setAttribute("bill", bill);
+                req.setAttribute("detail", detail);
+                req.setAttribute("contract", contract);
+                req.setAttribute("rooms", room);
+                req.setAttribute("readings", finalReadings); // ✅ cập nhật readings hoàn chỉnh
+                req.setAttribute("fees", fees);
+                req.setAttribute("feeMap", feeMap);
+                req.setAttribute("feeTypes", feeTypeList);
+                req.setAttribute("utilityTypeMap", utilityTypeMap);
+                req.setAttribute("editMode", true);
+
+                req.getRequestDispatcher("/admin/bill-edit.jsp").forward(req, resp);
+                return;
+            }
+
+            if ("view".equals(action)) {
+                int billId = Integer.parseInt(req.getParameter("billId"));
+                Bill bill = billDAO.getBillById(billId);
+                BillDetail detail = detailDAO.getBillDetailById(billId);
+
+                Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
+                Room room = roomDAO.getRoomById(contract.getRoomId());
+
+                String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
+
+                // Lấy readings thực tế từ DB
+                List<UtilityReading> dbReadings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
+                Map<Integer, UtilityReading> readingMap = new HashMap<>();
+                for (UtilityReading ur : dbReadings) {
+                    readingMap.put(ur.getUtilityTypeID(), ur);
+                }
+
+                // Lấy danh sách tiện ích cố định
+                List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
+                Map<Integer, UtilityType> utilityTypeMap = new HashMap<>();
+                List<UtilityReading> finalReadings = new ArrayList<>();
+
+                for (UtilityType ut : utilityTypes) {
+                    utilityTypeMap.put(ut.getUtilityTypeID(), ut);
+
+                    UtilityReading ur = readingMap.get(ut.getUtilityTypeID());
+                    if (ur != null) {
+                        finalReadings.add(ur);
+                    } else {
+                        // Nếu tiện ích theo tháng mà không có trong DB, tạo giả để hiển thị
+                        if ("month".equalsIgnoreCase(ut.getUnit())) {
+                            UtilityReading dummy = new UtilityReading();
+                            dummy.setUtilityTypeID(ut.getUtilityTypeID());
+                            dummy.setRoomID(room.getRoomID());
+                            dummy.setOldReading(BigDecimal.ZERO);
+                            dummy.setNewReading(BigDecimal.ONE); // đã dùng 1
+                            dummy.setPriceUsed(ut.getUnitPrice()); // lấy đúng đơn giá
+                            dummy.setChangedBy("default");
+                            dummy.setReadingDate(Date.valueOf(bill.getBillDate().toLocalDate()));
+                            finalReadings.add(dummy);
+                        }
+                    }
+                }
+
+                List<IncurredFee> fees = feeDAO.getFeesByBillId(billId);
+
+                Map<Integer, IncurredFeeType> feeTypeMap = new HashMap<>();
+                for (IncurredFeeType ft : incurredFeeTypeDAO.getAll()) {
+                    feeTypeMap.put(ft.getIncurredFeeTypeID(), ft);
+                }
+
+                req.setAttribute("bill", bill);
+                req.setAttribute("detail", detail);
+                req.setAttribute("contract", contract);
+                req.setAttribute("room", room);
+                req.setAttribute("readings", finalReadings); // dùng readings đã merge
+                req.setAttribute("fees", fees);
+                req.setAttribute("utilityTypeMap", utilityTypeMap);
+                req.setAttribute("feeTypeMap", feeTypeMap);
+// ✅ Kiểm tra nếu billDate thuộc tháng cuối của hợp đồng
+                boolean isLastMonth = false;
+                if (contract.getEndDate() != null && bill.getBillDate() != null) {
+                    YearMonth billYm = YearMonth.from(bill.getBillDate().toLocalDate());
+                    LocalDate endDate = contract.getEndDate().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                    YearMonth endYm = YearMonth.from(endDate);
+
+                    isLastMonth = billYm.equals(endYm);
+                }
+                req.setAttribute("isLastMonth", isLastMonth);
+
+                req.getRequestDispatcher("/admin/bill-view.jsp").forward(req, resp);
+                return;
+            } else if ("print".equals(action)) {
+                int billId = Integer.parseInt(req.getParameter("billId"));
+
+                Bill bill = billDAO.getBillById(billId);
+                BillDetail detail = detailDAO.getBillDetailById(billId);
+                Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
+                Room room = roomDAO.getRoomById(contract.getRoomId());
+
+                // Lấy tiện ích
+                String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
+                List<UtilityReading> dbReadings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
+                Map<Integer, UtilityReading> readingMap = new HashMap<>();
+                for (UtilityReading ur : dbReadings) {
+                    readingMap.put(ur.getUtilityTypeID(), ur);
+                }
+
+                List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
+                Map<Integer, UtilityType> utilityTypeMap = new HashMap<>();
+                List<UtilityReading> finalReadings = new ArrayList<>();
+                for (UtilityType ut : utilityTypes) {
+                    utilityTypeMap.put(ut.getUtilityTypeID(), ut);
+                    UtilityReading ur = readingMap.get(ut.getUtilityTypeID());
+                    if (ur != null) {
+                        finalReadings.add(ur);
+                    } else if ("month".equalsIgnoreCase(ut.getUnit())) {
+                        // Nếu là tiện ích tháng như rác, wifi thì tạo reading ảo
+                        UtilityReading dummy = new UtilityReading();
+                        dummy.setUtilityTypeID(ut.getUtilityTypeID());
+                        dummy.setRoomID(room.getRoomID());
+                        dummy.setOldReading(BigDecimal.ZERO);
+                        dummy.setNewReading(BigDecimal.ONE); // đã dùng 1 đơn vị
+                        dummy.setPriceUsed(ut.getUnitPrice());
+                        dummy.setChangedBy("default");
+                        dummy.setReadingDate(Date.valueOf(bill.getBillDate().toLocalDate()));
+                        finalReadings.add(dummy);
+                    }
+                }
+
+                List<IncurredFee> incurredFees = feeDAO.getFeesByBillId(billId);
+                Map<Integer, IncurredFeeType> feeTypeMap = new HashMap<>();
+                for (IncurredFeeType ft : incurredFeeTypeDAO.getAll()) {
+                    feeTypeMap.put(ft.getIncurredFeeTypeID(), ft);
+                }
+
+                // ✅ Kiểm tra nếu là tháng cuối
+                boolean isLastMonth = false;
+                if (contract.getEndDate() != null && bill.getBillDate() != null) {
+                    YearMonth billYm = YearMonth.from(bill.getBillDate().toLocalDate());
+                    LocalDate endDate = contract.getEndDate().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                    YearMonth endYm = YearMonth.from(endDate);
+
+                    isLastMonth = billYm.equals(endYm);
+                }
+
+                // ✅ Tính số tiền phải thu (có thể trừ cọc nếu là tháng cuối)
+                BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
+                BigDecimal totalAmount = bill.getTotalAmount();
+
+                BigDecimal amountDue = isLastMonth
+                        ? totalAmount.subtract(deposit)
+                        : totalAmount;
+
+                // Gửi data sang JSP
+                req.setAttribute("bill", bill);
+                req.setAttribute("detail", detail);
+                req.setAttribute("contract", contract);
+                req.setAttribute("room", room);
+                req.setAttribute("readings", finalReadings);
+                req.setAttribute("utilityTypeMap", utilityTypeMap);
+                req.setAttribute("fees", incurredFees);
+                req.setAttribute("feeTypeMap", feeTypeMap);
+                req.setAttribute("amountDue", amountDue);
+                req.setAttribute("isLastMonth", isLastMonth);
+
+                req.getRequestDispatcher("/admin/bill-print.jsp").forward(req, resp);
+                return;
+            } else if ("cancel".equals(action)) {
+                String billIdStr = req.getParameter("billId");
+                String blockId = req.getParameter("blockId");
+
+                if (billIdStr == null || billIdStr.isEmpty()) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu billId để hủy hóa đơn.");
+                    return;
+                }
+
+                int billId = Integer.parseInt(billIdStr);
+                BillDAO dao = new BillDAO();
+
+                if (blockId == null || blockId.isEmpty()) {
+                    blockId = dao.getBlockIdByBillId(billId); // ✅ fallback
+                }
+
+                if (!dao.isBillSent(billId)) {
+                    dao.deleteBillFully(billId);
+                    req.getSession().setAttribute("success", "✅ Hủy hóa đơn thành công.");
+                } else {
+                    req.getSession().setAttribute("success", "❌ Hóa đơn đã gửi, không thể hủy.");
+                }
+
+                resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list");
+
+                return;
+            }
 
             // --------- Action không hợp lệ ---------
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Action không hợp lệ.");
@@ -498,124 +645,138 @@ if ("view".equals(action)) {
     }
 
     @Override
-protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String month = req.getParameter("month");
-    String contractIdStr = req.getParameter("contractId");
-    String roomIdStr = req.getParameter("roomId");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String month = req.getParameter("month");
+        String contractIdStr = req.getParameter("contractId");
+        String roomIdStr = req.getParameter("roomId");
 
-    if ("edit".equals(req.getParameter("action"))) {
-    try {
-        int billId = Integer.parseInt(req.getParameter("billId"));
-        float roomRent = Float.parseFloat(req.getParameter("roomRent"));
-        float electricity = Float.parseFloat(req.getParameter("electricity"));
-        float water = Float.parseFloat(req.getParameter("water"));
-        float wifi = Float.parseFloat(req.getParameter("wifi"));
-        float trash = Float.parseFloat(req.getParameter("trash"));
-        String status = req.getParameter("status");
+        if ("edit".equals(req.getParameter("action"))) {
+            try {
+                int billId = Integer.parseInt(req.getParameter("billId"));
+                float roomRent = Float.parseFloat(req.getParameter("roomRent"));
+                float electricity = Float.parseFloat(req.getParameter("electricity"));
+                float water = Float.parseFloat(req.getParameter("water"));
+                float wifi = Float.parseFloat(req.getParameter("wifi"));
+                float trash = Float.parseFloat(req.getParameter("trash"));
+                String status = req.getParameter("status");
 
-        Bill bill = billDAO.getBillById(billId);
-        bill.setBillStatus(status);
-        float totalBase = roomRent + electricity + water + wifi + trash;
-        bill.setTotalAmount(totalBase); // sẽ cập nhật lại sau khi cộng phụ phí
-        billDAO.updateBill(bill);
+                Bill bill = billDAO.getBillById(billId);
+                bill.setBillStatus(status);
+                BigDecimal totalBase = BigDecimal.valueOf(roomRent)
+                        .add(BigDecimal.valueOf(electricity))
+                        .add(BigDecimal.valueOf(water))
+                        .add(BigDecimal.valueOf(wifi))
+                        .add(BigDecimal.valueOf(trash));
 
-        BillDetail detail = detailDAO.getBillDetailById(billId);
-        detail.setRoomrent(roomRent);
-        detail.setElectricityCost(electricity);
-        detail.setWaterCost(water);
-        detail.setWifiCost(wifi);
-        detailDAO.updateBillDetail(detail);
+                bill.setTotalAmount(totalBase);
+// sẽ cập nhật lại sau khi cộng phụ phí
+                billDAO.updateBill(bill);
 
-        // ✅ Cập nhật chỉ số tiện ích
-     List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
-Contract contract = contractDAO.getContractById(bill.getContractID());
-int roomId = contract.getRoomId();
-String readingMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
-Date readingDate = Date.valueOf(readingMonth + "-01");
+                BillDetail detail = detailDAO.getBillDetailById(billId);
+                detail.setRoomrent(roomRent);
+                detail.setElectricityCost(electricity);
+                detail.setWaterCost(water);
+                detail.setWifiCost(wifi);
+//        detail.setTrashCost(trash); // ✳️ nếu có cột này
+                detailDAO.updateBillDetail(detail);
 
-for (UtilityType ut : utilityTypes) {
-    if (!ut.isIndexedType()) continue;
+                // ✅ Cập nhật chỉ số tiện ích
+                List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
+                Contract contract = contractDAO.getContractById(bill.getContractID());
+                int roomId = contract.getRoomId();
+                String readingMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
+                Date readingDate = Date.valueOf(readingMonth + "-01");
 
-    String oldStr = req.getParameter("oldIndex_" + ut.getUtilityTypeID());
-    String newStr = req.getParameter("newIndex_" + ut.getUtilityTypeID());
+                for (UtilityType ut : utilityTypes) {
+                    BigDecimal oldReading = BigDecimal.ZERO;
+                    BigDecimal newReading = BigDecimal.ONE;
+                    BigDecimal priceUsed;
 
-    if (oldStr != null && newStr != null) {
-        try {
-            BigDecimal oldReading = new BigDecimal(oldStr);
-            BigDecimal newReading = new BigDecimal(newStr);
-            BigDecimal used = newReading.subtract(oldReading);
-            BigDecimal amount = used.multiply(ut.getUnitPrice());
+                    if (ut.isIndexedType()) {
+                        String oldStr = req.getParameter("oldIndex_" + ut.getUtilityTypeID());
+                        String newStr = req.getParameter("newIndex_" + ut.getUtilityTypeID());
+                        if (oldStr == null || newStr == null) {
+                            continue;
+                        }
 
-            // Kiểm tra xem đã có chưa
-            UtilityReading existing = readingDAO.getReading(roomId, ut.getUtilityTypeID(), readingMonth);
-            if (existing != null) {
-                existing.setOldReading(oldReading);
-                existing.setNewReading(newReading);
-                existing.setPriceUsed(amount);
-                existing.setChangedBy("admin");
-                existing.setUtilityReadingCreatedAt(new Timestamp(System.currentTimeMillis()));
-                readingDAO.updateReading(existing);
-            } else {
-                UtilityReading newReadingObj = new UtilityReading();
-                newReadingObj.setRoomID(roomId);
-                newReadingObj.setUtilityTypeID(ut.getUtilityTypeID());
-                newReadingObj.setReadingDate(readingDate);
-                newReadingObj.setOldReading(oldReading);
-                newReadingObj.setNewReading(newReading);
-                newReadingObj.setPriceUsed(amount);
-                newReadingObj.setChangedBy("admin");
-                newReadingObj.setUtilityReadingCreatedAt(new Timestamp(System.currentTimeMillis()));
-                readingDAO.insert(newReadingObj);
-            }
+                        try {
+                            oldReading = new BigDecimal(oldStr);
+                            newReading = new BigDecimal(newStr);
+                        } catch (Exception e) {
+                            continue;
+                        }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-
-
-        // ✅ Cập nhật phụ phí
-        BigDecimal total = BigDecimal.valueOf(totalBase);
-        List<IncurredFeeType> feeTypes = incurredFeeTypeDAO.getAll();
-        feeDAO.deleteFeesByBillId(billId); // Xóa cũ để cập nhật lại
-
-        for (IncurredFeeType ft : feeTypes) {
-            String param = req.getParameter("extraFee_" + ft.getIncurredFeeTypeID());
-            if (param != null && !param.isEmpty()) {
-                try {
-                    BigDecimal amount = new BigDecimal(param);
-                    if (amount.compareTo(BigDecimal.ZERO) > 0) {
-                        IncurredFee fee = new IncurredFee();
-                        fee.setBillID(billId);
-                        fee.setIncurredFeeTypeID(ft.getIncurredFeeTypeID());
-                        fee.setAmount(amount);
-                        feeDAO.insertFee(fee);
-
-                        total = total.add(amount);
+                        priceUsed = newReading.subtract(oldReading).multiply(ut.getUnitPrice());
+                    } else {
+                        priceUsed = ut.getUnitPrice(); // tiện ích theo tháng: mặc định 1 đơn vị
                     }
-                } catch (NumberFormatException ignored) {}
+
+                    UtilityReading existing = readingDAO.getReading(roomId, ut.getUtilityTypeID(), readingMonth);
+                    if (existing != null) {
+                        existing.setOldReading(oldReading);
+                        existing.setNewReading(newReading);
+                        existing.setPriceUsed(priceUsed);
+                        existing.setChangedBy("admin");
+                        existing.setUtilityReadingCreatedAt(new Timestamp(System.currentTimeMillis()));
+                        readingDAO.updateReading(existing);
+                    } else {
+                        UtilityReading r = new UtilityReading();
+                        r.setRoomID(roomId);
+                        r.setUtilityTypeID(ut.getUtilityTypeID());
+                        r.setReadingDate(readingDate);
+                        r.setOldReading(oldReading);
+                        r.setNewReading(newReading);
+                        r.setPriceUsed(priceUsed);
+                        r.setChangedBy("admin");
+                        r.setUtilityReadingCreatedAt(new Timestamp(System.currentTimeMillis()));
+                        readingDAO.insert(r);
+                    }
+                }
+
+                // ✅ Cập nhật phụ phí
+                BigDecimal total = BigDecimal.ZERO
+                        .add(BigDecimal.valueOf(roomRent))
+                        .add(BigDecimal.valueOf(electricity))
+                        .add(BigDecimal.valueOf(water))
+                        .add(BigDecimal.valueOf(wifi))
+                        .add(BigDecimal.valueOf(trash));
+
+                List<IncurredFeeType> feeTypes = incurredFeeTypeDAO.getAll();
+                feeDAO.deleteFeesByBillId(billId); // xóa cũ để cập nhật lại
+
+                for (IncurredFeeType ft : feeTypes) {
+                    String param = req.getParameter("extraFee_" + ft.getIncurredFeeTypeID());
+                    if (param != null && !param.isEmpty()) {
+                        try {
+                            BigDecimal amount = new BigDecimal(param);
+                            if (amount.compareTo(BigDecimal.ZERO) > 0) {
+                                IncurredFee fee = new IncurredFee();
+                                fee.setBillID(billId);
+                                fee.setIncurredFeeTypeID(ft.getIncurredFeeTypeID());
+                                fee.setAmount(amount);
+                                feeDAO.insertFee(fee);
+                                total = total.add(amount);
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+
+                // Trừ tiền cọc nếu là tháng cuối
+                BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
+                total = total.subtract(deposit);
+
+               bill.setTotalAmount(total);
+
+                billDAO.updateBill(bill);
+
+                resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list&success=updated");
+                return;
+
+            } catch (Exception e) {
+                throw new ServletException("Update bill failed", e);
             }
         }
-
-        // Trừ tiền cọc nếu có
-        BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
-        total = total.subtract(deposit);
-
-        // Cập nhật lại tổng tiền
-        bill.setTotalAmount(total.floatValue());
-        billDAO.updateBill(bill);
-
-        resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list&success=updated");
-        return;
-    } catch (Exception e) {
-        throw new ServletException("Update bill failed", e);
-    }
-}
-
-
-
 
         // ✅ Fix: Nếu month là null, "null", hoặc rỗng → dùng tháng hiện tại
         if (month == null || month.trim().isEmpty() || "null".equalsIgnoreCase(month)) {
@@ -713,7 +874,8 @@ for (UtilityType ut : utilityTypes) {
             Bill bill = new Bill();
             bill.setContractID(contractId);
             bill.setBillDate(new java.sql.Date(System.currentTimeMillis()));
-            bill.setTotalAmount(total.floatValue());
+           bill.setTotalAmount(total);
+
             bill.setBillStatus("Unpaid");
             int billId = billDAO.createBill(bill);
 
@@ -737,9 +899,9 @@ for (UtilityType ut : utilityTypes) {
                             fee.setBillID(billId);
                             fee.setIncurredFeeTypeID(feeType.getIncurredFeeTypeID());
                             fee.setAmount(amount);
-                            feeDAO.insertFee(fee);
 
-                            // ✅ Cộng dồn vào tổng
+                            feeDAO.insertFee(fee); // ✅ Thêm dòng này
+
                             total = total.add(amount);
                         }
                     } catch (NumberFormatException ignored) {
@@ -747,7 +909,11 @@ for (UtilityType ut : utilityTypes) {
                 }
             }
 
-//            req.setAttribute("feeTypeNames", feeTypeNames);
+// ✅ Sau khi cộng tất cả, mới update tổng bill
+         bill.setTotalAmount(total);
+
+            billDAO.updateBill(bill);
+
             resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list");
 
         } catch (Exception e) {

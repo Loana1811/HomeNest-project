@@ -43,6 +43,22 @@
     </head>
     <body>
         <div class="container py-4">
+            <c:if test="${not empty sessionScope.success}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ${sessionScope.success}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="success" scope="session" />
+            </c:if>
+
+            <c:if test="${not empty sessionScope.error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${sessionScope.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="error" scope="session" />
+            </c:if>
+
             <h2>Quy trình lập hóa đơn 2 bước</h2>
             <div class="stepper">
                 <div class="step <%= "1".equals(step) ? "active" : ""%>">1. Chốt dịch vụ</div>
@@ -209,70 +225,47 @@
 
 
                         </table>
-                        <div id="extra-fee-list">
-                            <div class="row mb-2 extra-fee-item">
-                                <div class="col-md-6">
-                                    <select name="extraFeeTypeIds" class="form-select" onchange="setDefaultAmount(this)">
-                                        <option value="">-- Chọn loại phụ phí --</option>
-                                        <c:forEach var="ft" items="${feeTypeList}">
-                                            <option value="${ft.incurredFeeTypeID}" data-default="${ft.defaultAmount}">
-                                                ${ft.feeName}
-                                            </option>
-                                        </c:forEach>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <input type="number" class="form-control" placeholder="Số tiền (VNĐ)">
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="number" name="extraFeeAmounts" class="form-control">
-                                </div>
-                            </div>
-                        </div>
+<!-- ✅ Hiển thị toàn bộ phụ phí cố định -->
+<div class="section-title fw-bold mt-4">Phụ phí phát sinh</div>
+<div class="mb-3">
+    <c:forEach var="feeType" items="${feeTypeList}">
+    <div class="row mb-2 align-items-center">
+        <div class="col-md-1">
+            <input type="checkbox"
+                   class="form-check-input fee-checkbox"
+                   data-target="fee_${feeType.incurredFeeTypeID}"
+                   onchange="toggleFeeInput(this)">
+        </div>
+        <div class="col-md-4">${feeType.feeName}</div>
+        <div class="col-md-6">
+            <input type="number"
+                   class="form-control extra-fee-input"
+                   name="extraFee_${feeType.incurredFeeTypeID}"
+                   id="fee_${feeType.incurredFeeTypeID}"
+                   value="${feeType.defaultAmount}"
+                   disabled
+                   oninput="updateTotal()" />
+        </div>
+    </div>
+</c:forEach>
 
+</div>
 
+<!-- ✅ Vùng để JS thêm phụ phí: ĐƯA VÀO TRONG FORM -->
+<div id="selectedFeesContainer"></div>
 
-                        <!-- Tổng -->
-                        <%
-                            model.Room room = (model.Room) request.getAttribute("room"); // ✅ THÊM DÒNG NÀY
-                            double rent = room != null ? room.getRentPrice() : 0.0;
+<!-- Tổng cộng -->
+<h5 class="text-danger mt-3">
+    Tổng cộng: <span id="totalAmount" class="fw-bold">0 ₫</span>
+</h5>
 
-                            double utilities = 0.0;
-                            if (request.getAttribute("totalAmount") != null) {
-                                Object utilAttr = request.getAttribute("totalAmount");
-                                if (utilAttr instanceof Number) {
-                                    utilities = ((Number) utilAttr).doubleValue();
-                                }
-                            }
+<!-- Nút -->
+<div class="mt-4">
+    <button type="submit" class="btn btn-primary">Thêm hóa đơn</button>
+    <a class="btn btn-outline-secondary" href="<%= ctx%>/admin/bill?step=1&action=step&blockId=${blockId}">Quay lại bước 1</a>
+</div>
+</form>
 
-                            double extra = 0.0;
-                            if (request.getAttribute("extraFee") != null) {
-                                Object extraAttr = request.getAttribute("extraFee");
-                                if (extraAttr instanceof java.math.BigDecimal) {
-                                    extra = ((java.math.BigDecimal) extraAttr).doubleValue();
-                                } else if (extraAttr instanceof Number) {
-                                    extra = ((Number) extraAttr).doubleValue();
-                                }
-                            }
-
-                            double grandTotal = rent + utilities + extra;
-                        %>
-
-                        <!-- Tổng cộng -->
-                        <h5 class="text-danger mt-3">
-                            Tổng cộng: <span id="totalAmount" class="fw-bold">0 ₫</span>
-                        </h5>
-
-
-
-
-                        <!-- Nút -->
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">Thêm hóa đơn</button>
-                            <a class="btn btn-outline-secondary" href="<%= ctx%>/admin/bill?step=1&action=step&blockId=${blockId}">Quay lại bước 1</a>
-
-                        </div>
-                    </form>
                 </c:if>
                 <c:if test="${empty room || empty utilityTypes}">
                     <div class="alert alert-warning">❗ Dữ liệu chưa đủ hoặc không hợp lệ. Vui lòng chọn phòng đã chốt dịch vụ từ bước 1.</div>
@@ -280,49 +273,113 @@
                 </c:if>
             </c:if>
         </div>
-        <script>
-            // Gọi lại khi thay chọn loại phụ phí
-            function setDefaultAmount(select) {
-                const selectedOption = select.options[select.selectedIndex];
-                const defaultAmount = selectedOption.getAttribute("data-default");
-                const amountInput = select.closest(".extra-fee-item").querySelector("input[name='extraFeeAmounts']");
-                if (defaultAmount && parseFloat(defaultAmount) > 0) {
-                    amountInput.value = defaultAmount;
-                } else {
-                    amountInput.value = '';
+    <script>
+    const addedFeeIds = new Set();
+
+    function toggleFeeInput(checkbox) {
+        const inputId = checkbox.getAttribute("data-target");
+        const input = document.getElementById(inputId);
+        input.disabled = !checkbox.checked;
+        updateTotal();
+    }
+
+    function addSelectedFee() {
+        const select = document.getElementById("feeDropdown");
+        const selectedOption = select.options[select.selectedIndex];
+
+        const id = selectedOption?.value?.trim();
+        const name = selectedOption?.getAttribute("data-name")?.trim() || "(Không tên)";
+        const defaultAttr = selectedOption?.getAttribute("data-default");
+        const defaultAmount = parseFloat((defaultAttr || "0").replace(/,/g, ""));
+
+        console.log("Selected option:", { id, name, defaultAttr, defaultAmount });
+
+        if (!id || isNaN(defaultAmount) || addedFeeIds.has(id)) {
+            select.selectedIndex = 0;
+            return;
+        }
+
+        addedFeeIds.add(id);
+
+        const container = document.getElementById("selectedFeesContainer");
+
+        const row = document.createElement("div");
+        row.className = "row mb-2 align-items-center";
+
+        const colName = document.createElement("div");
+        colName.className = "col-md-5";
+        colName.textContent = name;
+
+        const colInput = document.createElement("div");
+        colInput.className = "col-md-6";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.className = "form-control extra-fee-input";
+        input.name = `extraFee_${id}`;
+        input.value = defaultAmount.toFixed(2);
+        input.setAttribute("data-id", id);
+        input.oninput = updateTotal;
+        colInput.appendChild(input);
+
+        const colRemove = document.createElement("div");
+        colRemove.className = "col-md-1";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn btn-danger btn-sm";
+        btn.textContent = "X";
+        btn.onclick = function () {
+            removeFee(btn, id);
+        };
+        colRemove.appendChild(btn);
+
+        row.appendChild(colName);
+        row.appendChild(colInput);
+        row.appendChild(colRemove);
+
+        container.appendChild(row);
+        updateTotal();
+        select.selectedIndex = 0;
+    }
+
+    function updateTotal() {
+        let total = 0;
+
+        // Tiện ích
+        document.querySelectorAll(".amount-cell").forEach(td => {
+            const val = parseFloat(td.dataset.amount);
+            if (!isNaN(val)) total += val;
+        });
+
+        // Tiền phòng
+        const rent = parseFloat("${room.rentPrice}");
+        if (!isNaN(rent)) total += rent;
+
+        // Phụ phí (chỉ tính nếu input không bị disabled)
+        document.querySelectorAll(".extra-fee-input").forEach(input => {
+            if (!input.disabled) {
+                const val = parseFloat(input.value?.replaceAll(",", "") || "0");
+                if (!isNaN(val) && val > 0) {
+                    total += val;
                 }
-                updateTotal(); // ✅ Gọi lại tổng khi thay đổi
             }
+        });
 
-            function updateTotal() {
-                let total = 0;
+        document.getElementById("totalAmount").textContent =
+            total.toLocaleString("vi-VN") + " ₫";
+    }
 
-                // Cộng tiện ích
-                document.querySelectorAll(".amount-cell").forEach(td => {
-                    const value = parseFloat(td.dataset.amount);
-                    if (!isNaN(value))
-                        total += value;
-                });
+    window.onload = function () {
+        updateTotal();
+    };
+</script>
 
-                // Cộng các phụ phí
-                document.querySelectorAll("input[name='extraFeeAmounts']").forEach(input => {
-                    const val = parseFloat(input.value);
-                    if (!isNaN(val))
-                        total += val;
-                });
 
-                // Cộng thêm tiền phòng nếu có
-                const roomRent = parseFloat("${room.rentPrice}");
-                if (!isNaN(roomRent))
-                    total += roomRent;
 
-                // Cập nhật hiển thị tổng
-                document.getElementById("totalAmount").textContent = total.toLocaleString("vi-VN") + " ₫";
-            }
 
-            // Gọi khi trang load xong
-            document.addEventListener("DOMContentLoaded", updateTotal);
-        </script>
+
+
+
+
 
 
     </body>

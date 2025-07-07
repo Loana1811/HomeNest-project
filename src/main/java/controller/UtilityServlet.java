@@ -19,7 +19,6 @@ public class UtilityServlet extends HttpServlet {
     private RoomDAO roomDAO = new RoomDAO();
     private UtilityReadingDAO utilityReadingDAO = new UtilityReadingDAO();
     private UtilityTypeDAO dao = new UtilityTypeDAO();
-    private IncurredFeeTypeDAO feeTypeDAO = new IncurredFeeTypeDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -33,7 +32,9 @@ public class UtilityServlet extends HttpServlet {
                     Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
                     List<Object[]> assignedRooms = roomDAO.getRoomsAppliedToUtility(id);
                     Set<Integer> assignedRoomIds = new HashSet<>();
-                    for (Object[] r : assignedRooms) assignedRoomIds.add((Integer) r[0]);
+                    for (Object[] r : assignedRooms) {
+                        assignedRoomIds.add((Integer) r[0]);
+                    }
 
                     for (Map.Entry<String, List<Object[]>> entry : blockRoomMap.entrySet()) {
                         List<Object[]> roomList = entry.getValue();
@@ -65,7 +66,7 @@ public class UtilityServlet extends HttpServlet {
                         response.sendRedirect("/admin/utility?action=list");
                         return;
                     }
-                    loadUtilityLists(request);
+                    loadUtilityList(request);
                     request.getRequestDispatcher("/admin/utility-list.jsp").forward(request, response);
                     break;
                 }
@@ -113,7 +114,7 @@ public class UtilityServlet extends HttpServlet {
 
                 case "list":
                 default: {
-                    loadUtilityLists(request);
+                    loadUtilityList(request);
                     Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
                     request.setAttribute("blockRoomMap", blockRoomMap);
                     request.getRequestDispatcher("/admin/utility-list.jsp").forward(request, response);
@@ -130,30 +131,25 @@ public class UtilityServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         try {
-           if ("record".equals(action)) {
-    int roomId = Integer.parseInt(request.getParameter("roomId"));
-    String readingMonth = request.getParameter("readingMonth");
-    String blockId = request.getParameter("blockId");
-    List<UtilityType> utilityTypes = dao.getAll();
+            if ("record".equals(action)) {
+                int roomId = Integer.parseInt(request.getParameter("roomId"));
+                String readingMonth = request.getParameter("readingMonth");
+                String blockId = request.getParameter("blockId");
+                List<UtilityType> utilityTypes = dao.getAll();
 
-    for (UtilityType u : utilityTypes) {
-        String value = request.getParameter("new_" + u.getUtilityTypeID());
-        if (value != null && !value.trim().isEmpty()) {
-            double newIndex = Double.parseDouble(value);
-            utilityReadingDAO.insertOrUpdate(roomId, u.getUtilityTypeID(), readingMonth, newIndex);
-        }
-    }
+                for (UtilityType u : utilityTypes) {
+                    String value = request.getParameter("new_" + u.getUtilityTypeID());
+                    if (value != null && !value.trim().isEmpty()) {
+                        double newIndex = Double.parseDouble(value);
+                        utilityReadingDAO.insertOrUpdate(roomId, u.getUtilityTypeID(), readingMonth, newIndex);
+                    }
+                }
 
-    // ✅ Sau khi lưu xong tiện ích, chuyển đến bước 2 lập hóa đơn
- response.sendRedirect(request.getContextPath() + "/admin/bill?step=2&action=step&blockId=" + blockId + "&roomId=" + roomId);
+                response.sendRedirect(request.getContextPath() + "/admin/bill?step=2&action=step&blockId=" + blockId + "&roomId=" + roomId);
+                return;
+            }
 
-
-
-    return;
-}
-
-
-            // ---- TẠO / CẬP NHẬT TIỆN ÍCH ----
+            // Create or Update Utility
             String name = request.getParameter("name") != null ? request.getParameter("name").trim() : "";
             String unit = request.getParameter("unit");
             String customUnit = request.getParameter("customUnit") != null ? request.getParameter("customUnit").trim() : "";
@@ -161,12 +157,7 @@ public class UtilityServlet extends HttpServlet {
 
             if (name.length() < 3 || name.length() > 50 || !name.matches("^[\\w\\s\\-]+$") || name.matches("^\\d+$")) {
                 request.setAttribute("error", "❌ Invalid utility name.");
-                if ("update".equals(action)) {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    reloadEditModalWithError(request, response, id, name, unit, customUnit);
-                } else {
-                    reloadFormWithRoomData(request, response);
-                }
+                reloadFormWithRoomData(request, response);
                 return;
             }
 
@@ -180,12 +171,7 @@ public class UtilityServlet extends HttpServlet {
                 unit = customUnit;
                 if (unit.isEmpty() || unit.length() > 20 || !unit.matches("^[\\w\\s\\-]+$")) {
                     request.setAttribute("error", "❌ Invalid custom unit.");
-                    if ("update".equals(action)) {
-                        int id = Integer.parseInt(request.getParameter("id"));
-                        reloadEditModalWithError(request, response, id, name, unit, customUnit);
-                    } else {
-                        reloadFormWithRoomData(request, response);
-                    }
+                    reloadFormWithRoomData(request, response);
                     return;
                 }
             }
@@ -193,15 +179,12 @@ public class UtilityServlet extends HttpServlet {
             BigDecimal price;
             try {
                 price = new BigDecimal(priceRaw);
-                if (price.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
+                if (price.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException ex) {
                 request.setAttribute("error", "❌ Price must be a positive number.");
-                if ("update".equals(action)) {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    reloadEditModalWithError(request, response, id, name, unit, customUnit);
-                } else {
-                    reloadFormWithRoomData(request, response);
-                }
+                reloadFormWithRoomData(request, response);
                 return;
             }
 
@@ -233,49 +216,18 @@ public class UtilityServlet extends HttpServlet {
         }
     }
 
-    private void loadUtilityLists(HttpServletRequest request) throws Exception {
-        List<UtilityType> all = dao.getAll();
-        List<UtilityType> systemList = new ArrayList<>();
-        List<UtilityType> userList = new ArrayList<>();
-        List<IncurredFeeType> feeList = feeTypeDAO.getAll();
-        request.setAttribute("systemList", systemList);
-        request.setAttribute("userList", userList);
-        request.setAttribute("feeList", feeList);
-    }
+    private void loadUtilityList(HttpServletRequest request) throws Exception {
+    List<UtilityType> all = dao.getAll();
+    List<IncurredFeeType> feeList = new IncurredFeeTypeDAO().getAll(); // 👈 Thêm dòng này
+
+    request.setAttribute("systemList", all);
+    request.setAttribute("feeList", feeList); // 👈 Và dòng này
+}
+
 
     private void reloadFormWithRoomData(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
         Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
         request.setAttribute("blockRoomMap", blockRoomMap);
-        request.getRequestDispatcher("/admin/createIncurredFee.jsp").forward(request, response);
-    }
-
-    private void reloadEditModalWithError(HttpServletRequest request, HttpServletResponse response, int id, String name, String unit, String customUnit) throws ServletException, IOException, SQLException {
-        UtilityType old = dao.getById(id);
-        String finalUnit = "Other".equals(unit) ? customUnit : unit;
-        UtilityType editing = new UtilityType(id, name, old.getUnitPrice(), finalUnit);
-
-        Map<String, List<Object[]>> blockRoomMap = roomDAO.getRoomsGroupedByBlock();
-        List<Object[]> assignedRooms = roomDAO.getRoomsAppliedToUtility(id);
-        Set<Integer> assignedRoomIds = new HashSet<>();
-        for (Object[] r : assignedRooms) assignedRoomIds.add((Integer) r[0]);
-
-        for (Map.Entry<String, List<Object[]>> entry : blockRoomMap.entrySet()) {
-            List<Object[]> roomList = entry.getValue();
-            for (int i = 0; i < roomList.size(); i++) {
-                Object[] room = roomList.get(i);
-                Integer roomId = (Integer) room[0];
-                boolean isChecked = assignedRoomIds.contains(roomId);
-                if (room.length < 3) {
-                    roomList.set(i, new Object[]{room[0], room[1], isChecked});
-                } else {
-                    room[2] = isChecked;
-                }
-            }
-        }
-
-        request.setAttribute("utility", editing);
-        request.setAttribute("blockRoomMap", blockRoomMap);
-        request.setAttribute("error", request.getAttribute("error"));
-        request.getRequestDispatcher("/admin/utility-edit.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin/create-utilitySystem.jsp").forward(request, response);
     }
 }

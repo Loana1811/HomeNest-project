@@ -4,6 +4,7 @@
  */
 package model;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 
 /**
@@ -14,10 +15,10 @@ public class Bill {
     private int billID;
     private int contractID;
     private Date BillDate;
-    private float totalAmount;
+   private BigDecimal totalAmount;
     private String billStatus;
 
-    public Bill(int billID, int contractID, Date BillDate, float totalAmount, String billStatus) {
+    public Bill(int billID, int contractID, Date BillDate, BigDecimal totalAmount, String billStatus) {
         this.billID = billID;
         this.contractID = contractID;
         this.BillDate = BillDate;
@@ -52,11 +53,11 @@ public class Bill {
         this.BillDate = BillDate;
     }
 
-    public float getTotalAmount() {
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(float totalAmount) {
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 

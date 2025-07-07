@@ -95,6 +95,7 @@
         .modal-title {
             font-weight: bold;
         }
+     
     </style>
 </head>
 <body>
@@ -139,7 +140,9 @@
 
         <div class="mb-3 d-flex gap-3">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUtilityModal">➕ Add Utility</button>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFeeModal">➕ Add Incurred Fee</button>
+           <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addFeeModal">+ Add Fee</button>
+
+  
         </div>
 
         <!-- SYSTEM UTILITIES -->
@@ -217,7 +220,7 @@
         <!-- MODALS & SCRIPTS -->
 
         <!-- MODAL: ADD UTILITY (nếu bạn có modal này riêng thì giữ nguyên hoặc include) -->
-        <jsp:include page="createIncurredFee.jsp" /> <!-- Sửa thành createUtility.jsp nếu là tiện ích -->
+        <jsp:include page="create-utilitySystem.jsp" /> <!-- Sửa thành createUtility.jsp nếu là tiện ích -->
 
         <!-- MODAL: EDIT UTILITY (dynamic load, giống cũ) -->
         <div class="modal fade" id="editUtilityModal" tabindex="-1">
@@ -229,33 +232,9 @@
         </div>
 
         <!-- MODAL: ADD FEE -->
-        <div class="modal fade" id="addFeeModal" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-           <form action="<%= request.getContextPath() %>/admin/feeType" method="post">
-              <input type="hidden" name="action" value="create">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">➕ Add Incurred Fee</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mb-3">
-                    <label class="form-label">Fee Name</label>
-                    <input type="text" name="feeName" class="form-control" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Default Amount (VND)</label>
-                    <input type="number" name="defaultAmount" min="0" class="form-control" required>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button class="btn btn-primary" type="submit">Save</button>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
+      
+<jsp:include page="incurredFeeType-add.jsp" />
+
 
         <!-- MODAL: EDIT FEE (dynamic load) -->
         <div class="modal fade" id="editFeeModal" tabindex="-1">

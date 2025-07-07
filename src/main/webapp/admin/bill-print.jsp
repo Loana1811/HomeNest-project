@@ -12,107 +12,123 @@
     List<UtilityReading> utilityReadings = (List<UtilityReading>) request.getAttribute("readings");
     Map<Integer, UtilityType> utilityTypeMap = (Map<Integer, UtilityType>) request.getAttribute("utilityTypeMap");
 
+    // Tiền cọc
     BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
-    BigDecimal totalAmount = BigDecimal.ZERO;
 
-    totalAmount = totalAmount.add(BigDecimal.valueOf(billDetail.getRoomrent()));
+    // Tổng cộng
+    BigDecimal totalAmount = BigDecimal.ZERO;
+    if (billDetail != null && billDetail.getRoomrent() != 0) {
+        totalAmount = totalAmount.add(BigDecimal.valueOf(billDetail.getRoomrent()));
+    }
+
     for (UtilityReading ur : utilityReadings) {
         if (ur.getPriceUsed() != null) {
             totalAmount = totalAmount.add(ur.getPriceUsed());
         }
     }
+
     for (IncurredFee fee : incurredFees) {
         if (fee.getAmount() != null) {
             totalAmount = totalAmount.add(fee.getAmount());
         }
     }
 
-    // 💡 Trừ tiền cọc chỉ nếu là tháng cuối
+    // Tháng cuối -> trừ tiền cọc
     boolean isLastMonth = Boolean.TRUE.equals(request.getAttribute("isLastMonth"));
-    BigDecimal dueAmount = totalAmount;
-    if (isLastMonth) {
-        dueAmount = dueAmount.subtract(deposit);
-    }
+    BigDecimal dueAmount = isLastMonth ? totalAmount.subtract(deposit) : totalAmount;
 %>
+
 
 <html>
     <head>
-        <title>Chi tiết hóa đơn</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
         <style>
             body {
-                background: #f5f5f5;
-                font-family: Arial, sans-serif;
-                padding: 20px;
-            }
-            .invoice-container {
-                background: #fff;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                background-color: #f9fafb;
+                font-family: "Segoe UI", sans-serif;
                 padding: 30px;
-                max-width: 800px;
-                margin: 0 auto;
             }
+
+            .invoice-box {
+                max-width: 850px;
+                margin: auto;
+                background: #fff;
+                padding: 30px 40px;
+                border-radius: 12px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            }
+
             .logo {
-                max-width: 150px;
-                margin-bottom: 20px;
+                height: 80px;
             }
-            .title {
-                color: #1e3a8a;
+
+            .invoice-title {
                 font-size: 24px;
                 font-weight: bold;
-                text-align: center;
-                margin-bottom: 20px;
+                color: #1e3a8a;
             }
+
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 10px;
-                color: #1e3a8a;
+                margin: 25px 0;
             }
-            .table th, .table td {
-                vertical-align: middle;
-                color: #1e3a8a;
+
+            .info-row p {
+                margin: 4px 0;
             }
+
             .table th {
-                background-color: #e0e7ff;
-                border-color: #1e3a8a;
+                background-color: #eff6ff;
+                color: #1e3a8a;
             }
+
             .table td {
-                border-color: #e0e7ff;
+                color: #1e293b;
             }
+
             .total-row td {
                 font-weight: bold;
-                background-color: #dbeafe;
-                color: #1e3a8a;
+                background-color: #e0f2fe;
             }
+
             .payment-info {
-                margin-top: 20px;
-                padding: 15px;
+                margin-top: 40px;
+                padding: 20px;
                 background-color: #f1f5f9;
-                border-radius: 5px;
-                text-align: center;
+                border-radius: 8px;
             }
+
             .qr-code {
-                max-width: 100px;
-                margin-top: 10px;
+                width: 120px;
+                height: auto;
             }
-            .bank-details {
-                margin-top: 10px;
-                color: #1e3a8a;
+
+            @media print {
+                .no-print {
+                    display: none;
+                }
             }
+            @page {
+                margin: 1cm;
+                size: auto;
+            }
+
         </style>
     </head>
-    <body>
-        <div class="invoice-container">
-            <img src="${pageContext.request.contextPath}/img/logo.png" alt="HomeNest Logo" class="logo">
-            <h2 class="title">HÓA ĐƠN TIỀN THUÊ NHÀ</h2>
+
+    <body onload="window.print()">
+        <div class="invoice-box">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <img src="${pageContext.request.contextPath}/img/logo.png" class="logo">
+                <h2 class="invoice-title text-center flex-grow-1">HÓA ĐƠN TIỀN THUÊ NHÀ</h2>
+            </div>
 
             <div class="info-row">
                 <div>
                     <p><strong>Phòng:</strong> <%= contract.getRoomNumber()%></p>
                     <p><strong>Khách thuê:</strong> <%= contract.getTenantName()%></p>
-                    <p><strong>Số điện thoại:</strong> <%= contract.getPhone()%></p>
+                    <p><strong>SĐT:</strong> <%= contract.getPhone()%></p>
                 </div>
                 <div>
                     <p><strong>Ngày lập hóa đơn:</strong> <fmt:formatDate value="${bill.billDate}" pattern="dd/MM/yyyy"/></p>
@@ -120,7 +136,7 @@
                 </div>
             </div>
 
-            <table class="table table-bordered mt-4">
+            <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Hạng mục</th>
@@ -128,17 +144,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
-    <c:if test="${detail.roomrent > 0}">
-    <tr>
-        <td>Tiền phòng</td>
-        <td><fmt:formatNumber value="${detail.roomrent}" type="currency" maxFractionDigits="0"/> đ</td>
-    </tr>
-</c:if>
-
-
-
-
+                    <tr>
+                        <td>Tiền phòng</td>
+                        <td><fmt:formatNumber value="${detail.roomrent}" type="currency" maxFractionDigits="0"/> đ</td>
+                    </tr>
 
                     <c:forEach var="ur" items="${readings}">
                         <c:set var="utype" value="${utilityTypeMap[ur.utilityTypeID]}" />
@@ -166,22 +175,25 @@
                         </tr>
                     </c:forEach>
 
-                    <c:if test="${isLastMonth}">
-                        <tr>
-                            <td>Tiền cọc trừ</td>
-                            <td><fmt:formatNumber value="<%= deposit%>" type="currency" maxFractionDigits="0"/> đ</td>
-                        </tr>
-                    </c:if>
+                    
+                    <% if (isLastMonth) {%>
+                    <tr>
+                        <td>Tiền cọc trừ</td>
+                        <td><fmt:formatNumber value="<%= deposit%>" type="currency" maxFractionDigits="0"/> đ</td>
+                    </tr>
+                    <% }%>
 
 
                     <tr class="total-row">
                         <td>Tổng cộng</td>
                         <td><fmt:formatNumber value="<%= totalAmount%>" type="currency" maxFractionDigits="0"/> đ</td>
                     </tr>
+
                     <tr class="total-row">
                         <td>Số tiền phải thu</td>
                         <td><fmt:formatNumber value="<%= dueAmount%>" type="currency" maxFractionDigits="0"/> đ</td>
                     </tr>
+
                     <tr class="total-row">
                         <td>Trạng thái</td>
                         <td><strong><%= "PAID".equals(bill.getBillStatus()) ? "Đã thanh toán" : "Chưa thanh toán"%></strong></td>
@@ -189,19 +201,21 @@
                 </tbody>
             </table>
 
-            <div class="payment-info">
-                <h4>Thông tin thanh toán</h4>
-                <p class="bank-details">
-                    <strong>Ngân hàng:</strong> MuoidiemprojectSWP<br>
-                    <strong>Chủ tài khoản:</strong> Group3_PRO<br>
-                    <strong>Số tài khoản:</strong> 101010101010<br>
-                    <strong>Nội dung chuyển khoản:</strong> SV-P5 (Tên Nhờ - Số phòng)
-                </p>
-                <img src="${pageContext.request.contextPath}/img/qr_manifest_group3.png" alt="QR Code" class="qr-code">
-                <p>Hoặc quét mã QR để thanh toán</p>
+            <div class="payment-info d-flex justify-content-between align-items-start">
+                <div class="bank-details">
+                    <h5>Thông tin thanh toán</h5>
+                    <p>
+                        <strong>Ngân hàng:</strong> MuoidiemprojectSWP<br>
+                        <strong>Chủ tài khoản:</strong> Group3_PRO<br>
+                        <strong>Số tài khoản:</strong> 101010101010<br>
+                        <strong>Nội dung chuyển khoản:</strong> SV-P5 (Tên Nhờ - Số phòng)
+                    </p>
+                </div>
+                <div class="text-center">
+                    <img src="${pageContext.request.contextPath}/img/qr_manifest_group3.png" alt="QR Code" class="qr-code mb-2">
+                    <div>Quét mã QR để thanh toán</div>
+                </div>
             </div>
-
-            <a href="<%= request.getContextPath()%>/admin/bill?action=list" class="btn btn-primary mt-3">← Quay lại danh sách</a>
         </div>
     </body>
 </html>

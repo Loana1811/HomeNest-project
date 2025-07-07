@@ -6,7 +6,16 @@
 <%
     List<Map<String, Object>> billSummary = (List<Map<String, Object>>) request.getAttribute("billSummary");
     String selectedMonth = (String) request.getAttribute("selectedMonth");
-    String success = (String) request.getAttribute("success");
+    String success = (String) session.getAttribute("success");
+    if (success != null) {
+%>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong><%= success%></strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<%
+        session.removeAttribute("success");
+    }
 %>
 <style>
     body {
@@ -90,7 +99,7 @@
         z-index: 999;
     }
 
-    .dropdown:hover .dropdown-content {
+    .dropdown-content.show {
         display: block;
     }
 
@@ -150,6 +159,7 @@
     }
 </style>
 
+
 <html>
     <head>
         <title>Danh sách hóa đơn</title>
@@ -178,6 +188,8 @@
                     <th>Phụ thu</th>
                     <th>Tiền cọc</th>
                     <th>Tổng</th>
+                    <th>Đã thu</th>
+
                     <th>Cần thu</th>
                     <th>Trạng thái</th>
                     <th>Chi tiết</th>
@@ -195,8 +207,10 @@
                             BigDecimal trash = (BigDecimal) row.get("Trash");
                             BigDecimal extra = (BigDecimal) row.get("ExtraFee");
                             BigDecimal deposit = (BigDecimal) row.get("Deposit");
-                            BigDecimal total = (BigDecimal) row.get("Total");
+                            BigDecimal totalAmount = (BigDecimal) row.get("TotalAmount"); // cần thêm ở DAO nếu chưa có
+                            BigDecimal totalPaid = (BigDecimal) row.get("TotalPaid");
                             BigDecimal due = (BigDecimal) row.get("DueAmount");
+
                             int billId = (int) row.get("BillID");
                 %>
                 <tr>
@@ -208,29 +222,63 @@
                     <td><fmt:formatNumber value="<%= trash%>" type="currency" currencySymbol="đ" /></td>
                     <td><%= (extra != null) ? new java.text.DecimalFormat("#,###").format(extra) + " đ" : "--"%></td>
                     <td><%= (deposit != null) ? new java.text.DecimalFormat("#,###").format(deposit) + " đ" : "--"%></td>
-                    <td><fmt:formatNumber value="<%= total%>" type="currency" currencySymbol="đ" /></td>
-                    <td><fmt:formatNumber value="<%= due%>" type="currency" currencySymbol="đ" /></td>
-                    <td>
-                        <% if ("PAID".equalsIgnoreCase(status)) { %>
-                        <span class="badge badge-success">Đã thanh toán</span>
-                        <% } else { %>
-                        <span class="badge badge-warning">Chưa thanh toán</span>
-                        <% }%>
-                    </td>
+                    <td><fmt:formatNumber value="<%= totalAmount%>" type="currency" currencySymbol="đ" /></td> <!-- Tổng -->
+                    <td><fmt:formatNumber value="<%= totalPaid%>" type="currency" currencySymbol="đ" /></td> <!-- Đã thu -->
+                    <td><fmt:formatNumber value="<%= due%>" type="currency" currencySymbol="đ" /></td> <!-- Cần thu -->
 
-                    <td>
-                        <div class="dropdown">
-                            <button class="dot-button">⋮</button>
-                            <div class="dropdown-content">
-                                <a href="bill?action=view&billId=<%= billId%>">Xem</a>
-                                <a href="bill?action=edit&billId=<%= billId%>">Chỉnh sửa</a>
-                                <% if (!"PAID".equalsIgnoreCase(status)) {%>
-                                <a href="${pageContext.request.contextPath}/admin/payment.jsp?billId=<%= billId%>">Thu tiền</a>
-                                <% } %>
 
-                            </div>
-                        </div>
-                    </td>
+               <td>
+    <%
+        if ("PAID".equalsIgnoreCase(status)) {
+    %>
+        <span class="badge bg-success">Đã thanh toán</span>
+    <%
+        } else if ("PARTIAL".equalsIgnoreCase(status)) {
+    %>
+        <span class="badge bg-warning text-dark">Chưa thanh toán đủ</span>
+        <a href="${pageContext.request.contextPath}/admin/payment?billId=${bill.billID}" class="btn btn-sm btn-outline-primary ms-2">Tiếp tục thu</a>
+    <%
+        } else {
+    %>
+        <span class="badge bg-danger">Chưa thanh toán</span>
+        <a href="${pageContext.request.contextPath}/admin/payment?billId=${bill.billID}" class="btn btn-sm btn-outline-primary ms-2">Thu tiền</a>
+    <%
+        }
+    %>
+</td>
+
+                 <td>
+    <div class="d-flex justify-content-center gap-2">
+        <% if (!"PAID".equalsIgnoreCase(status)) { %>
+            <a href="<%= request.getContextPath() + "/admin/payment?billId=" + billId %>" class="btn btn-success btn-sm">
+                Thu tiền
+            </a>
+        <% } %>
+
+        <div class="dropdown">
+            <button class="dot-button">⋮</button>
+            <div class="dropdown-content">
+                <a href="bill?action=view&billId=<%= billId %>">Xem</a>
+                <a href="bill?action=edit&billId=<%= billId %>">Chỉnh sửa</a>
+                <a href="<%= request.getContextPath() + "/admin/bill?action=print&billId=" + billId %>" target="_blank">In hóa đơn</a>
+
+                <% 
+                    Boolean sent = (Boolean) row.get("Sent");
+                    String blockId = String.valueOf(row.get("BlockID"));
+                    if (sent == null || !sent) {
+                %>
+                <a href="<%= request.getContextPath() + "/admin/bill?action=cancel&billId=" + billId + "&blockId=" + blockId %>"
+                   onclick="return confirm('Bạn có chắc chắn muốn hủy hóa đơn này không?')"
+                   class="dropdown-item text-danger">🗑 Hủy hóa đơn</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</td>
+
+
+
+
 
                 </tr>
                 <% }
@@ -245,5 +293,26 @@
         <a href="bill?action=step&step=1" class="btn btn-primary mt-3">➕ Tạo hóa đơn</a>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+           document.querySelectorAll('.dot-button').forEach(button => {
+               button.addEventListener('click', function (event) {
+                   event.stopPropagation();
+                   closeAllDropdowns();
+                   const dropdown = this.nextElementSibling;
+                   dropdown.classList.toggle('show');
+               });
+           });
+
+           window.addEventListener('click', function () {
+               closeAllDropdowns();
+           });
+
+           function closeAllDropdowns() {
+               document.querySelectorAll('.dropdown-content').forEach(menu => {
+                   menu.classList.remove('show');
+               });
+           }
+        </script>
+
     </body>
 </html>

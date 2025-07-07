@@ -18,14 +18,27 @@ public class UtilityHistoryView {
     private BigDecimal newPrice;
     private String changedBy;
     private Date createdAt;
+private boolean isUtility;
 
-    public UtilityHistoryView(int utilityTypeId, String utilityName, BigDecimal oldPrice, BigDecimal newPrice, String changedBy, Date createdAt) {
-    this.utilityTypeId = utilityTypeId;
-    this.utilityName = utilityName;
-    this.oldPrice = oldPrice;
-    this.newPrice = newPrice;
-    this.changedBy = changedBy;
-    this.createdAt = createdAt; // 
+    public UtilityHistoryView(int utilityTypeId, String utilityName, BigDecimal oldPrice, BigDecimal newPrice, String changedBy, Date createdAt, boolean isUtility) {
+        this.utilityTypeId = utilityTypeId;
+        this.utilityName = utilityName;
+        this.oldPrice = oldPrice;
+        this.newPrice = newPrice;
+        this.changedBy = changedBy;
+        this.createdAt = createdAt;
+        this.isUtility = isUtility;
+    }
+
+
+
+public boolean isUtility() {
+    return isUtility;
+}
+
+ 
+public boolean getIsUtility() {
+    return isUtility;
 }
 
 

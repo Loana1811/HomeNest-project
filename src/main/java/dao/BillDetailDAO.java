@@ -17,16 +17,28 @@ public class BillDetailDAO {
         return list;
     }
 
-    public BillDetail getBillDetailById(int id) throws SQLException {
-        String sql = "SELECT * FROM BillDetails WHERE BillDetailID=?";
-        try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try(ResultSet rs = ps.executeQuery()) {
-                if(rs.next()) return map(rs);
+   public BillDetail getBillDetailById(int id) throws SQLException {
+    String sql = "SELECT bd.*, r.RentPrice " +
+                 "FROM BillDetails bd " +
+                 "JOIN Bills b ON bd.BillID = b.BillID " +
+                 "JOIN Contracts c ON b.ContractID = c.ContractID " +
+                 "JOIN Rooms r ON c.RoomID = r.RoomID " +
+                 "WHERE bd.BillID = ?";
+
+    try (Connection c = dbContext.getConnection();
+         PreparedStatement ps = c.prepareStatement(sql)) {
+        ps.setInt(1, id); // id là BillID
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                BillDetail b = map(rs);
+                b.setRoomrent(rs.getFloat("RentPrice")); // Lấy tiền phòng từ bảng Rooms
+                return b;
             }
         }
-        return null;
     }
+    return null;
+}
+
 
     public boolean insertBillDetail(BillDetail b) throws SQLException {
         String sql = "INSERT INTO BillDetails (BillID, RoomRent, ElectricityCost, WaterCost, WifiCost) VALUES (?, ?, ?, ?, ?)";
