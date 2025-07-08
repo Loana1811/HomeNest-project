@@ -41,15 +41,31 @@ public class CustomerDAO extends DBContext {
         return null;
     }
 
-    public void insertCustomerFromGoogle(Customer c) throws SQLException {
+    public boolean insertCustomerFromGoogle(Customer c) throws SQLException {
+        // Nếu email đã tồn tại → không thêm
+        if (isGoogleEmailExists(c.getEmail())) {
+            System.out.println("Tài khoản Google này đã tồn tại trong hệ thống.");
+            return false;
+        }
+
         String sql = "INSERT INTO Customers (CustomerFullName, Email, PhoneNumber, CCCD, Gender, BirthDate, Address, CustomerPassword, CustomerStatus) "
-                + "VALUES (?, ?, '', '', '', '', '', ?, 'Potential')";
+                + "VALUES (?, ?, NULL, NULL, NULL, NULL, NULL, ?, 'Potential')";
 
         try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, c.getCustomerFullName());     // ?
-            ps.setString(2, c.getEmail());                // ?
-            ps.setString(3, c.getCustomerPassword());     // ?  
-            ps.executeUpdate();
+            ps.setString(1, c.getCustomerFullName());
+            ps.setString(2, c.getEmail());
+            //ps.setString(3, c.getPhoneNumber());
+            ps.setString(3, c.getCustomerPassword()); // đã hash MD5 trước đó
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean isGoogleEmailExists(String email) throws SQLException {
+        String sql = "SELECT 1 FROM Customers WHERE Email = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // true nếu email đã tồn tại
         }
     }
 
@@ -90,7 +106,7 @@ public class CustomerDAO extends DBContext {
     // Kiểm tra khách hàng có bị trùng Email, Phone hoặc CCCD không
     public boolean isDuplicate(Customer customer) throws SQLException {
         String sql = "SELECT 1 FROM Customers WHERE PhoneNumber = ? OR Email = ? OR CCCD = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customer.getPhoneNumber());
             ps.setString(2, customer.getEmail());
             ps.setString(3, customer.getCCCD());
@@ -98,6 +114,7 @@ public class CustomerDAO extends DBContext {
             return rs.next(); // true nếu trùng
         }
     }
+
     public boolean insertCustomer(Customer customer) {
         String sql = "INSERT INTO Customers(CustomerFullName, PhoneNumber, CCCD, Gender , BirthDate, Address, Email, CustomerPassword, CustomerStatus) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Potential')";

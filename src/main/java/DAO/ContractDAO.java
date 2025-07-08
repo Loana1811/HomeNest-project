@@ -146,18 +146,43 @@ public class ContractDAO extends DBContext {
         }
         return null;
     }
-
+    
     public boolean deleteContract(int contractId) {
-        String sql = "DELETE FROM Contracts WHERE ContractID = ?";
-        try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        String selectSql = "SELECT StartDate, EndDate, ContractStatus FROM Contracts WHERE ContractID = ?";
+        String deleteSql = "DELETE FROM Contracts WHERE ContractID = ?";
 
-            ps.setInt(1, contractId);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+        try ( Connection conn = this.getConnection();  PreparedStatement selectPs = conn.prepareStatement(selectSql)) {
+
+            selectPs.setInt(1, contractId);
+            ResultSet rs = selectPs.executeQuery();
+
+            if (rs.next()) {
+                Date startDate = rs.getDate("StartDate");
+                String status = rs.getString("ContractStatus");
+
+                java.util.Date today = new java.util.Date();
+
+                // Không cho xóa nếu đã bắt đầu hoặc đã kết thúc
+                if ("Ended".equalsIgnoreCase(status) || !startDate.after(today)) {
+                    return false;
+                }
+            } else {
+                // Không tìm thấy hợp đồng
+                return false;
+            }
+
+            // Nếu điều kiện hợp lệ -> thực hiện xóa
+            try ( PreparedStatement deletePs = conn.prepareStatement(deleteSql)) {
+                deletePs.setInt(1, contractId);
+                int rowsAffected = deletePs.executeUpdate();
+                return rowsAffected > 0;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
-    }  
+
+        return false;
+    }
+
 }

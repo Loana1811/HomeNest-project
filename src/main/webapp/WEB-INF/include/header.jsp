@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Header</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         .header {
             background-color: rgb(0, 128, 128);
@@ -12,7 +12,7 @@
             color: white;
         }
 
-        .container {
+        .header-container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
@@ -59,7 +59,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="container">
+        <div class="header-container">
             <div class="header__right">
                 <c:choose>
                     <c:when test="${not empty sessionScope.user}">

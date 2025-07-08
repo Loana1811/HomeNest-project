@@ -1,18 +1,32 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
 <html>
     <%@ include file="WEB-INF/include/header.jsp" %>
     <head>
-
         <title>List of Contracts</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .alert-custom {
+                max-width: 600px;
+                margin: 20px auto;
+            }
+        </style>
     </head>
     <body>
         <div class="container mt-5">
             <h2 class="text-center">List of Contracts</h2>
+
+            <!-- Thông báo lỗi hiển thị NGAY SAU tiêu đề -->
+            <c:if test="${not empty sessionScope.deleteError}">
+                <div class="alert alert-danger text-center alert-custom">
+                    ${sessionScope.deleteError}
+                </div>
+                <c:remove var="deleteError" scope="session"/>
+            </c:if>
+
+            <!-- Bảng hợp đồng -->
             <c:if test="${not empty contracts}">
-                <table class="table table-bordered table-hover">
+                <table class="table table-bordered table-hover mt-3">
                     <thead class="table-dark">
                         <tr>
                             <th>Contract ID</th>
@@ -38,33 +52,30 @@
                                 <td>${contract.contractstatus}</td>
                                 <td>${contract.contractcreatedAt}</td>
                                 <td>
-                                    <a href="<%= request.getContextPath()%>/Contracts?action=view&id=${contract.contractId}" class="btn btn-info btn-sm">View</a>
-                                    <a href="<%= request.getContextPath()%>/Contracts?action=history&tenantId=${contract.tenantId}" class="btn btn-sm btn-info">
-                                        View Contract History
-                                    </a>
-
-                                    <!-- Nút xoá dùng form để tránh lỗi GET không an toàn -->
+                                    <a href="<%= request.getContextPath()%>/Contracts?action=view&id=${contract.contractId}" class="btn btn-primary btn-sm mb-1">View</a>
+                                    <a href="<%= request.getContextPath()%>/Contracts?action=history&tenantId=${contract.tenantId}" class="btn btn-secondary btn-sm mb-1">View Contract History</a>
                                     <form action="Contracts" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this contract?');">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="contractId" value="${contract.contractId}">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
-
-
-
                                 </td>
                             </tr>
                         </c:forEach>
                     </tbody>
                 </table>
             </c:if>
+
             <c:if test="${empty contracts}">
-                <p class="text-center text-danger">No contracts to display</p>
+                <p class="text-center text-danger mt-4">No contracts to display</p>
             </c:if>
-            <div class="text-center">
+
+            <!-- Nút tạo hợp đồng nằm dưới cùng -->
+            <div class="text-center mt-4">
                 <a href="<%= request.getContextPath()%>/Contracts?action=create" class="btn btn-primary">Create New Contract</a>
             </div>
         </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

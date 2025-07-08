@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package Controller;
 
 import DAO.ContractDAO;
@@ -42,8 +46,7 @@ public class ContractServlet extends HttpServlet {
             request.setAttribute("tenants", tenants);
             request.setAttribute("rooms", rooms);
             request.getRequestDispatcher("/createContract.jsp").forward(request, response);
-        } else if (action.equals(
-                "edit")) {
+        } else if (action.equals("edit")) {
             int id = Integer.parseInt(request.getParameter("id"));
 
             ContractDAO contractDAO = new ContractDAO();
@@ -182,8 +185,14 @@ public class ContractServlet extends HttpServlet {
             ContractDAO contractDAO = new ContractDAO();
             boolean deleted = contractDAO.deleteContract(contractId);
 
+            if (!deleted) {
+                // Đặt thông báo lỗi vào session
+                request.getSession().setAttribute("deleteError", "❌ Không thể xóa hợp đồng đã bắt đầu hoặc đã kết thúc.");
+            }
+
             response.sendRedirect("Contracts");
         }
+
     }
 
     @Override

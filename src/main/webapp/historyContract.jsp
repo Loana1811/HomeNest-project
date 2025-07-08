@@ -40,15 +40,19 @@
                                 <td>${contract.contractstatus}</td>
                                 <td>${contract.contractcreatedAt}</td>
                                 <td>
-                                    <a href="<%= request.getContextPath() %>/Contracts?action=view&id=${contract.contractId}" class="btn btn-sm btn-primary">View</a>
+                                    <a href="<%= request.getContextPath()%>/Contracts?action=view&id=${contract.contractId}" class="btn btn-sm btn-primary">View</a>
                                 </td>
-                            </tr>
-                        </c:forEach>
+                                <c:if test="${not empty sessionScope.deleteError}">
+                            <div class="alert alert-danger">${sessionScope.deleteError}</div>
+                            <c:remove var="deleteError" scope="session"/>
+                        </c:if>
+                        </tr>
+                    </c:forEach>
                     </tbody>
                 </table>
             </c:if>
 
-            <a href="<%= request.getContextPath() %>/Contracts?action=list" class="btn btn-secondary">Back</a>
+            <a href="<%= request.getContextPath()%>/Contracts?action=list" class="btn btn-secondary">Back</a>
         </div>
     </body>
 </html>
