@@ -24,6 +24,9 @@ public class Room {
     private String imagePath;
     private String description;
     private Date postedDate;
+    private String activeContractCode; // Hợp đồng đang hoạt động/tháng này
+    private boolean hasRecord;         // Đã có utility record chưa?
+    private boolean hasBill;
 
     // Constructors
     public Room() {
@@ -156,7 +159,39 @@ public class Room {
     public void setPostedDate(Date postedDate) {
         this.postedDate = postedDate;
     }
-   
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
+
+    public String getActiveContractCode() {
+        return activeContractCode;
+    }
+
+    public void setActiveContractCode(String activeContractCode) {
+        this.activeContractCode = activeContractCode;
+    }
+
+    public boolean isHasRecord() {
+        return hasRecord;
+    }
+
+    public void setHasRecord(boolean hasRecord) {
+        this.hasRecord = hasRecord;
+    }
+
+    public boolean isHasBill() {
+        return hasBill;
+    }
+
+    public void setHasBill(boolean hasBill) {
+        this.hasBill = hasBill;
+    }
+    
     
     
 }

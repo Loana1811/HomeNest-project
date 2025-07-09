@@ -97,7 +97,7 @@ public class TenantDAO extends DBContext {
                 customer.setPhoneNumber(rs.getString("PhoneNumber"));
                 customer.setCCCD(rs.getString("CCCD"));
                 customer.setGender(rs.getString("Gender"));
-                customer.setBirthDay(rs.getDate("BirthDate"));
+                customer.setBirthDate(rs.getDate("BirthDate"));
                 customer.setAddress(rs.getString("Address"));
                 customer.setEmail(rs.getString("Email"));
                 return customer;

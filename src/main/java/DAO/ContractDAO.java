@@ -170,6 +170,128 @@ public class ContractDAO extends DBContext {
         }
         return contracts;
     }
+    
+    public List<Contract> getActiveContractsInMonth(String month) throws SQLException {
+    List<Contract> list = new ArrayList<>();
+    String sql =
+        "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, " +
+        "       r.RoomNumber, r.RentPrice " +
+        "FROM Contracts c " +
+        "JOIN Rooms r ON c.RoomID = r.RoomID " +
+        "WHERE c.ContractStatus = 'Active' " +
+        "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? " +
+        "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)";
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, month);
+        ps.setString(2, month);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Contract c = new Contract();
+                c.setContractId(rs.getInt("ContractID"));
+                c.setTenantId(rs.getInt("TenantID"));
+                c.setRoomId(rs.getInt("RoomID"));
+                c.setStartDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setContractstatus(rs.getString("ContractStatus"));
+                c.setRoomNumber(rs.getString("RoomNumber"));    // <-- tên phòng
+                c.setRoomRent(rs.getFloat("RentPrice"));       // <-- giá thuê
+                list.add(c);
+            }
+        }
+    }
+    return list;
+}
+    
+    public float getRoomRentByContractId(int contractId) throws SQLException {
+    String sql = "SELECT r.RentPrice " +
+                 "FROM Contracts c " +
+                 "JOIN Rooms r ON c.RoomID = r.RoomID " +
+                 "WHERE c.ContractID = ?";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, contractId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getFloat("RentPrice");
+            }
+        }
+    }
+
+    return 0;
+}
+     public Contract getActiveContractOfRoomInMonth(int roomId, String month) throws SQLException {
+    String sql =
+        "SELECT TOP 1 c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, " +
+        "       r.RoomNumber, r.RentPrice " +
+        "FROM Contracts c " +
+        "JOIN Rooms r ON c.RoomID = r.RoomID " +
+        "WHERE c.ContractStatus = 'Active' " +
+        "  AND c.RoomID = ? " +
+        "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? " +
+        "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)" +
+        "ORDER BY c.StartDate DESC"; // Nếu có nhiều hợp đồng trùng, lấy hợp đồng bắt đầu mới nhất
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, roomId);
+        ps.setString(2, month);
+        ps.setString(3, month);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Contract c = new Contract();
+                c.setContractId(rs.getInt("ContractID"));
+                c.setTenantId(rs.getInt("TenantID"));
+                c.setRoomId(rs.getInt("RoomID"));
+                c.setStartDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setContractstatus(rs.getString("ContractStatus"));
+                c.setRoomNumber(rs.getString("RoomNumber"));
+                c.setRoomRent(rs.getFloat("RentPrice"));
+                return c;
+            }
+        }
+    }
+    return null;
+}
+
+    public Contract getContractWithRoomAndTenantByContractId(int contractId) {
+    String sql =
+        "SELECT c.*, r.RoomNumber, r.RoomID, " +
+        "       cu.CustomerFullName AS CustomerFullName, cu.PhoneNumber " +
+        "FROM Contracts c " +
+        "JOIN Rooms r ON c.RoomID = r.RoomID " +
+        "JOIN Tenants t ON c.TenantID = t.TenantID " +
+        "JOIN Customers cu ON t.CustomerID = cu.CustomerID " +
+        "WHERE c.ContractID = ?";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, contractId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Contract c = new Contract();
+                c.setContractId(rs.getInt("ContractID"));
+                c.setRoomId(rs.getInt("RoomID"));
+                c.setTenantId(rs.getInt("TenantID"));
+                c.setStartDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setDeposit(rs.getBigDecimal("Deposit"));
+                c.setRoomNumber(rs.getString("RoomNumber"));
+                c.setTenantName(rs.getString("CustomerFullName"));
+                c.setPhone(rs.getString("PhoneNumber")); // 👈 Thêm dòng này
+                return c;
+            }
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
 
 
 }

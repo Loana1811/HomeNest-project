@@ -4,19 +4,24 @@
  */
 package controller;
 
+import dao.BlockDAO;
 import dao.CategoryDAO;
+import dao.NotificationDAO;
 import dao.RoomDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import model.Block;
 import model.Category;
+import model.Notification;
 import model.Room;
 
 /**
@@ -70,6 +75,7 @@ public class RoomListServlet extends HttpServlet {
             // Khởi tạo DAO
             RoomDAO roomDAO = new RoomDAO();
             CategoryDAO categoryDAO = new CategoryDAO();
+            BlockDAO blockDAO = new BlockDAO();
 
             // Lấy các tham số lọc từ request
             String categoryParam = request.getParameter("category");
@@ -109,6 +115,17 @@ public class RoomListServlet extends HttpServlet {
             // Lấy danh sách danh mục phòng
             List<Category> categoryList = categoryDAO.getAllCategories();
 
+              List<Block> blockList = blockDAO.getAllBlocks();
+            List<String> locationList = roomDAO.getAllLocations();
+            HttpSession session = request.getSession(false);
+            if (session != null && session.getAttribute("customer") != null) {
+                model.Customer customer = (model.Customer) session.getAttribute("customer");
+                int customerId = customer.getCustomerID();
+                NotificationDAO notificationDAO = new NotificationDAO();
+                List<Notification> notifications = notificationDAO.getNotificationsByCustomer(customerId);
+
+                request.setAttribute("notifications", notifications);
+            }
             // Gửi dữ liệu sang JSP
             request.setAttribute("roomList", pagedRooms);
             request.setAttribute("categoryList", categoryList);

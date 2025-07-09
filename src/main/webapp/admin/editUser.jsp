@@ -202,7 +202,7 @@
                     <div class="form-floating mb-3">
                         <select id="status" name="status" class="form-select" <c:if test="${user.role.roleName eq 'Admin'}">disabled</c:if>>
                             <option value="Active" <c:if test="${user.userStatus eq 'Active'}">selected</c:if>>Active</option>
-                            <option value="Inactive" <c:if test="${user.userStatus eq 'Inactive'}">selected</c:if>>Inactive</option>
+                            <option value="Inactive" <c:if test="${user.userStatus eq 'Disable'}">selected</c:if>>Inactive</option>
                             </select>
                             <label for="status">Status</label>
                             <div class="invalid-feedback"></div>

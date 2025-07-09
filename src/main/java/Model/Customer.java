@@ -17,7 +17,7 @@ public class Customer {
     private String phoneNumber;
     private String CCCD;
     private String gender;
-    private Date birthDay;
+    private Date birthDate;
     private String address;
     private String email;
     private String customerPassword;
@@ -27,14 +27,14 @@ public class Customer {
     }
 
     public Customer(int customerID, String customerFullName, String phoneNumber, String CCCD,
-            String gender, Date birthDay, String address, String email,
+            String gender, Date birthDate, String address, String email,
             String customerPassword, String customerStatus) {
         this.customerID = customerID;
         this.customerFullName = customerFullName;
         this.phoneNumber = phoneNumber;
         this.CCCD = CCCD;
         this.gender = gender;
-        this.birthDay = birthDay;
+        this.birthDate = birthDate;
         this.address = address;
         this.email = email;
         this.customerPassword = customerPassword;
@@ -81,12 +81,12 @@ public class Customer {
         this.gender = gender;
     }
 
-    public Date getBirthDay() {
-        return birthDay;
+    public Date getBirthDate() {
+        return birthDate;
     }
 
-    public void setBirthDay(Date birthDay) {
-        this.birthDay = birthDay;
+    public void setBirthDate(Date birthDate) {
+        this.birthDate = birthDate;
     }
 
     public String getAddress() {

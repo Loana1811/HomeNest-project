@@ -154,7 +154,7 @@ public class UserDAO extends DBContext {
     }
 
     public boolean deactivateUser(int userId) throws SQLException {
-        String query = "UPDATE Users SET UserStatus = 'Inactive' WHERE UserID = ?";
+        String query = "UPDATE Users SET UserStatus = 'Disable' WHERE UserID = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
@@ -387,7 +387,7 @@ public class UserDAO extends DBContext {
                     customer.setPhoneNumber(rs.getString("PhoneNumber"));
                     customer.setCCCD(rs.getString("CCCD"));
                     customer.setGender(rs.getString("Gender"));
-                    customer.setBirthDay(rs.getDate("BirthDate"));
+                    customer.setBirthDate(rs.getDate("BirthDate"));
                     customer.setAddress(rs.getString("Address"));
                     customer.setEmail(rs.getString("Email"));
                     customer.setCustomerPassword(rs.getString("CustomerPassword"));
@@ -397,5 +397,22 @@ public class UserDAO extends DBContext {
             }
         }
         return null;
+    }
+
+    public List<User> getManagersByBlockId(int blockId) throws SQLException {
+        List<User> managers = new ArrayList<>();
+        String sql = "SELECT * FROM Users WHERE RoleID = 2 AND BlockID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, blockId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    managers.add(mapResultSetToUser(rs));
+                }
+            }
+        }
+
+        return managers;
     }
 }

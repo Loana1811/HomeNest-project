@@ -3,20 +3,21 @@ package model;
 import java.sql.Timestamp;
 
 public class Notification {
+
     private int notificationID;
     private int customerID;
     private String title;
     private String message;
     private boolean isRead;
     private Timestamp notificationCreatedAt;
-    private Integer sentBy;
+    private Integer sentBy; // userID của người gửi (có thể null)
+    private String senderName; // dùng khi join bảng Users
 
-    // Constructor mặc định
     public Notification() {
     }
 
-    // Constructor đầy đủ
-    public Notification(int notificationID, int customerID, String title, String message, boolean isRead, Timestamp notificationCreatedAt, Integer sentBy) {
+    public Notification(int notificationID, int customerID, String title, String message, boolean isRead,
+            Timestamp notificationCreatedAt, Integer sentBy) {
         this.notificationID = notificationID;
         this.customerID = customerID;
         this.title = title;
@@ -59,11 +60,11 @@ public class Notification {
         this.message = message;
     }
 
-    public boolean getIsRead() { // Thay đổi từ isRead() thành getIsRead()
+    public boolean getIsRead() {
         return isRead;
     }
 
-    public void setRead(boolean isRead) {
+    public void setIsRead(boolean isRead) {
         this.isRead = isRead;
     }
 
@@ -82,4 +83,14 @@ public class Notification {
     public void setSentBy(Integer sentBy) {
         this.sentBy = sentBy;
     }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+
 }

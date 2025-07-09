@@ -28,6 +28,8 @@ import model.Tenant;
 @WebServlet(name = "ContractServlet", urlPatterns = {"/Contracts"})
 public class ContractServlet extends HttpServlet {
 
+    private ContractDAO contractDAO = new ContractDAO(); // hoặc dùng setter để inject
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -152,7 +154,7 @@ public class ContractServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
 
@@ -198,9 +200,7 @@ public class ContractServlet extends HttpServlet {
                     return;
                 }
 
-                // Gọi DAO để thêm hợp đồng
-                ContractDAO contractDAO = new ContractDAO();
-                boolean success = contractDAO.addContract(tenantId, roomId, startDate, endDate);
+                boolean success = this.contractDAO.addContract(tenantId, roomId, startDate, endDate);
 
                 if (success) {
                     response.sendRedirect(request.getContextPath() + "/Contracts?action=list");

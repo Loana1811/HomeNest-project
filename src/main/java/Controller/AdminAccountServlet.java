@@ -39,9 +39,8 @@ public class AdminAccountServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
     private final BlockDAO blockDAO = new BlockDAO();
-     private final NotificationDAO notificationDAO = new NotificationDAO();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
     private static final Logger LOGGER = Logger.getLogger(AdminAccountServlet.class.getName());
-    
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -127,7 +126,7 @@ public class AdminAccountServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-          // Check if user is Admin
+        // Check if user is Admin
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null || !"Admin".equals(currentUser.getRole().getRoleName())) {
@@ -179,7 +178,7 @@ public class AdminAccountServlet extends HttpServlet {
         }
     }
 
-     private void displayAccountList(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+    private void displayAccountList(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         LOGGER.info("Displaying account list");
         List<User> userList = userDAO.getAllUsers();
         List<Customer> customerList = customerDAO.getAllCustomers();
@@ -463,7 +462,7 @@ public class AdminAccountServlet extends HttpServlet {
 
         if (birthDate != null && !birthDate.trim().isEmpty()) {
             try {
-                customer.setBirthDay(Date.valueOf(birthDate.trim()));
+                customer.setBirthDate(Date.valueOf(birthDate.trim()));
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.SEVERE, "Invalid date format: " + birthDate, e);
                 request.setAttribute("error", "Invalid date format for birth date.");
@@ -471,7 +470,7 @@ public class AdminAccountServlet extends HttpServlet {
                 return;
             }
         } else {
-            customer.setBirthDay(null);
+            customer.setBirthDate(null);
         }
         customer.setAddress(address != null && !address.trim().isEmpty() ? address.trim() : null);
         customer.setCustomerStatus("Active");
@@ -541,250 +540,250 @@ public class AdminAccountServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/account");
     }
 
-        public void editAccount(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
-            String userIDStr = request.getParameter("userID");
-            String customerIDStr = request.getParameter("customerID");
-            String fullName = request.getParameter("fullName");
-            String email = request.getParameter("email");
-            String phoneNumber = request.getParameter("phoneNumber");
-            String roleIDStr = request.getParameter("roleID");
-            String status = request.getParameter("status");
-            String reason = request.getParameter("reason");
+    public void editAccount(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
+        String userIDStr = request.getParameter("userID");
+        String customerIDStr = request.getParameter("customerID");
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String phoneNumber = request.getParameter("phoneNumber");
+        String roleIDStr = request.getParameter("roleID");
+        String status = request.getParameter("status");
+        String reason = request.getParameter("reason");
 
-            // Validate required fields
-            if (userIDStr == null && customerIDStr == null) {
-                request.setAttribute("error", "User ID or Customer ID is required.");
-                preserveFormData(request);
-                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                return;
-            }
-
-            if (fullName == null || fullName.trim().isEmpty()
-                    || email == null || email.trim().isEmpty()
-                    || phoneNumber == null || phoneNumber.trim().isEmpty()) {
-                request.setAttribute("error", "Full name, email, and phone number are required.");
-                preserveFormData(request);
-                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                return;
-            }
-
-            if (!phoneNumber.matches("\\d{10,11}")) {
-                request.setAttribute("error", "Phone number must be 10-11 digits.");
-                preserveFormData(request);
-                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                return;
-            }
-
-            if (status == null || status.trim().isEmpty()) {
-                request.setAttribute("error", "Status is required.");
-                preserveFormData(request);
-                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                return;
-            }
-
-            if (userIDStr != null && !userIDStr.trim().isEmpty()) {
-                // Handle User Edit
-                int userID = Integer.parseInt(userIDStr);
-                int roleID = Integer.parseInt(roleIDStr);
-
-                User user = userDAO.getUserById(userID);
-                if (user == null) {
-                    request.setAttribute("error", "User not found.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                    return;
-                }
-                if (user.getRole() != null && "Admin".equalsIgnoreCase(user.getRole().getRoleName())) {
-                    request.setAttribute("error", "Admin account cannot be edited.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                    return;
-                }
-
-                if (userDAO.isEmailExists(email.trim()) && !email.trim().equals(user.getEmail())) {
-                    request.setAttribute("error", "Email already exists.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                    return;
-                }
-
-                String originalStatus = user.getUserStatus();
-                user.setUserFullName(fullName.trim());
-                user.setEmail(email.trim());
-                user.setPhoneNumber(phoneNumber.trim());
-                user.setUserStatus(status.trim());
-                user.setRoleID(roleID);
-
-                if (roleID == 2) { // Manager role
-                    String blockIDStr = request.getParameter("blockID");
-                    if (blockIDStr == null || blockIDStr.trim().isEmpty()) {
-                        request.setAttribute("error", "Block is required for Manager.");
-                        preserveFormData(request);
-                        request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                        return;
-                    }
-                    user.setBlockID(Integer.parseInt(blockIDStr));
-                } else {
-                    user.setBlockID(null);
-                }
-
-                boolean success = userDAO.updateUser(user);
-                if (!success) {
-                    request.setAttribute("error", "Failed to update user.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                    return;
-                }
-
-                // Send email if status changed
-                if (!status.equals(originalStatus) && reason != null && !reason.trim().isEmpty()) {
-                    String emailSubject = status.equals("Inactive") ? "Your Account Has Been Disabled" : "Your Account Has Been Activated";
-                    String emailMessage = status.equals("Inactive")
-                            ? "Dear " + user.getUserFullName() + ",\n\nYour account has been disabled.\n\nReason: " + reason
-                            + "\n\nIf you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team"
-                            : "Dear " + user.getUserFullName() + ",\n\nYour account has been activated.\n\nReason: " + reason
-                            + "\n\nWelcome back! If you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team";
-                    if (email != null && !email.trim().isEmpty() && isValidEmail(email)) {
-                        try {
-                            sendStatusChangeEmail(email, user.getUserFullName(), status, reason);
-                            customerDAO.logEmail(0, userID, email, emailSubject, emailMessage, "Sent", null);
-                            request.setAttribute("success", "User updated and email sent successfully.");
-                        } catch (MessagingException e) {
-                            LOGGER.log(Level.SEVERE, "Failed to send email for user " + userID, e);
-                            customerDAO.logEmail(0, userID, email, emailSubject, emailMessage, "Failed", e.getMessage());
-                            request.setAttribute("error", "User updated but failed to send email: " + e.getMessage());
-                        }
-                    } else {
-                        customerDAO.logEmail(0, userID, email != null ? email : "N/A", emailSubject, emailMessage, "Failed", "Invalid or missing email address.");
-                        request.setAttribute("error", "User updated but no valid email address found to send notification.");
-                    }
-                } else if (!status.equals(originalStatus)) {
-                    request.setAttribute("error", "Reason is required for status change.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
-                    return;
-                }
-                request.setAttribute("success", "User updated successfully.");
-                response.sendRedirect(request.getContextPath() + "/admin/account");
-            } else if (customerIDStr != null && !customerIDStr.trim().isEmpty()) {
-                // Handle Customer Edit
-                int customerID = Integer.parseInt(customerIDStr);
-                Customer customer = customerDAO.getCustomerById(customerID);
-
-                if (customer == null) {
-                    request.setAttribute("error", "Customer not found.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-
-                if (customerDAO.isEmailExists(email.trim()) && !email.trim().equals(customer.getEmail())) {
-                    request.setAttribute("error", "Email already exists.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-                if (customerDAO.isPhoneNumberExists(phoneNumber.trim()) && !phoneNumber.trim().equals(customer.getPhoneNumber())) {
-                    request.setAttribute("error", "Phone number already exists.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-
-                String cccd = request.getParameter("cccd");
-                if (cccd != null && !cccd.trim().isEmpty() && !cccd.matches("\\d{12}")) {
-                    request.setAttribute("error", "CCCD must be 12 digits if provided.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-                if (cccd != null && !cccd.trim().isEmpty() && customerDAO.isCCCDExists(cccd.trim()) && !cccd.trim().equals(customer.getCCCD())) {
-                    request.setAttribute("error", "CCCD already exists.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-
-                String originalStatus = customer.getCustomerStatus();
-                customer.setCustomerFullName(fullName.trim());
-                customer.setEmail(email.trim());
-                customer.setPhoneNumber(phoneNumber.trim());
-                customer.setCustomerStatus(status.trim());
-
-                String gender = request.getParameter("gender");
-                String birthDate = request.getParameter("birthDate");
-                String address = request.getParameter("address");
-
-                if (cccd != null && !cccd.trim().isEmpty()) {
-                    customer.setCCCD(cccd.trim());
-                } else {
-                    customer.setCCCD(null);
-                }
-                if (gender != null && !gender.trim().isEmpty()) {
-                    customer.setGender(gender.trim());
-                } else {
-                    customer.setGender(null);
-                }
-                if (birthDate != null && !birthDate.trim().isEmpty()) {
-                    try {
-                        Date sqlDate = Date.valueOf(birthDate.trim());
-                        customer.setBirthDay(sqlDate);
-                    } catch (IllegalArgumentException e) {
-                        LOGGER.log(Level.SEVERE, "Invalid date format: " + birthDate, e);
-                        request.setAttribute("error", "Invalid date format for birth date.");
-                        preserveFormData(request);
-                        request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                        return;
-                    }
-                } else {
-                    customer.setBirthDay(null);
-                }
-                if (address != null && !address.trim().isEmpty()) {
-                    customer.setAddress(address.trim());
-                } else {
-                    customer.setAddress(null);
-                }
-
-                boolean success = customerDAO.updateCustomer(customer);
-                if (!success) {
-                    request.setAttribute("error", "Failed to update customer.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-
-                // Send email if status changed
-                if (!status.equals(originalStatus) && reason != null && !reason.trim().isEmpty()) {
-                    String emailSubject = status.equals("Inactive") ? "Your Account Has Been Disabled" : "Your Account Has Been Activated";
-                    String emailMessage = status.equals("Inactive")
-                            ? "Dear " + customer.getCustomerFullName() + ",\n\nYour account has been disabled.\n\nReason: " + reason
-                            + "\n\nIf you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team"
-                            : "Dear " + customer.getCustomerFullName() + ",\n\nYour account has been activated.\n\nReason: " + reason
-                            + "\n\nWelcome back! If you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team";
-                    if (email != null && !email.trim().isEmpty() && isValidEmail(email)) {
-                        try {
-                            sendStatusChangeEmail(email, customer.getCustomerFullName(), status, reason);
-                            customerDAO.logEmail(customerID, null, email, emailSubject, emailMessage, "Sent", null);
-                            request.setAttribute("success", "Customer updated and email sent successfully.");
-                        } catch (MessagingException e) {
-                            LOGGER.log(Level.SEVERE, "Failed to send email for customer " + customerID, e);
-                            customerDAO.logEmail(customerID, null, email, emailSubject, emailMessage, "Failed", e.getMessage());
-                            request.setAttribute("error", "Customer updated but failed to send email: " + e.getMessage());
-                        }
-                    } else {
-                        customerDAO.logEmail(customerID, null, email != null ? email : "N/A", emailSubject, emailMessage, "Failed", "Invalid or missing email address.");
-                        request.setAttribute("error", "Customer updated but no valid email address found to send notification.");
-                    }
-                } else if (!status.equals(originalStatus)) {
-                    request.setAttribute("error", "Reason is required for status change.");
-                    preserveFormData(request);
-                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
-                    return;
-                }
-                request.setAttribute("success", "Customer updated successfully.");
-                response.sendRedirect(request.getContextPath() + "/admin/account");
-            }
+        // Validate required fields
+        if (userIDStr == null && customerIDStr == null) {
+            request.setAttribute("error", "User ID or Customer ID is required.");
+            preserveFormData(request);
+            request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+            return;
         }
+
+        if (fullName == null || fullName.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            request.setAttribute("error", "Full name, email, and phone number are required.");
+            preserveFormData(request);
+            request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+            return;
+        }
+
+        if (!phoneNumber.matches("\\d{10,11}")) {
+            request.setAttribute("error", "Phone number must be 10-11 digits.");
+            preserveFormData(request);
+            request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+            return;
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            request.setAttribute("error", "Status is required.");
+            preserveFormData(request);
+            request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+            return;
+        }
+
+        if (userIDStr != null && !userIDStr.trim().isEmpty()) {
+            // Handle User Edit
+            int userID = Integer.parseInt(userIDStr);
+            int roleID = Integer.parseInt(roleIDStr);
+
+            User user = userDAO.getUserById(userID);
+            if (user == null) {
+                request.setAttribute("error", "User not found.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                return;
+            }
+            if (user.getRole() != null && "Admin".equalsIgnoreCase(user.getRole().getRoleName())) {
+                request.setAttribute("error", "Admin account cannot be edited.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                return;
+            }
+
+            if (userDAO.isEmailExists(email.trim()) && !email.trim().equals(user.getEmail())) {
+                request.setAttribute("error", "Email already exists.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                return;
+            }
+
+            String originalStatus = user.getUserStatus();
+            user.setUserFullName(fullName.trim());
+            user.setEmail(email.trim());
+            user.setPhoneNumber(phoneNumber.trim());
+            user.setUserStatus(status.trim());
+            user.setRoleID(roleID);
+
+            if (roleID == 2) { // Manager role
+                String blockIDStr = request.getParameter("blockID");
+                if (blockIDStr == null || blockIDStr.trim().isEmpty()) {
+                    request.setAttribute("error", "Block is required for Manager.");
+                    preserveFormData(request);
+                    request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                    return;
+                }
+                user.setBlockID(Integer.parseInt(blockIDStr));
+            } else {
+                user.setBlockID(null);
+            }
+
+            boolean success = userDAO.updateUser(user);
+            if (!success) {
+                request.setAttribute("error", "Failed to update user.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                return;
+            }
+
+            // Send email if status changed
+            if (!status.equals(originalStatus) && reason != null && !reason.trim().isEmpty()) {
+                String emailSubject = status.equals("Inactive") ? "Your Account Has Been Disabled" : "Your Account Has Been Activated";
+                String emailMessage = status.equals("Inactive")
+                        ? "Dear " + user.getUserFullName() + ",\n\nYour account has been disabled.\n\nReason: " + reason
+                        + "\n\nIf you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team"
+                        : "Dear " + user.getUserFullName() + ",\n\nYour account has been activated.\n\nReason: " + reason
+                        + "\n\nWelcome back! If you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team";
+                if (email != null && !email.trim().isEmpty() && isValidEmail(email)) {
+                    try {
+                        sendStatusChangeEmail(email, user.getUserFullName(), status, reason);
+                        customerDAO.logEmail(0, userID, email, emailSubject, emailMessage, "Sent", null);
+                        request.setAttribute("success", "User updated and email sent successfully.");
+                    } catch (MessagingException e) {
+                        LOGGER.log(Level.SEVERE, "Failed to send email for user " + userID, e);
+                        customerDAO.logEmail(0, userID, email, emailSubject, emailMessage, "Failed", e.getMessage());
+                        request.setAttribute("error", "User updated but failed to send email: " + e.getMessage());
+                    }
+                } else {
+                    customerDAO.logEmail(0, userID, email != null ? email : "N/A", emailSubject, emailMessage, "Failed", "Invalid or missing email address.");
+                    request.setAttribute("error", "User updated but no valid email address found to send notification.");
+                }
+            } else if (!status.equals(originalStatus)) {
+                request.setAttribute("error", "Reason is required for status change.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
+                return;
+            }
+            request.setAttribute("success", "User updated successfully.");
+            response.sendRedirect(request.getContextPath() + "/admin/account");
+        } else if (customerIDStr != null && !customerIDStr.trim().isEmpty()) {
+            // Handle Customer Edit
+            int customerID = Integer.parseInt(customerIDStr);
+            Customer customer = customerDAO.getCustomerById(customerID);
+
+            if (customer == null) {
+                request.setAttribute("error", "Customer not found.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+
+            if (customerDAO.isEmailExists(email.trim()) && !email.trim().equals(customer.getEmail())) {
+                request.setAttribute("error", "Email already exists.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+            if (customerDAO.isPhoneNumberExists(phoneNumber.trim()) && !phoneNumber.trim().equals(customer.getPhoneNumber())) {
+                request.setAttribute("error", "Phone number already exists.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+
+            String cccd = request.getParameter("cccd");
+            if (cccd != null && !cccd.trim().isEmpty() && !cccd.matches("\\d{12}")) {
+                request.setAttribute("error", "CCCD must be 12 digits if provided.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+            if (cccd != null && !cccd.trim().isEmpty() && customerDAO.isCCCDExists(cccd.trim()) && !cccd.trim().equals(customer.getCCCD())) {
+                request.setAttribute("error", "CCCD already exists.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+
+            String originalStatus = customer.getCustomerStatus();
+            customer.setCustomerFullName(fullName.trim());
+            customer.setEmail(email.trim());
+            customer.setPhoneNumber(phoneNumber.trim());
+            customer.setCustomerStatus(status.trim());
+
+            String gender = request.getParameter("gender");
+            String birthDate = request.getParameter("birthDate");
+            String address = request.getParameter("address");
+
+            if (cccd != null && !cccd.trim().isEmpty()) {
+                customer.setCCCD(cccd.trim());
+            } else {
+                customer.setCCCD(null);
+            }
+            if (gender != null && !gender.trim().isEmpty()) {
+                customer.setGender(gender.trim());
+            } else {
+                customer.setGender(null);
+            }
+            if (birthDate != null && !birthDate.trim().isEmpty()) {
+                try {
+                    Date sqlDate = Date.valueOf(birthDate.trim());
+                    customer.setBirthDate(sqlDate);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.log(Level.SEVERE, "Invalid date format: " + birthDate, e);
+                    request.setAttribute("error", "Invalid date format for birth date.");
+                    preserveFormData(request);
+                    request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                    return;
+                }
+            } else {
+                customer.setBirthDate(null);
+            }
+            if (address != null && !address.trim().isEmpty()) {
+                customer.setAddress(address.trim());
+            } else {
+                customer.setAddress(null);
+            }
+
+            boolean success = customerDAO.updateCustomer(customer);
+            if (!success) {
+                request.setAttribute("error", "Failed to update customer.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+
+            // Send email if status changed
+            if (!status.equals(originalStatus) && reason != null && !reason.trim().isEmpty()) {
+                String emailSubject = status.equals("Inactive") ? "Your Account Has Been Disabled" : "Your Account Has Been Activated";
+                String emailMessage = status.equals("Inactive")
+                        ? "Dear " + customer.getCustomerFullName() + ",\n\nYour account has been disabled.\n\nReason: " + reason
+                        + "\n\nIf you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team"
+                        : "Dear " + customer.getCustomerFullName() + ",\n\nYour account has been activated.\n\nReason: " + reason
+                        + "\n\nWelcome back! If you have any questions, please contact our support team at support@homenest.com.\n\nBest regards,\nHomeNest Team";
+                if (email != null && !email.trim().isEmpty() && isValidEmail(email)) {
+                    try {
+                        sendStatusChangeEmail(email, customer.getCustomerFullName(), status, reason);
+                        customerDAO.logEmail(customerID, null, email, emailSubject, emailMessage, "Sent", null);
+                        request.setAttribute("success", "Customer updated and email sent successfully.");
+                    } catch (MessagingException e) {
+                        LOGGER.log(Level.SEVERE, "Failed to send email for customer " + customerID, e);
+                        customerDAO.logEmail(customerID, null, email, emailSubject, emailMessage, "Failed", e.getMessage());
+                        request.setAttribute("error", "Customer updated but failed to send email: " + e.getMessage());
+                    }
+                } else {
+                    customerDAO.logEmail(customerID, null, email != null ? email : "N/A", emailSubject, emailMessage, "Failed", "Invalid or missing email address.");
+                    request.setAttribute("error", "Customer updated but no valid email address found to send notification.");
+                }
+            } else if (!status.equals(originalStatus)) {
+                request.setAttribute("error", "Reason is required for status change.");
+                preserveFormData(request);
+                request.getRequestDispatcher("/admin/editCustomer.jsp").forward(request, response);
+                return;
+            }
+            request.setAttribute("success", "Customer updated successfully.");
+            response.sendRedirect(request.getContextPath() + "/admin/account");
+        }
+    }
 
     public void sendStatusChangeEmail(String recipientEmail, String name, String status, String reason) throws MessagingException {
         Properties props = new Properties();
@@ -838,5 +837,4 @@ public class AdminAccountServlet extends HttpServlet {
         // }
     }
 
-  
 }

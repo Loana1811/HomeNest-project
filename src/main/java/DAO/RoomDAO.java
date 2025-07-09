@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import model.Block;
+import model.Contract;
 import model.Room;
+import model.RoomStatusDTO;
 import utils.DBContext;
 
 /**
@@ -641,5 +644,179 @@ public class RoomDAO extends DBContext {
                 rs.getString("Description"),
                 rs.getDate("PostedDate")
         );
+    }
+
+    public Map<Block, List<RoomStatusDTO>> getRoomStatusByBlock(String month) throws SQLException {
+        Map<Block, List<RoomStatusDTO>> result = new LinkedHashMap<>();
+
+        String sql = "DECLARE @month VARCHAR(7) = ? "
+                + "SELECT b.BlockID, b.BlockName, r.RoomID, r.RoomNumber, "
+                + "CASE WHEN COUNT(DISTINCT ur.UtilityTypeID) >= 2 THEN 1 ELSE 0 END AS FullyRecorded, "
+                + "CASE WHEN EXISTS (SELECT 1 FROM Bills bi "
+                + "JOIN Contracts ct ON ct.ContractID = bi.ContractID "
+                + "WHERE ct.RoomID = r.RoomID AND FORMAT(bi.BillDate, 'yyyy-MM') = @month) THEN 1 ELSE 0 END AS IsClosed "
+                + "FROM Rooms r "
+                + "JOIN Blocks b ON r.BlockID = b.BlockID "
+                + "LEFT JOIN Contracts c ON c.RoomID = r.RoomID AND c.ContractStatus = 'Active' "
+                + "LEFT JOIN UtilityReadings ur ON ur.RoomID = r.RoomID AND FORMAT(ur.ReadingDate, 'yyyy-MM') = @month "
+                + "GROUP BY b.BlockID, b.BlockName, r.RoomID, r.RoomNumber "
+                + "ORDER BY b.BlockName, r.RoomNumber";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, month);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int blockId = rs.getInt("BlockID");
+                    String blockName = rs.getString("BlockName");
+
+                    Block block = new Block();
+                    block.setBlockID(blockId);
+                    block.setBlockName(blockName);
+
+                    RoomStatusDTO room = new RoomStatusDTO();
+                    room.setRoomId(rs.getInt("RoomID"));
+                    room.setRoomName(rs.getString("RoomNumber"));
+                    room.setFullyRecorded(rs.getInt("FullyRecorded") == 1);
+                    room.setClosed(rs.getInt("IsClosed") == 1);
+
+                    // Thêm vào map (không dùng lambda)
+                    List<RoomStatusDTO> roomList = null;
+                    if (result.containsKey(block)) {
+                        roomList = result.get(block);
+                    } else {
+                        roomList = new ArrayList<>();
+                        result.put(block, roomList);
+                    }
+                    roomList.add(room);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public Contract getActiveContractByRoomId(int roomId) {
+        String sql = "SELECT * FROM Contracts WHERE RoomID = ? AND ContractStatus = 'Active'";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Contract c = new Contract();
+                    c.setContractId(rs.getInt("ContractID"));
+                    c.setTenantId(rs.getInt("TenantID"));
+                    c.setRoomId(rs.getInt("RoomID"));
+                    c.setStartDate(rs.getDate("StartDate"));
+                    c.setEndDate(rs.getDate("EndDate"));
+                    c.setContractstatus(rs.getString("ContractStatus"));
+                    c.setContractcreatedAt(rs.getTimestamp("ContractCreatedAt"));
+                    return c;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public float getRoomPriceByRoomId(int roomId) {
+        float rentPrice = 0;
+        String sql = "SELECT RentPrice FROM Rooms WHERE RoomID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    rentPrice = rs.getFloat("RentPrice");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return rentPrice;
+    }
+
+    public boolean existsBillForRoomAndMonth(int roomId, String month) {
+        String sql = "SELECT 1 FROM Bills b "
+                + "JOIN Contracts c ON b.ContractID = c.ContractID "
+                + "WHERE c.RoomID = ? "
+                + "AND FORMAT(b.BillDate, 'yyyy-MM') = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setString(2, month);
+            try ( ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // Đã có bill → true
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Object[]> getRoomsWithActiveContractsByBlock(int blockId) throws SQLException {
+        List<Object[]> rooms = new ArrayList<>();
+        String sql = "SELECT r.RoomID, r.RoomNumber FROM Rooms r "
+                + "JOIN Contracts c ON r.RoomID = c.RoomID "
+                + "WHERE r.BlockID = ? AND c.ContractStatus = 'Active'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, blockId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                rooms.add(new Object[]{
+                    rs.getInt("RoomID"),
+                    rs.getString("RoomNumber")
+                });
+            }
+        }
+        return rooms;
+    }
+
+    public List<String> getAllLocations() {
+        List<String> locations = new ArrayList<>();
+        String sql = "SELECT DISTINCT location FROM Rooms WHERE location IS NOT NULL AND location <> ''";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    locations.add(rs.getString("location"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return locations;
+    }
+
+    public void updateRoomStatus(int roomId, String status) {
+        String sql = "UPDATE Rooms SET RoomStatus = ? WHERE RoomID = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, roomId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Room> getAllRooms() {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Room room = extractRoom(rs); // dùng hàm extractRoom bạn đã viết sẵn
+                list.add(room);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }

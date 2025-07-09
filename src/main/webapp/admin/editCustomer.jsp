@@ -356,7 +356,7 @@
                             <select id="customerStatus" name="status" class="form-select" required>
                                 <option value="">Select Status</option>
                                 <option value="Active" <c:if test="${customer.customerStatus == 'Active'}">selected</c:if>>Active</option>
-                                <option value="Inactive" <c:if test="${customer.customerStatus == 'Inactive'}">selected</c:if>>Inactive</option>
+                                <option value="Inactive" <c:if test="${customer.customerStatus == 'Disable'}">selected</c:if>>Inactive</option>
                             </select>
                             <label for="customerStatus">Status <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>

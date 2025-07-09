@@ -136,7 +136,7 @@ public class RegisterCustomerServlet extends HttpServlet {
         customer.setPhoneNumber(phone);
         customer.setCCCD(cccd);
         customer.setGender(gender);
-        customer.setBirthDay(Date.valueOf(birth));
+        customer.setBirthDate(Date.valueOf(birth));
         customer.setAddress(address);
         customer.setEmail(email);
         customer.setCustomerPassword(password);

@@ -185,7 +185,7 @@
         <div class="sidebar">
             <h5 class="text-primary">Admin Menu</h5>
             <ul class="nav flex-column">
-                
+
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
                 </li>
@@ -206,6 +206,13 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
+                </li>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/adminReport">Report</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/notification?action=viewNotifications">Notification</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/Contracts">Contract</a>

@@ -8,6 +8,7 @@ import model.UtilityReading;
 import model.UtilityUsageView;
 import utils.DBContext;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,21 @@ public class UtilityReadingDAO {
             }
         }
         return list;
+    }
+
+    public boolean isReadingExists(int roomId, int utilityTypeId, String month) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE RoomID = ? AND UtilityTypeID = ? AND FORMAT(ReadingDate, 'yyyy-MM') = ?";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, utilityTypeId);
+            ps.setString(3, month);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 
     // Lấy theo ID
@@ -126,7 +142,7 @@ public class UtilityReadingDAO {
                         rs.getDouble("PriceUsed"),
                         rs.getString("ChangedBy"),
                         rs.getDate("ReadingDate"),
-                         rs.getString("BlockName")
+                        rs.getString("BlockName")
                 ));
             }
         }
@@ -167,4 +183,232 @@ public class UtilityReadingDAO {
         b.setChangedBy(rs.getString("ChangedBy"));
         return b;
     }
+
+    public List<UtilityReading> getReadingsForRoomAndMonth(int roomId, String month) {
+        List<UtilityReading> readings = new ArrayList<>();
+        String sql
+                = "SELECT * FROM UtilityReadings "
+                + "WHERE RoomID = ? AND FORMAT(ReadingDate, 'yyyy-MM') = ?";
+
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomId);
+            ps.setString(2, month);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UtilityReading r = new UtilityReading();
+                    r.setReadingID(rs.getInt("ReadingID"));
+                    r.setRoomID(rs.getInt("RoomID"));
+                    r.setUtilityTypeID(rs.getInt("UtilityTypeID"));
+                    r.setReadingDate(rs.getDate("ReadingDate"));
+                    r.setOldReading(rs.getBigDecimal("OldReading"));
+                    r.setNewReading(rs.getBigDecimal("NewReading"));
+                    r.setPriceUsed(rs.getBigDecimal("PriceUsed"));
+                    r.setOldPrice(rs.getBigDecimal("OldPrice"));
+                    r.setChangedBy(rs.getString("ChangedBy"));
+                    r.setUtilityReadingCreatedAt(rs.getTimestamp("UtilityReadingCreatedAt"));
+                    readings.add(r);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return readings;
+    }
+
+    public List<UtilityReading> getReadingsByRoomAndMonth(int roomId, String month) throws SQLException {
+        List<UtilityReading> list = new ArrayList<>();
+        String sql = "SELECT * FROM UtilityReadings "
+                + "WHERE RoomID = ? AND FORMAT(ReadingDate, 'yyyy-MM') = ?";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setString(2, month);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UtilityReading u = new UtilityReading();
+                u.setReadingID(rs.getInt("ReadingID"));
+                u.setRoomID(roomId);
+                u.setUtilityTypeID(rs.getInt("UtilityTypeID"));
+                u.setOldReading(rs.getBigDecimal("OldReading"));
+                u.setNewReading(rs.getBigDecimal("NewReading"));
+                u.setPriceUsed(rs.getBigDecimal("PriceUsed"));
+                u.setChangedBy(rs.getString("ChangedBy"));
+                u.setReadingDate(rs.getDate("ReadingDate"));
+
+                list.add(u);
+            }
+        }
+        return list;
+    }
+// Lấy chỉ số mới nhất (newReading) của phòng, loại tiện ích, *TRƯỚC* tháng đang chọn
+
+    public Double getLatestIndex(int roomId, int typeId, String readingMonth) throws SQLException {
+        System.out.println("🔍 getLatestIndex: roomId=" + roomId + ", typeId=" + typeId + ", readingMonth=" + readingMonth);
+
+        String sql = "SELECT TOP 1 NewReading FROM UtilityReadings "
+                + "WHERE RoomID = ? AND UtilityTypeID = ? AND ReadingDate < ? "
+                + "ORDER BY ReadingDate DESC";
+
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, typeId);
+
+            // Convert yyyy-MM to LocalDate
+            LocalDate monthStart = LocalDate.parse(readingMonth + "-01");
+            ps.setDate(3, java.sql.Date.valueOf(monthStart));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                double result = rs.getDouble(1);
+                System.out.println("✅ Found old index: " + result);
+                return result;
+            } else {
+                System.out.println("⚠ No result found for getLatestIndex.");
+            }
+        }
+        return 0.0;
+    }
+
+    public UtilityReading getReading(int roomId, int utilityTypeId, String month) {
+        // month dạng "yyyy-MM"
+        String sql = "SELECT TOP 1 * FROM UtilityReadings "
+                + "WHERE roomID = ? AND utilityTypeID = ? AND FORMAT(readingDate,'yyyy-MM') = ? "
+                + "ORDER BY readingDate DESC";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, utilityTypeId);
+            ps.setString(3, month);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                // mapping fields (bạn cần sửa lại tên trường cho đúng DB nếu khác)
+                UtilityReading ur = new UtilityReading();
+                ur.setReadingID(rs.getInt("readingID"));
+                ur.setUtilityTypeID(rs.getInt("utilityTypeID"));
+                ur.setRoomID(rs.getInt("roomID"));
+                ur.setReadingDate(rs.getDate("readingDate"));
+                ur.setOldReading(rs.getBigDecimal("oldReading"));
+                ur.setNewReading(rs.getBigDecimal("newReading"));
+                ur.setPriceUsed(rs.getBigDecimal("priceUsed"));
+                ur.setChangedBy(rs.getString("changedBy"));
+                // ... các trường khác nếu có
+                return ur;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean hasUtilityReading(int roomId, String month) throws SQLException {
+        return getReadingsByRoomAndMonth(roomId, month).size() > 0;
+    }
+
+//    return getReadingsByRoomAndMonth(roomId, month).size() > 0;
+    public void insertOrUpdate(int roomId, int utilityTypeId, String readingMonth, double newIndex) throws SQLException {
+        // Lấy chỉ số cũ trước tháng đang ghi
+        Double oldIndex = getLatestIndex(roomId, utilityTypeId, readingMonth);
+
+        // Kiểm tra xem đã tồn tại chỉ số của tháng này chưa
+        UtilityReading existing = getReading(roomId, utilityTypeId, readingMonth);
+
+        if (existing != null) {
+            // Nếu đã có -> update chỉ số mới
+            String updateSql = "UPDATE UtilityReadings SET NewReading = ?, OldReading = ?, ChangedBy = ?, UtilityReadingCreatedAt = GETDATE() "
+                    + "WHERE ReadingID = ?";
+            try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setDouble(1, newIndex);
+                ps.setDouble(2, oldIndex);
+                ps.setString(3, "admin");
+                ps.setInt(4, existing.getReadingID());
+                ps.executeUpdate();
+            }
+        } else {
+            // Nếu chưa có -> insert mới
+            String insertSql = "INSERT INTO UtilityReadings (RoomID, UtilityTypeID, ReadingDate, OldReading, NewReading, ChangedBy, UtilityReadingCreatedAt) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
+            try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                ps.setInt(1, roomId);
+                ps.setInt(2, utilityTypeId);
+
+                // Chuyển yyyy-MM -> java.sql.Date
+                LocalDate date = LocalDate.parse(readingMonth + "-01");
+                ps.setDate(3, Date.valueOf(date));
+
+                ps.setDouble(4, oldIndex);
+                ps.setDouble(5, newIndex);
+                ps.setString(6, "admin");
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    public void updateReading(UtilityReading ur) {
+        String sql = "UPDATE UtilityReadings SET OldReading=?, NewReading=?, PriceUsed=?, ChangedBy=?, UtilityReadingCreatedAt=? "
+                + "WHERE RoomID=? AND UtilityTypeID=? AND ReadingDate=?";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBigDecimal(1, ur.getOldReading());
+            ps.setBigDecimal(2, ur.getNewReading());
+            ps.setBigDecimal(3, ur.getPriceUsed());
+            ps.setString(4, ur.getChangedBy());
+            ps.setTimestamp(5, ur.getUtilityReadingCreatedAt());
+            ps.setInt(6, ur.getRoomID());
+            ps.setInt(7, ur.getUtilityTypeID());
+            ps.setDate(8, ur.getReadingDate());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<UtilityReading> getLatestReadingsByRoomAndMonth(int roomId, String month) {
+        List<UtilityReading> readings = new ArrayList<>();
+        String sql
+                = "SELECT ur.* "
+                + "FROM UtilityReadings ur "
+                + "JOIN ( "
+                + "    SELECT UtilityTypeID, MAX(UtilityReadingCreatedAt) AS MaxDate "
+                + "    FROM UtilityReadings "
+                + "    WHERE RoomID = ? AND YEAR(ReadingDate) = ? AND MONTH(ReadingDate) = ? "
+                + "    GROUP BY UtilityTypeID "
+                + ") latest ON ur.UtilityTypeID = latest.UtilityTypeID "
+                + "         AND ur.UtilityReadingCreatedAt = latest.MaxDate "
+                + "WHERE ur.RoomID = ? AND YEAR(ur.ReadingDate) = ? AND MONTH(ur.ReadingDate) = ?";
+
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            LocalDate parsedDate = LocalDate.parse(month + "-01");
+            int year = parsedDate.getYear();
+            int monthValue = parsedDate.getMonthValue();
+
+            ps.setInt(1, roomId);
+            ps.setInt(2, year);
+            ps.setInt(3, monthValue);
+            ps.setInt(4, roomId);
+            ps.setInt(5, year);
+            ps.setInt(6, monthValue);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UtilityReading ur = new UtilityReading();
+                    ur.setReadingID(rs.getInt("ReadingID"));
+                    ur.setRoomID(rs.getInt("RoomID"));
+                    ur.setUtilityTypeID(rs.getInt("UtilityTypeID"));
+                    ur.setReadingDate(rs.getDate("ReadingDate"));
+                    ur.setOldReading(rs.getBigDecimal("OldReading"));
+                    ur.setNewReading(rs.getBigDecimal("NewReading"));
+                    ur.setPriceUsed(rs.getBigDecimal("PriceUsed"));
+                    ur.setOldPrice(rs.getBigDecimal("OldPrice"));
+                    ur.setChangedBy(rs.getString("ChangedBy"));
+                    ur.setUtilityReadingCreatedAt(rs.getTimestamp("UtilityReadingCreatedAt"));
+                    readings.add(ur);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return readings;
+    }
+
 }

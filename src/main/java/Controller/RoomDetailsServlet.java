@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.RentalRequestDAO;
 import dao.RoomDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,8 +13,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.Connection;
 import java.util.List;
+import model.Customer;
 import model.Room;
 import utils.DBContext;
 
@@ -62,15 +65,16 @@ public class RoomDetailsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String idParam = request.getParameter("id");
         if (idParam == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu ID phòng.");
             return;
         }
 
-        try  { // 👈 Gọi trực tiếp getConnection() vì đã extends DBContext
-            RoomDAO roomDAO = new RoomDAO();
+        try {
             int roomId = Integer.parseInt(idParam);
+            RoomDAO roomDAO = new RoomDAO();
             Room room = roomDAO.getRoomById(roomId);
 
             if (room == null) {
@@ -78,47 +82,61 @@ public class RoomDetailsServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Thêm phần lấy danh sách phòng nổi bật
             List<Room> featuredRooms = roomDAO.getFeaturedRooms();
-
-            // ✅ Đưa dữ liệu lên request
             request.setAttribute("room", room);
             request.setAttribute("featuredRooms", featuredRooms);
 
-            // ✅ Forward về JSP hiển thị chi tiết
+            // ✅ Kiểm tra nếu khách đã gửi yêu cầu rồi thì không hiện nút "Gửi"
+            HttpSession session = request.getSession();
+            Customer currentCustomer = (Customer) session.getAttribute("customer");
+
+            boolean alreadyRequested = false;
+            boolean showSuccess = false;
+
+            if (currentCustomer != null) {
+                if ("true".equals(request.getParameter("success"))) {
+                    alreadyRequested = true;
+                    showSuccess = true;
+                } else {
+                    RentalRequestDAO rentalRequestDAO = new RentalRequestDAO();
+                   // alreadyRequested = rentalRequestDAO.existsPendingRequest(currentCustomer.getCustomerID(), roomId);
+                }
+            }
+
+            request.setAttribute("alreadyRequested", alreadyRequested);
+            request.setAttribute("showSuccess", showSuccess);
+
             request.getRequestDispatcher("/customer/room-detail.jsp").forward(request, response);
 
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID phòng không hợp lệ.");
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi khi lấy thông tin phòng.");
         }
     }
 
-        /**
-         * Handles the HTTP <code>POST</code> method.
-         *
-         * @param request servlet request
-         * @param response servlet response
-         * @throws ServletException if a servlet-specific error occurs
-         * @throws IOException if an I/O error occurs
-         */
-        @Override
-        protected void doPost
-        (HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-            processRequest(request, response);
-        }
-
-        /**
-         * Returns a short description of the servlet.
-         *
-         * @return a String containing servlet description
-         */
-        @Override
-        public String getServletInfo
-        
-            () {
-        return "Short description";
-        }// </editor-fold>
-
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
     }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Hiển thị thông tin chi tiết phòng và kiểm tra đã gửi yêu cầu thuê chưa";
+    }
+}
