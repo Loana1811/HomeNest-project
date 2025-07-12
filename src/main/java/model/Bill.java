@@ -25,6 +25,9 @@ public class Bill {
         this.billStatus = billStatus;
     }
 
+    public Bill() {
+    }
+
     public int getBillID() {
         return billID;
     }

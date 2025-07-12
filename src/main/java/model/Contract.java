@@ -11,78 +11,109 @@ import java.sql.Date;
  * @author ThanhTruc
  */
 public class Contract {
-    private int contractID;
-    private int tenantID;
-    private int roomID;
-    private Date startDate;
-    private Date endDate;
-    private String contractStatus;
-    private Date contractCreatedAt;
 
-    public Contract(int contractID, int tenantID, int roomID, Date startDate, Date endDate, String contractStatus, Date contractCreatedAt) {
-        this.contractID = contractID;
-        this.tenantID = tenantID;
-        this.roomID = roomID;
+    private int contractId;
+    private int tenantId;
+    private String tenantName;
+    private int roomId;
+    private String roomNumber;
+    private java.util.Date startDate;
+    private java.util.Date endDate;
+    private String contractstatus;
+    private java.util.Date contractcreatedAt;
+    private double amount;
+
+    public Contract() {
+    }
+
+    public Contract(int contractId, int tenantId, int roomId, java.util.Date startDate, java.util.Date endDate, String contractstatus, java.util.Date contractcreatedAt) {
+        this.contractId = contractId;
+        this.tenantId = tenantId;
+        this.roomId = roomId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.contractStatus = contractStatus;
-        this.contractCreatedAt = contractCreatedAt;
+        this.contractstatus = contractstatus;
+        this.contractcreatedAt = contractcreatedAt;
     }
 
-    public int getContractID() {
-        return contractID;
+    public int getContractId() {
+        return contractId;
     }
 
-    public void setContractID(int contractID) {
-        this.contractID = contractID;
+    public void setContractId(int contractId) {
+        this.contractId = contractId;
     }
 
-    public int getTenantID() {
-        return tenantID;
+    public int getTenantId() {
+        return tenantId;
     }
 
-    public void setTenantID(int tenantID) {
-        this.tenantID = tenantID;
+    public void setTenantId(int tenantId) {
+        this.tenantId = tenantId;
     }
 
-    public int getRoomID() {
-        return roomID;
+    public String getTenantName() {
+        return tenantName;
     }
 
-    public void setRoomID(int roomID) {
-        this.roomID = roomID;
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
     }
 
-    public Date getStartDate() {
+    public int getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public java.util.Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(java.util.Date startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public java.util.Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(java.util.Date endDate) {
         this.endDate = endDate;
     }
 
-    public String getContractStatus() {
-        return contractStatus;
+    public String getContractstatus() {
+        return contractstatus;
     }
 
-    public void setContractStatus(String contractStatus) {
-        this.contractStatus = contractStatus;
+    public void setContractstatus(String contractstatus) {
+        this.contractstatus = contractstatus;
     }
 
-    public Date getContractCreatedAt() {
-        return contractCreatedAt;
+    public java.util.Date getContractcreatedAt() {
+        return contractcreatedAt;
     }
 
-    public void setContractCreatedAt(Date contractCreatedAt) {
-        this.contractCreatedAt = contractCreatedAt;
+    public void setContractcreatedAt(java.util.Date contractcreatedAt) {
+        this.contractcreatedAt = contractcreatedAt;
     }
-    
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
 }

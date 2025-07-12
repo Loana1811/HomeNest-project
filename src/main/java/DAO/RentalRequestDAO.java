@@ -3,168 +3,198 @@ package dao;
 import model.RentalRequest;
 import utils.DBContext;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RentalRequestDAO {
-    private Connection conn;
+public class RentalRequestDAO extends DBContext {
 
-    public RentalRequestDAO() {
-        try {
-            conn = new DBContext().getConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Lấy tất cả yêu cầu thuê
-    public List<RentalRequest> getAllRentalRequests() {
+    public List<RentalRequest> getAllRentalRequests() throws SQLException {
         List<RentalRequest> list = new ArrayList<>();
-        String sql = "SELECT RequestID, CustomerID, RoomID, RequestDate, RequestStatus, ApprovedBy, ApprovedDate "
-                   + "FROM RentalRequests";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT * FROM RentalRequests";
+        try ( PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new RentalRequest(
-                    rs.getInt("RequestID"),
-                    rs.getInt("CustomerID"),
-                    rs.getInt("RoomID"),
-                    rs.getDate("RequestDate"),
-                    rs.getString("RequestStatus"),
-                    rs.getInt("ApprovedBy"),
-                    rs.getDate("ApprovedDate")
-                ));
+                list.add(map(rs));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return list;
     }
 
-    // Lấy 1 yêu cầu theo ID
-    public RentalRequest getRentalRequestById(int id) {
-        String sql = "SELECT RequestID, CustomerID, RoomID, RequestDate, RequestStatus, ApprovedBy, ApprovedDate "
-                   + "FROM RentalRequests WHERE RequestID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    public RentalRequest getRentalRequestById(int id) throws SQLException {
+        String sql = "SELECT * FROM RentalRequests WHERE RequestID=?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new RentalRequest(
-                        rs.getInt("RequestID"),
-                        rs.getInt("CustomerID"),
-                        rs.getInt("RoomID"),
-                        rs.getDate("RequestDate"),
-                        rs.getString("RequestStatus"),
-                        rs.getInt("ApprovedBy"),
-                        rs.getDate("ApprovedDate")
-                    );
+                    return map(rs);
                 }
             }
-        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    public boolean insertRentalRequest(RentalRequest b) throws SQLException {
+        String sql = "INSERT INTO RentalRequests (CustomerID, RoomID, RequestDate, RequestStatus) VALUES (?, ?, ?, ?)";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, b.getCustomerID());
+            ps.setInt(2, b.getRoomID());
+            ps.setDate(3, b.getRequestDate());
+            ps.setString(4, b.getRequestStatus());
+            int rows = ps.executeUpdate();
+            System.out.println("✅ Rows inserted: " + rows);
+            return rows > 0;
+        }
+    }
+
+    public boolean updateRentalRequest(RentalRequest b) throws SQLException {
+        String sql = "UPDATE RentalRequests SET CustomerID=?, RoomID=?, RequestDate=?, RequestStatus=?, ApprovedBy=?, ApprovedDate=? WHERE RequestID=?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, b.getCustomerID());
+            ps.setInt(2, b.getRoomID());
+            ps.setDate(3, b.getRequestDate());
+            ps.setString(4, b.getRequestStatus());
+
+            if (b.getApprovedBy() == null) {
+                ps.setNull(5, Types.INTEGER);
+            } else {
+                ps.setInt(5, b.getApprovedBy());
+            }
+
+            if (b.getApprovedDate() == null) {
+                ps.setNull(6, Types.DATE);
+            } else {
+                ps.setDate(6, b.getApprovedDate());
+            }
+
+            ps.setInt(7, b.getRequestID());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean deleteRentalRequest(int id) throws SQLException {
+        String sql = "DELETE FROM RentalRequests WHERE RequestID=?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean existsPendingRequest(int customerId, int roomId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM RentalRequests WHERE CustomerID=? AND RoomID=? AND RequestStatus = 'Pending'";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            System.out.println("➡️ [DEBUG] Checking pending request for CustomerID = " + customerId + ", RoomID = " + roomId);
+            ps.setInt(1, customerId);
+            ps.setInt(2, roomId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                boolean exists = rs.next() && rs.getInt(1) > 0;
+                System.out.println("✅ [DEBUG] existsPendingRequest: " + exists);
+                return exists;
+            }
+        }
+    }
+
+    public void cancelPendingRequest(int customerId, int roomId) throws SQLException {
+        String sql = "DELETE FROM RentalRequests WHERE CustomerID = ? AND RoomID = ? AND RequestStatus = 'Pending'";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            ps.setInt(2, roomId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Dùng cho admin duyệt yêu cầu
+    public RentalRequest getRequestById(int requestId) {
+        String sql = "SELECT * FROM RentalRequests WHERE RequestID = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, requestId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                RentalRequest r = new RentalRequest();
+                r.setRequestID(rs.getInt("RequestID"));
+                r.setRoomID(rs.getInt("RoomID"));
+                r.setCustomerID(rs.getInt("CustomerID"));
+                r.setRequestDate(rs.getDate("RequestDate"));
+                r.setRequestStatus(rs.getString("RequestStatus"));
+                r.setApprovedBy(rs.getObject("ApprovedBy") != null ? rs.getInt("ApprovedBy") : null);
+                r.setApprovedDate(rs.getDate("ApprovedDate"));
+                return r;
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    // Thêm mới yêu cầu
-    public void addRentalRequest(RentalRequest r) {
-        String sql = "INSERT INTO RentalRequests (CustomerID, RoomID, RequestDate, RequestStatus, ApprovedBy, ApprovedDate) "
-                   + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, r.getCustomerID());
-            ps.setInt(2, r.getRoomID());
-            ps.setDate(3, r.getRequestDate());
-            ps.setString(4, r.getRequestStatus());
-            ps.setInt(5, r.getApprovedBy());
-            ps.setDate(6, r.getApprovedDate());
+    public void updateStatus(int requestId, String status) {
+        String sql = "UPDATE RentalRequests SET RequestStatus = ? WHERE RequestID = ?";
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, requestId);
             ps.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Cập nhật yêu cầu
-    public void updateRentalRequest(RentalRequest r) {
-        String sql = "UPDATE RentalRequests SET CustomerID = ?, RoomID = ?, RequestDate = ?, RequestStatus = ?, ApprovedBy = ?, ApprovedDate = ? "
-                   + "WHERE RequestID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, r.getCustomerID());
-            ps.setInt(2, r.getRoomID());
-            ps.setDate(3, r.getRequestDate());
-            ps.setString(4, r.getRequestStatus());
-            ps.setInt(5, r.getApprovedBy());
-            ps.setDate(6, r.getApprovedDate());
-            ps.setInt(7, r.getRequestID());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private RentalRequest map(ResultSet rs) throws SQLException {
+        RentalRequest b = new RentalRequest();
+        b.setRequestID(rs.getInt("RequestID"));
+        b.setCustomerID(rs.getInt("CustomerID"));
+        b.setRoomID(rs.getInt("RoomID"));
+        b.setRequestDate(rs.getDate("RequestDate"));
+        b.setRequestStatus(rs.getString("RequestStatus"));
+        b.setApprovedBy(rs.getObject("ApprovedBy") != null ? rs.getInt("ApprovedBy") : null);
+        b.setApprovedDate(rs.getDate("ApprovedDate"));
+        return b;
     }
 
-    // Xóa yêu cầu
-    public void deleteRentalRequest(int id) {
-        String sql = "DELETE FROM RentalRequests WHERE RequestID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Lấy theo khách hàng
-    public List<RentalRequest> getRentalRequestsByCustomerId(int customerId) {
+    public List<RentalRequest> getAllRequests() throws SQLException {
         List<RentalRequest> list = new ArrayList<>();
-        String sql = "SELECT RequestID, CustomerID, RoomID, RequestDate, RequestStatus, ApprovedBy, ApprovedDate "
-                   + "FROM RentalRequests WHERE CustomerID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, customerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new RentalRequest(
-                        rs.getInt("RequestID"),
-                        rs.getInt("CustomerID"),
-                        rs.getInt("RoomID"),
-                        rs.getDate("RequestDate"),
-                        rs.getString("RequestStatus"),
-                        rs.getInt("ApprovedBy"),
-                        rs.getDate("ApprovedDate")
-                    ));
-                }
+        String sql = "SELECT * FROM RentalRequests";
+        try ( PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(map(rs));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return list;
     }
 
-    // Lấy theo phòng
-    public List<RentalRequest> getRentalRequestsByRoomId(int roomId) {
+    public List<RentalRequest> getRentalRequestsByBlockId(int blockId) throws SQLException {
         List<RentalRequest> list = new ArrayList<>();
-        String sql = "SELECT RequestID, CustomerID, RoomID, RequestDate, RequestStatus, ApprovedBy, ApprovedDate "
-                   + "FROM RentalRequests WHERE RoomID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, roomId);
-            try (ResultSet rs = ps.executeQuery()) {
+        String query = "SELECT r.* FROM RentalRequests r "
+                + "JOIN Rooms ro ON r.RoomID = ro.RoomID "
+                + "WHERE ro.BlockID = ? "
+                + "ORDER BY r.RequestDate DESC";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, blockId);
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new RentalRequest(
-                        rs.getInt("RequestID"),
-                        rs.getInt("CustomerID"),
-                        rs.getInt("RoomID"),
-                        rs.getDate("RequestDate"),
-                        rs.getString("RequestStatus"),
-                        rs.getInt("ApprovedBy"),
-                        rs.getDate("ApprovedDate")
-                    ));
+                    RentalRequest r = new RentalRequest();
+                    r.setRequestID(rs.getInt("RequestID"));
+                    r.setCustomerID(rs.getInt("CustomerID"));
+                    r.setRoomID(rs.getInt("RoomID"));
+                    r.setRequestDate(rs.getDate("RequestDate"));
+                    r.setRequestStatus(rs.getString("RequestStatus"));
+                    r.setApprovedBy(rs.getObject("ApprovedBy") != null ? rs.getInt("ApprovedBy") : null);
+                    r.setApprovedDate(rs.getDate("ApprovedDate"));
+                    list.add(r);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
         return list;
     }
+
+  public void expireOldPendingRequests() {
+    String sql = "UPDATE RentalRequests SET RequestStatus = 'Expired' "
+               + "WHERE RequestStatus = 'Pending' AND DATEDIFF(DAY, RequestDate, GETDATE()) > 7";
+    try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+
 }

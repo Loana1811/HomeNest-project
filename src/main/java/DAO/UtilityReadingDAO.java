@@ -1,160 +1,170 @@
-// UtilityReadingDAO.java
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package dao;
 
 import model.UtilityReading;
+import model.UtilityUsageView;
 import utils.DBContext;
-
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UtilityReadingDAO {
-    private Connection conn;
 
-    public UtilityReadingDAO() {
-        try {
-            conn = new DBContext().getConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private final DBContext dbContext = new DBContext();
 
-    // Lấy tất cả bản ghi chỉ số
-    public List<UtilityReading> getAllUtilityReadings() {
+    // Lấy tất cả bản ghi UtilityReading
+    public List<UtilityReading> getAllUtilityReadings() throws SQLException {
         List<UtilityReading> list = new ArrayList<>();
-        String sql = "SELECT ReadingID, UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, PriceUsed, OldPrice, ChangedBy, UtilityReadingCreatedAt "
-                   + "FROM UtilityReadings";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT * FROM UtilityReadings";
+        try ( Connection c = dbContext.getConnection();  PreparedStatement ps = c.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new UtilityReading(
-                    rs.getInt("ReadingID"),
-                    rs.getInt("UtilityTypeID"),
-                    rs.getInt("RoomID"),
-                    rs.getDate("ReadingDate"),
-                    rs.getBigDecimal("OldReading"),
-                    rs.getBigDecimal("NewReading"),
-                    rs.getBigDecimal("PriceUsed"),
-                    rs.getBigDecimal("OldPrice"),
-                    rs.getString("ChangedBy"),
-                    rs.getTimestamp("UtilityReadingCreatedAt")
-                ));
+                list.add(map(rs));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return list;
     }
 
     // Lấy theo ID
-    public UtilityReading getUtilityReadingById(int id) {
-        String sql = "SELECT ReadingID, UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, PriceUsed, OldPrice, ChangedBy, UtilityReadingCreatedAt "
-                   + "FROM UtilityReadings WHERE ReadingID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    public UtilityReading getUtilityReadingById(int id) throws SQLException {
+        String sql = "SELECT * FROM UtilityReadings WHERE ReadingID=?";
+        try ( Connection c = dbContext.getConnection();  PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new UtilityReading(
-                        rs.getInt("ReadingID"),
-                        rs.getInt("UtilityTypeID"),
-                        rs.getInt("RoomID"),
-                        rs.getDate("ReadingDate"),
-                        rs.getBigDecimal("OldReading"),
-                        rs.getBigDecimal("NewReading"),
-                        rs.getBigDecimal("PriceUsed"),
-                        rs.getBigDecimal("OldPrice"),
-                        rs.getString("ChangedBy"),
-                        rs.getTimestamp("UtilityReadingCreatedAt")
-                    );
+                    return map(rs);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    // Thêm mới
-    public void addUtilityReading(UtilityReading u) {
-        String sql = "INSERT INTO UtilityReadings (UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, PriceUsed, OldPrice, ChangedBy) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, u.getUtilityTypeID());
-            ps.setInt(2, u.getRoomID());
-            ps.setDate(3, u.getReadingDate());
-            ps.setBigDecimal(4, u.getOldReading());
-            ps.setBigDecimal(5, u.getNewReading());
-            ps.setBigDecimal(6, u.getPriceUsed());
-            ps.setBigDecimal(7, u.getOldPrice());
-            ps.setString(8, u.getChangedBy());
+    // Thêm bản ghi UtilityReading
+    public boolean insertUtilityReading(UtilityReading b) throws SQLException {
+        String sql = "INSERT INTO UtilityReadings "
+                + "(UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, PriceUsed, OldPrice, ChangedBy, UtilityReadingCreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        return dbContext.execUpdateQuery(sql, b.getUtilityTypeID(), b.getRoomID(), b.getReadingDate(),
+                b.getOldReading(), b.getNewReading(), b.getPriceUsed(), b.getOldPrice(), b.getChangedBy()) > 0;
+    }
+
+    // Update bản ghi
+    public boolean updateUtilityReading(UtilityReading b) throws SQLException {
+        String sql = "UPDATE UtilityReadings SET UtilityTypeID=?, RoomID=?, ReadingDate=?, OldReading=?, NewReading=?, PriceUsed=?, OldPrice=?, ChangedBy=? WHERE ReadingID=?";
+        return dbContext.execUpdateQuery(sql, b.getUtilityTypeID(), b.getRoomID(), b.getReadingDate(),
+                b.getOldReading(), b.getNewReading(), b.getPriceUsed(), b.getOldPrice(), b.getChangedBy(), b.getReadingID()) > 0;
+    }
+
+    // Xoá bản ghi
+    public boolean deleteUtilityReading(int id) throws SQLException {
+        String sql = "DELETE FROM UtilityReadings WHERE ReadingID=?";
+        return dbContext.execUpdateQuery(sql, id) > 0;
+    }
+
+    public void insert(UtilityReading ur) throws SQLException {
+        String sql = "INSERT INTO UtilityReadings "
+                + "(RoomID, UtilityTypeID, ReadingDate, OldReading, NewReading, PriceUsed, ChangedBy, UtilityReadingCreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ur.getRoomID());
+            ps.setInt(2, ur.getUtilityTypeID());
+            ps.setDate(3, ur.getReadingDate());  // Hoặc GETDATE() tuỳ field
+            ps.setBigDecimal(4, ur.getOldReading());
+            ps.setBigDecimal(5, ur.getNewReading());
+            ps.setBigDecimal(6, ur.getPriceUsed());
+            ps.setString(7, ur.getChangedBy());
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-    // Cập nhật
-    public void updateUtilityReading(UtilityReading u) {
-        String sql = "UPDATE UtilityReadings SET UtilityTypeID = ?, RoomID = ?, ReadingDate = ?, OldReading = ?, NewReading = ?, PriceUsed = ?, OldPrice = ?, ChangedBy = ? "
-                   + "WHERE ReadingID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, u.getUtilityTypeID());
-            ps.setInt(2, u.getRoomID());
-            ps.setDate(3, u.getReadingDate());
-            ps.setBigDecimal(4, u.getOldReading());
-            ps.setBigDecimal(5, u.getNewReading());
-            ps.setBigDecimal(6, u.getPriceUsed());
-            ps.setBigDecimal(7, u.getOldPrice());
-            ps.setString(8, u.getChangedBy());
-            ps.setInt(9, u.getReadingID());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    // Lấy chỉ số mới nhất của 1 phòng & utility
+    public double getLatestIndex(int roomId, int utilityTypeId) throws SQLException {
+        String sql = "SELECT TOP 1 NewReading FROM UtilityReadings WHERE RoomID = ? AND UtilityTypeID = ? ORDER BY UtilityReadingCreatedAt DESC";
 
-    // Xóa
-    public void deleteUtilityReading(int id) {
-        String sql = "DELETE FROM UtilityReadings WHERE ReadingID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Lấy theo phòng
-    public List<UtilityReading> getUtilityReadingsByRoomId(int roomId) {
-        List<UtilityReading> list = new ArrayList<>();
-        String sql = "SELECT ReadingID, UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, PriceUsed, OldPrice, ChangedBy, UtilityReadingCreatedAt "
-                   + "FROM UtilityReadings WHERE RoomID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new UtilityReading(
-                        rs.getInt("ReadingID"),
-                        rs.getInt("UtilityTypeID"),
-                        rs.getInt("RoomID"),
-                        rs.getDate("ReadingDate"),
-                        rs.getBigDecimal("OldReading"),
-                        rs.getBigDecimal("NewReading"),
-                        rs.getBigDecimal("PriceUsed"),
-                        rs.getBigDecimal("OldPrice"),
-                        rs.getString("ChangedBy"),
-                        rs.getTimestamp("UtilityReadingCreatedAt")
-                    ));
-                }
+            ps.setInt(2, utilityTypeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        return 0;
+    }
+
+    // Trả về danh sách sử dụng tiện ích (View)
+    public List<UtilityUsageView> getAllUsages() throws SQLException {
+        List<UtilityUsageView> list = new ArrayList<>();
+
+        String sql = "SELECT ur.ReadingID, r.RoomNumber, ut.UtilityName, "
+                + "       ur.OldReading AS OldIndex, "
+                + "       ur.NewReading AS NewIndex, "
+                + "       ut.UnitPrice AS UnitPrice, "
+                + "       (ur.NewReading - ur.OldReading) * ut.UnitPrice AS PriceUsed, "
+                + "       ur.ChangedBy, "
+                + "       ur.ReadingDate AS ReadingDate, "
+                + "       b.BlockName AS BlockName "
+                + "FROM UtilityReadings ur "
+                + "JOIN Rooms r ON ur.RoomID = r.RoomID "
+                + "JOIN Blocks b ON r.BlockID = b.BlockID "
+                + "JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
+                + "WHERE (ur.OldReading > 0 OR ur.NewReading > 0) "
+                + "AND (ur.ChangedBy NOT LIKE '%|%') "
+                + "ORDER BY b.BlockName, r.RoomNumber, ur.ReadingDate DESC";
+
+        try (
+                 Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new UtilityUsageView(
+                        rs.getInt("ReadingID"),
+                        rs.getString("RoomNumber"),
+                        rs.getString("UtilityName"),
+                        rs.getDouble("OldIndex"),
+                        rs.getDouble("NewIndex"),
+                        rs.getDouble("PriceUsed"),
+                        rs.getString("ChangedBy"),
+                        rs.getDate("ReadingDate"),
+                         rs.getString("BlockName")
+                ));
+            }
+        }
+
         return list;
+    }
+
+    // Gán utility cho phòng (init reading = 0)
+    public void assignUtilityToRoom(int roomId, int utilityTypeId) throws SQLException {
+        String sql = "INSERT INTO UtilityReadings (RoomID, UtilityTypeID, ReadingDate, OldReading, NewReading) VALUES (?, ?, GETDATE(), 0, 0)";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, utilityTypeId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Xoá reading = 0 theo utilityType
+    public void deleteZeroReadingsByUtilityType(int utilityTypeId) throws SQLException {
+        String sql = "DELETE FROM UtilityReadings WHERE UtilityTypeID = ? AND OldReading = 0 AND NewReading = 0";
+        try ( Connection conn = dbContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, utilityTypeId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Map ResultSet -> UtilityReading
+    private UtilityReading map(ResultSet rs) throws SQLException {
+        UtilityReading b = new UtilityReading();
+        b.setReadingID(rs.getInt("ReadingID"));
+        b.setUtilityTypeID(rs.getInt("UtilityTypeID"));
+        b.setRoomID(rs.getInt("RoomID"));
+        b.setReadingDate(rs.getDate("ReadingDate"));
+        b.setOldReading(rs.getBigDecimal("OldReading"));
+        b.setNewReading(rs.getBigDecimal("NewReading"));
+        b.setPriceUsed(rs.getBigDecimal("PriceUsed"));
+        b.setOldPrice(rs.getBigDecimal("OldPrice"));
+        b.setChangedBy(rs.getString("ChangedBy"));
+        return b;
     }
 }

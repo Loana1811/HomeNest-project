@@ -6,10 +6,10 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
- 
+
 <%@ page import="model.Room" %>
 <%@ page import="model.Category" %>
-
+<%@ page import="model.Block" %>
 
 <%
     List<Room> roomList = (List<Room>) request.getAttribute("roomList");
@@ -30,81 +30,83 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
         <style>
+            /* ===== Base Layout ===== */
+            body {
+                background-color: #f0fdf4;
+            }
 
+            .navbar {
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                padding: 12px 24px;
+            }
 
-
-
-
+            /* ===== Room Card ===== */
             .room-card {
-                border: 1px solid #ddd;
-                border-radius: 15px;
+                border: 1px solid #dee2e6;
+                border-radius: 12px;
+                background-color: #ffffff;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                 overflow: hidden;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-                transition: 0.3s;
-                background: #fff;
-                min-height: 400px;
+                transition: transform 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
             }
+
             .room-card:hover {
-                transform: translateY(-6px);
+                transform: translateY(-5px);
             }
+
             .room-img {
                 width: 100%;
-                height: 220px;
+                height: 200px;
                 object-fit: cover;
-            }
-            .price {
-                font-size: 2.4rem;      /* ~36px */
-                font-weight: 900;
-                color: red;
-                margin-top: 0.5rem;
-            }
-            .room-info p {
-                margin-bottom: 3px;
-                font-size: 16px;
-                color: #444;
-            }
-            .status-available {
-                color: green;
-            }
-            .status-occupied {
-                color: red;
+                border-bottom: 1px solid #ddd;
             }
 
-            .filter-popup {
-                position: fixed;
-                top: 10%;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 900px;
-                background: #fff;
-                border-radius: 15px;
-                z-index: 1000;
+            .room-info {
                 padding: 20px;
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+                flex-grow: 1;
             }
-            .overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
+
+            .room-info p {
+                font-size: 0.95rem;
+                margin-bottom: 0.4rem;
+                color: #555;
             }
-            .d-none {
-                display: none !important;
+
+            /* ===== Room Status ===== */
+            .status-available {
+                color: #28a745;
+                font-weight: 600;
             }
-            .price-option-group .btn.active {
-                background-color: #495057;
-                color: white;
+
+            .status-occupied {
+                color: #dc3545;
+                font-weight: 600;
             }
-            .area-option-group .btn.active {
-                background-color: #495057;
-                color: white;
+
+            /* ===== Price ===== */
+            .price {
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: #d10000;
             }
-            footer .container-fluid {
-                max-width: 100% !important;
+
+            /* ===== Button Styles ===== */
+            .btn-warning {
+                background-color: #ffc107;
+                border: none;
             }
+
+            .btn-warning:hover {
+                background-color: #e0a800;
+            }
+
+            /* ===== Pagination ===== */
             .pagination .page-link {
-                color: #198754; /* Bootstrap xanh lá */
+                color: #198754;
                 border-color: #198754;
             }
 
@@ -115,306 +117,434 @@
 
             .pagination .active .page-link {
                 background-color: #198754;
-                border-color: #198754;
                 color: white;
+                border-color: #198754;
             }
 
+            /* ===== Tags ===== */
+            .highlight-tag {
+                background-color: #e7f3ff;
+                color: #0056b3;
+                padding: 8px 12px;
+                border-radius: 15px;
+                display: inline-block;
+                max-width: 120px;
+                word-wrap: break-word;
+                text-align: center;
+                font-size: 14px;
+            }
+
+            /* ===== Filter Popup ===== */
+            .filter-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 1050;
+                width: 500px;
+                background: white;
+                padding: 30px;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            /* ===== Overlay ===== */
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.4);
+                z-index: 1040;
+            }
         </style>
     </head>
     <body style="padding-top: 100px; overflow-x: hidden;">
 
-
-
+        <!-- ===== NAVBAR ===== -->
         <nav class="navbar navbar-light bg-white shadow-sm fixed-top px-4 py-2">
             <div class="container-fluid d-flex justify-content-between align-items-center">
 
-                <!-- Logo bên trái -->
-                <div class="d-flex align-items-center">
-                    <img src="<%= request.getContextPath()%>/images/logo.jpg" alt="HomeNest Logo" style="height: 70px;" class="mb-2 me-2">
-                    <span class="fw-bold fs-4 text-success">HomeNest</span>
-                </div>
+                <div class="container-fluid py-3 px-4">
+                    <div class="row align-items-center gy-2">
 
-                <!-- Dropdown Category ở giữa -->
-                <div class="flex-grow-1 d-flex justify-content-center">
-                    <form method="get" action="<%= request.getContextPath() %>/customer/room-list" class="mb-0">
-
-                        <select class="form-select form-select-sm" name="category" onchange="this.form.submit()" style="width: 250px;">
-                            <option value="">All</option>
-                            <%
-                                int selectedCategory = -1;
-                                try {
-                                    selectedCategory = Integer.parseInt(selectedCategoryId);
-                                } catch (Exception ignored) {
-                                }
-                                if (categoryList != null) {
-                                    for (model.Category c : categoryList) {
-                            %>
-                            <option value="<%= c.getCategoriesID()%>" <%= (c.getCategoriesID() == selectedCategory) ? "selected" : ""%>>
-                                <%= c.getCategoriesName()%>
-                            </option>
-                            <%
-                                    }
-                                }
-                            %>
-                        </select>
-                    </form>
-                </div>
-
-                <!-- Nút Filter bên phải -->
-                <div>
-                    <button class="btn btn-outline-dark" onclick="toggleFilter()">Filter</button>
-                </div>
-
-            </div>
-        </nav>
-
-        <!-- Overlay -->
-        <div id="overlay" class="overlay d-none" onclick="toggleFilter()"></div>
-
-        <!-- Filter Popup -->
-        <div id="filterPopup" class="filter-popup d-none">
-            <form method="get" action="room-list">
-
-                <h5 class="fw-bold mb-3">Room Filters</h5>
-                <!-- Block -->
-                <div class="mb-3">
-                    <label class="fw-semibold mb-2">Block</label><br/>
-                    <div class="d-flex flex-wrap gap-2">
-                        <input type="radio" class="btn-check" name="block" id="blockAll" value="" 
-                               <%= request.getParameter("block") == null ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="blockAll">All</label>
-
-                        <input type="radio" class="btn-check" name="block" id="blockA" value="1"
-                               <%= "1".equals(request.getParameter("block")) ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="blockA">Block A</label>
-
-                        <input type="radio" class="btn-check" name="block" id="blockB" value="2"
-                               <%= "2".equals(request.getParameter("block")) ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="blockB">Block B</label>
-
-                        <input type="radio" class="btn-check" name="block" id="blockC" value="3"
-                               <%= "3".equals(request.getParameter("block")) ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="blockC">Block C</label>
-
-                        <input type="radio" class="btn-check" name="block" id="blockD" value="4"
-                               <%= "4".equals(request.getParameter("block")) ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="blockD">Block D</label>
-                    </div>
-                </div>
-
-                <!-- Status -->
-                <div class="mb-3">
-                    <label class="fw-semibold mb-2">Status</label><br/>
-                    <div class="d-flex flex-wrap gap-2">
-                        <input type="radio" class="btn-check" name="status" id="statusAll" value="" <%= selectedStatus.isEmpty() ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="statusAll">All</label>
-
-                        <input type="radio" class="btn-check" name="status" id="statusAvailable" value="Available" <%= selectedStatus.equals("Available") ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="statusAvailable">Available</label>
-
-                        <input type="radio" class="btn-check" name="status" id="statusOccupied" value="Occupied" <%= selectedStatus.equals("Occupied") ? "checked" : ""%>>
-                        <label class="btn btn-outline-secondary rounded" for="statusOccupied">Occupied</label>
-                    </div>
-                </div>
-
-                <!-- Price Range -->
-                <div class="mb-3">
-                    <label class="fw-semibold mb-2">Price Range (VND)</label><br/>
-                    <div class="d-flex flex-wrap gap-2 price-option-group" id="priceGroup">
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="0" data-max="1000000" onclick="selectPrice(this, 0, 1000000)">Under 1M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="1000000" data-max="2000000" onclick="selectPrice(this, 1000000, 2000000)">1 - 2M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="2000000" data-max="3000000" onclick="selectPrice(this, 2000000, 3000000)">2 - 3M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="3000000" data-max="5000000" onclick="selectPrice(this, 3000000, 5000000)">3 - 5M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="5000000" data-max="7000000" onclick="selectPrice(this, 5000000, 7000000)">5 - 7M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="7000000" data-max="10000000" onclick="selectPrice(this, 7000000, 10000000)">7 - 10M</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="10000000" data-max="" onclick="selectPrice(this, 10000000, null)">Above 10M</button>
-                        <button type="button" class="btn btn-outline-danger rounded" onclick="clearPrice()">Clear</button>
-                    </div>
-                </div>
-
-                <!-- Area Range -->
-                <div class="mb-3">
-                    <label class="fw-semibold mb-2">Area Range (m²)</label><br/>
-                    <div class="d-flex flex-wrap gap-2 area-option-group" id="areaGroup">
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="0" data-max="18" onclick="selectArea(this, 0, 18)">Under 18</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="18" data-max="20" onclick="selectArea(this, 18, 20)">18 - 20</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="20" data-max="25" onclick="selectArea(this, 20, 25)">20 - 25</button>
-                        <button type="button" class="btn btn-outline-secondary rounded" data-min="25" data-max="" onclick="selectArea(this, 25, null)">Above 25</button>
-                        <button type="button" class="btn btn-outline-danger rounded" onclick="clearArea()">Clear</button>
-                    </div>
-                </div>
-
-                <input type="hidden" name="minArea" id="minArea" value="<%= minArea%>">
-                <input type="hidden" name="maxArea" id="maxArea" value="<%= maxArea%>">
-
-
-
-                <input type="hidden" name="minPrice" id="minPrice" value="<%= minPrice%>">
-                <input type="hidden" name="maxPrice" id="maxPrice" value="<%= maxPrice%>">
-
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-primary">Apply</button>
-                    <button type="button" class="btn btn-secondary ms-2" onclick="toggleFilter()">Cancel</button>
-                </div>
-            </form>
-        </div>
-
-        <% if (roomList != null && !roomList.isEmpty()) { %>
-        <div class="row g-4 px-4 px-md-5">
-
-            <% for (Room r : roomList) {%>
-            <div class="col-md-4">
-                <div class="room-card">
-                    <img src="<%= request.getContextPath() %>/images/rooms/<%= r.getImagePath() != null ? r.getImagePath() : "room-default.jpg" %>"
-
-                         onerror="this.onerror=null;this.src='images/rooms/room-default.jpg';"
-                         class="room-img" alt="Room Image">
-                    <div class="p-3 room-info">
-
-                        <h5 class="fw-semibold mb-2">
-                            <%= r.getRoomNumber()%>
-                        </h5>
-
-
-
-                        <p><i class="bi bi-diagram-3"></i> Block: <%= r.getBlockID()%></p>
-                        <p class="text-danger fw-semibold">
-                            <i class="bi bi-arrows-fullscreen me-1"></i> <%= r.getArea()%> m²
-                        </p>
-
-
-
-                        <p>
-                            <i class="bi bi-door-closed"></i> Status:
-                            <span class="<%= r.getRoomStatus().equalsIgnoreCase("Available") ? "status-available" : "status-occupied"%>">
-                                <%= r.getRoomStatus()%>
-                            </span>
-                        </p>
-                        <p class="price" style="font-size: 1.2rem;">
-                            Price:
-                            <span style="font-size: 1.5rem; font-weight: 600; color: red;">
-                                <%= String.format("%,.0f", r.getRentPrice())%> ₫
-                            </span> / month
-                        </p>
-
-
-                        <div class="text-end">
-                            <a href="room-detail?id=<%= r.getRoomID()%>" class="btn btn-warning fw-bold px-4 py-2">View details</a>
+                        <!-- ==== Logo bên trái ==== -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 d-flex align-items-center">
+                            <%-- 
+                            <img src="<%= request.getContextPath()%>/images/logo.jpg" 
+                                 alt="HomeNest Logo" style="height: 60px;" class="me-2"> 
+                            --%>
+                            <span class="fw-bold fs-4 text-success">HomeNest</span>
                         </div>
 
+                        <!-- ==== Dropdown + Filter giữa ==== -->
+                        <div class="col-lg-6 col-md-8 col-sm-12 d-flex justify-content-center">
+                            <div class="d-flex align-items-center gap-2">
 
+                                <!-- Dropdown Category -->
+                                <form method="get" action="<%= request.getContextPath()%>/customer/room-list" class="mb-0">
+                                    <select class="form-select border-success" name="category" onchange="this.form.submit()" style="min-width: 400px;">
+                                        <option value="">All</option>
+                                        <%
+                                            int selectedCategory = -1;
+                                            try {
+                                                selectedCategory = Integer.parseInt(selectedCategoryId);
+                                            } catch (Exception ignored) {
+                                            }
+                                            if (categoryList != null) {
+                                                for (Category c : categoryList) {
+                                        %>
+                                        <option value="<%= c.getCategoriesID()%>" <%= (c.getCategoriesID() == selectedCategory) ? "selected" : ""%>>
+                                            <%= c.getCategoriesName()%>
+                                        </option>
+                                        <%
+                                                }
+                                            }
+                                        %>
+                                    </select>
+                                </form>
+
+                                <!-- Nút Filter -->
+                                <button class="btn btn-outline-success btn-sm" onclick="toggleFilter()">Filter</button>
+                            </div>
+                        </div>
+
+                        <!-- ==== Người dùng: Hiển thị thông báo + profile + logout ==== -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 ms-auto d-flex justify-content-end align-items-center gap-3">
+                            <%
+                                model.Customer customer = (model.Customer) session.getAttribute("customer");
+                                List<model.Notification> notifications = (List<model.Notification>) request.getAttribute("notifications");
+                                int unreadCount = 0;
+                                if (notifications != null) {
+                                    for (model.Notification n : notifications) {
+                                        if (!n.isIsRead()) {
+
+                                            unreadCount++;
+                                        }
+                                    }
+                                }
+
+                                if (customer != null) {
+                            %>
+                            <span class="fw-semibold text-dark">Hello, <%= customer.getCustomerFullName()%></span>
+
+                            <!-- Nút Thông báo -->
+                            <a href="<%= request.getContextPath()%>/customer/notifications"
+                               class="btn btn-outline-warning btn-sm position-relative">
+                                <i class="bi bi-bell-fill"></i>
+                                <% if (unreadCount > 0) {%>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    <%= unreadCount%>
+                                </span>
+                                <% }%>
+                            </a>
+
+                            <!-- Nút Profile -->
+                            <a href="<%= request.getContextPath()%>/customer/view-profile" class="btn btn-outline-primary btn-sm">Profile</a>
+
+                            <!-- Nút Logout -->
+                            <a href="<%= request.getContextPath()%>/Logouts" class="btn btn-outline-danger btn-sm">Logout</a>
+                            <%
+                            } else {
+                            %>
+                            <a href="<%= request.getContextPath()%>/Login" class="btn btn-outline-success btn-sm">Login</a>
+                            <%
+                                }
+                            %>
+                        </div>
+
+                        </nav>
+
+
+
+                        <!-- Overlay -->
+                        <div id="overlay" class="overlay d-none" onclick="toggleFilter()"></div>
+
+                        <!-- Filter Popup -->
+                        <div id="filterPopup" class="filter-popup d-none">
+                            <form method="get" action="room-list">
+
+                                <h5 class="fw-bold mb-3">Room Filters</h5>
+                                <%
+                                    String selectedBlock = request.getParameter("block") != null ? request.getParameter("block") : "";
+                                %>
+
+                                <!-- Block Filter -->
+                                <div class="mb-3">
+                                    <label class="fw-semibold mb-2">Block</label><br/>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <!-- All Option -->
+                                        <input type="radio" class="btn-check" name="block" id="blockAll" value=""
+                                               <%= selectedBlock.isEmpty() ? "checked" : ""%>>
+                                        <label class="btn btn-outline-success rounded" for="blockAll">All</label>
+
+
+                                        <!-- Dynamic from blockList -->
+                                        <%
+                                            List<Block> blockList = (List<Block>) request.getAttribute("blockList");
+                                            if (blockList != null) {
+                                                for (Block b : blockList) {
+                                                    String blockIdStr = String.valueOf(b.getBlockID());
+                                        %>
+                                        <input type="radio" class="btn-check" name="block" id="block<%= b.getBlockID()%>" value="<%= blockIdStr%>"
+                                               <%= blockIdStr.equals(selectedBlock) ? "checked" : ""%>>
+                                        <label class="btn btn-outline-success rounded" for="block<%= b.getBlockID()%>"><%= b.getBlockName()%></label>
+                                        <%
+                                                }
+                                            }
+                                        %>
+                                    </div>
+                                </div>
+                                <!-- Status -->
+                                <div class="mb-3">
+                                    <label class="fw-semibold mb-2">Status</label><br/>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <input type="radio" class="btn-check" name="status" id="statusAll" value="" <%= selectedStatus.isEmpty() ? "checked" : ""%>>
+                                        <label class="btn btn-outline-success rounded" for="statusAll">All</label>
+
+                                        <input type="radio" class="btn-check" name="status" id="statusAvailable" value="Available" <%= selectedStatus.equals("Available") ? "checked" : ""%>>
+                                        <label class="btn btn-outline-success rounded" for="statusAvailable">Available</label>
+
+
+                                    </div>
+                                </div>
+                                <!-- Price Range -->
+                                <div class="mb-3">
+                                    <label class="fw-semibold mb-2">Price Range (VND)</label><br/>
+                                    <div class="d-flex flex-wrap gap-2 price-option-group" id="priceGroup">
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="0" data-max="1000000" onclick="selectPrice(this, 0, 1000000)">Under 1M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="1000000" data-max="2000000" onclick="selectPrice(this, 1000000, 2000000)">1 - 2M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="2000000" data-max="3000000" onclick="selectPrice(this, 2000000, 3000000)">2 - 3M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="3000000" data-max="5000000" onclick="selectPrice(this, 3000000, 5000000)">3 - 5M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="5000000" data-max="7000000" onclick="selectPrice(this, 5000000, 7000000)">5 - 7M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="7000000" data-max="10000000" onclick="selectPrice(this, 7000000, 10000000)">7 - 10M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="10000000" data-max="" onclick="selectPrice(this, 10000000, null)">Above 10M</button>
+                                        <button type="button" class="btn btn-outline-success rounded" onclick="clearPrice()">Clear</button>
+                                    </div>
+                                </div>
+
+                                <!-- Area Range -->
+                                <div class="mb-3">
+                                    <label class="fw-semibold mb-2">Area Range (m²)</label><br/>
+                                    <div class="d-flex flex-wrap gap-2 area-option-group" id="areaGroup">
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="0" data-max="18" onclick="selectArea(this, 0, 18)">Under 18</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="18" data-max="20" onclick="selectArea(this, 18, 20)">18 - 20</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="20" data-max="25" onclick="selectArea(this, 20, 25)">20 - 25</button>
+                                        <button type="button" class="btn btn-outline-success rounded" data-min="25" data-max="" onclick="selectArea(this, 25, null)">Above 25</button>
+                                        <button type="button" class="btn btn-outline-success rounded" onclick="clearArea()">Clear</button>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="minArea" id="minArea" value="<%= minArea%>">
+                                <input type="hidden" name="maxArea" id="maxArea" value="<%= maxArea%>">
+
+
+
+                                <input type="hidden" name="minPrice" id="minPrice" value="<%= minPrice%>">
+                                <input type="hidden" name="maxPrice" id="maxPrice" value="<%= maxPrice%>">
+                                <%
+                                    List<String> locationList = (List<String>) request.getAttribute("locationList");
+                                    String selectedLocation = request.getParameter("location") != null ? request.getParameter("location") : "";
+                                %>
+
+
+                                <!-- Location Dropdown -->
+                                <div class="mb-3">
+                                    <label class="fw-semibold mb-2">Location</label>
+                                    <select class="form-select border-success" name="location">
+                                        <option value="">All</option>
+                                        <% if (locationList != null) {
+                                                for (String loc : locationList) {%>
+                                        <option value="<%= loc%>" <%= loc.equals(selectedLocation) ? "selected" : ""%>>
+                                            <%= loc%>
+                                        </option>
+                                        <%  }
+                                            } %>
+                                    </select>
+                                </div>
+
+
+                                <div class="text-end mt-4">
+                                    <button type="submit" class="btn btn-primary">Apply</button>
+                                    <button type="button" class="btn btn-secondary ms-2" onclick="toggleFilter()">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <% if (roomList != null && !roomList.isEmpty()) { %>
+                        <div class="row g-4 px-4 px-md-5">
+
+                            <% for (Room r : roomList) {%>
+                            <div class="col-md-4">
+                                <div class="room-card">
+
+                                    <img src="<%= request.getContextPath()%>/<%= r.getImagePath() != null ? r.getImagePath() : "uploads/default.jpg"%>" 
+                                         onerror="this.onerror=null;this.src='<%= request.getContextPath()%>/uploads/default.jpg';"
+                                         class="room-img" alt="Room Image"/>
+
+                                    <div class="p-3 room-info">
+
+                                        <h5 class="fw-semibold mb-2">
+                                            <%= r.getRoomNumber()%>
+                                        </h5>
+
+
+
+                                        <%
+
+                                            String blockName = "N/A";
+                                            if (blockList != null) {
+                                                for (Block b : blockList) {
+                                                    if (b.getBlockID() == r.getBlockID()) {
+                                                        blockName = b.getBlockName();
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        %>
+                                        <p><i class="bi bi-diagram-3"></i> Block: <%= blockName%></p>
+
+                                        <p class="text-danger fw-semibold">
+                                            <i class="bi bi-arrows-fullscreen me-1"></i> <%= r.getArea()%> m²
+                                        </p>
+
+                                        <p><i class="bi bi-geo-alt-fill me-1"></i> Location: <%= r.getLocation() != null ? r.getLocation() : "N/A"%></p>
+
+
+                                        <p>
+                                            <i class="bi bi-door-closed"></i> Status:
+                                            <span class="<%= r.getRoomStatus().equalsIgnoreCase("Available") ? "status-available" : "status-occupied"%>">
+                                                <%= r.getRoomStatus()%>
+                                            </span>
+                                        </p>
+                                        <p class="price" style="font-size: 1.2rem;">
+                                            Price:
+                                            <span style="font-size: 1.5rem; font-weight: 600; color: red;">
+                                                <%= String.format("%,.0f", r.getRentPrice())%> ₫
+                                            </span> / month
+                                        </p>
+
+
+                                        <div class="text-end">
+                                            <a href="room-detail?id=<%= r.getRoomID()%>" class="btn btn-success fw-bold px-4 py-2">View details</a>
+
+                                        </div>
+
+
+                                        <%
+                                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy");
+                                            java.util.Date postedDate = r.getPostedDate();
+                                        %>
+                                        <% if (postedDate != null) {%>
+                                        <p class="text-muted fst-italic small mt-2 mb-0">
+                                            Post: <%= sdf.format(postedDate)%>
+                                        </p>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                        </div> <!-- Kết thúc .row -->
+
+                        <!-- ===== PHÂN TRANG ===== -->
                         <%
-                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy");
-                            java.util.Date postedDate = r.getPostedDate();
+                            Integer currentPage = (Integer) request.getAttribute("currentPage");
+                            Integer totalPages = (Integer) request.getAttribute("totalPages");
+
+                            if (currentPage == null) {
+                                currentPage = 1;
+                            }
+                            if (totalPages == null)
+                                totalPages = 1;
                         %>
-                        <% if (postedDate != null) {%>
-                        <p class="text-muted fst-italic small mt-2 mb-0">
-                            Post: <%= sdf.format(postedDate)%>
-                        </p>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-            <% } %>
-        </div> <!-- Kết thúc .row -->
 
-        <!-- ===== PHÂN TRANG ===== -->
-        <%
-            Integer currentPage = (Integer) request.getAttribute("currentPage");
-            Integer totalPages = (Integer) request.getAttribute("totalPages");
+                        <div class="d-flex justify-content-center my-4">
+                            <nav>
+                                <ul class="pagination">
+                                    <% if (currentPage > 1) {%>
+                                    <li class="page-item">
+                                        <a class="page-link" href="room-list?page=<%= currentPage - 1%>">&laquo;</a>
+                                    </li>
+                                    <% } %>
 
-            if (currentPage == null) {
-                currentPage = 1;
-            }
-            if (totalPages == null)
-                totalPages = 1;
-        %>
+                                    <% for (int i = 1; i <= totalPages; i++) {%>
+                                    <li class="page-item <%= (i == currentPage) ? "active" : ""%>">
+                                        <a class="page-link" href="room-list?page=<%= i%>"><%= i%></a>
+                                    </li>
+                                    <% } %>
 
-        <div class="d-flex justify-content-center my-4">
-            <nav>
-                <ul class="pagination">
-                    <% if (currentPage > 1) {%>
-                    <li class="page-item">
-                        <a class="page-link" href="room-list?page=<%= currentPage - 1%>">&laquo;</a>
-                    </li>
-                    <% } %>
+                                    <% if (currentPage < totalPages) {%>
+                                    <li class="page-item">
+                                        <a class="page-link" href="room-list?page=<%= currentPage + 1%>">&raquo;</a>
+                                    </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
 
-                    <% for (int i = 1; i <= totalPages; i++) {%>
-                    <li class="page-item <%= (i == currentPage) ? "active" : ""%>">
-                        <a class="page-link" href="room-list?page=<%= i%>"><%= i%></a>
-                    </li>
-                    <% } %>
-
-                    <% if (currentPage < totalPages) {%>
-                    <li class="page-item">
-                        <a class="page-link" href="room-list?page=<%= currentPage + 1%>">&raquo;</a>
-                    </li>
-                    <% } %>
-                </ul>
-            </nav>
-        </div>
-
-        <% } else { %>
-        <div class="alert alert-warning mt-4">No rooms available to display.</div>
-        <% }%>
+                        <% } else { %>
+                        <div class="alert alert-warning mt-4">No rooms available to display.</div>
+                        <% }%>
 
 
 
-        <script>
-            function toggleFilter() {
-                document.getElementById('filterPopup').classList.toggle('d-none');
-                document.getElementById('overlay').classList.toggle('d-none');
-            }
+                        <script>
+                            function toggleFilter() {
+                                document.getElementById('filterPopup').classList.toggle('d-none');
+                                document.getElementById('overlay').classList.toggle('d-none');
+                            }
 
-            function selectPrice(btn, min, max) {
-                document.getElementById("minPrice").value = min !== null ? min : '';
-                document.getElementById("maxPrice").value = max !== null ? max : '';
+                            function selectPrice(btn, min, max) {
+                                document.getElementById("minPrice").value = min !== null ? min : '';
+                                document.getElementById("maxPrice").value = max !== null ? max : '';
 
-                document.querySelectorAll('#priceGroup .btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
+                                document.querySelectorAll('#priceGroup .btn').forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                            }
 
-            function clearPrice() {
-                document.getElementById("minPrice").value = '';
-                document.getElementById("maxPrice").value = '';
-                document.querySelectorAll('#priceGroup .btn').forEach(b => b.classList.remove('active'));
-            }
-            function selectArea(btn, min, max) {
-                document.getElementById("minArea").value = min !== null ? min : '';
-                document.getElementById("maxArea").value = max !== null ? max : '';
-                document.querySelectorAll('#areaGroup .btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
+                            function clearPrice() {
+                                document.getElementById("minPrice").value = '';
+                                document.getElementById("maxPrice").value = '';
+                                document.querySelectorAll('#priceGroup .btn').forEach(b => b.classList.remove('active'));
+                            }
+                            function selectArea(btn, min, max) {
+                                document.getElementById("minArea").value = min !== null ? min : '';
+                                document.getElementById("maxArea").value = max !== null ? max : '';
+                                document.querySelectorAll('#areaGroup .btn').forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                            }
 
-            function clearArea() {
-                document.getElementById("minArea").value = '';
-                document.getElementById("maxArea").value = '';
-                document.querySelectorAll('#areaGroup .btn').forEach(b => b.classList.remove('active'));
-            }
+                            function clearArea() {
+                                document.getElementById("minArea").value = '';
+                                document.getElementById("maxArea").value = '';
+                                document.querySelectorAll('#areaGroup .btn').forEach(b => b.classList.remove('active'));
+                            }
 
-            window.onload = function () {
-                const min = document.getElementById("minPrice").value;
-                const max = document.getElementById("maxPrice").value;
-                document.querySelectorAll('#priceGroup .btn').forEach(btn => {
-                    const btnMin = btn.getAttribute("data-min");
-                    const btnMax = btn.getAttribute("data-max");
-                    if (btnMin === min && btnMax === max) {
-                        btn.classList.add("active");
-                    }
-                });
+                            window.onload = function () {
+                                const min = document.getElementById("minPrice").value;
+                                const max = document.getElementById("maxPrice").value;
+                                document.querySelectorAll('#priceGroup .btn').forEach(btn => {
+                                    const btnMin = btn.getAttribute("data-min");
+                                    const btnMax = btn.getAttribute("data-max");
+                                    if (btnMin === min && btnMax === max) {
+                                        btn.classList.add("active");
+                                    }
+                                });
 
-                const minArea = document.getElementById("minArea").value;
-                const maxArea = document.getElementById("maxArea").value;
-                document.querySelectorAll('#areaGroup .btn').forEach(btn => {
-                    const btnMin = btn.getAttribute("data-min");
-                    const btnMax = btn.getAttribute("data-max");
-                    if (btnMin === minArea && btnMax === maxArea) {
-                        btn.classList.add("active");
-                    }
-                });
-            };
-        </script>
-        <!-- ====== FOOTER ====== -->
-        <jsp:include page="footer.jsp" />
-    </body>
-</html>
+                                const minArea = document.getElementById("minArea").value;
+                                const maxArea = document.getElementById("maxArea").value;
+                                document.querySelectorAll('#areaGroup .btn').forEach(btn => {
+                                    const btnMin = btn.getAttribute("data-min");
+                                    const btnMax = btn.getAttribute("data-max");
+                                    if (btnMin === minArea && btnMax === maxArea) {
+                                        btn.classList.add("active");
+                                    }
+                                });
+                            };
+                        </script>
+
+                        </body>
+                        </html>

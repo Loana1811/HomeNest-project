@@ -2,136 +2,55 @@ package dao;
 
 import model.BillDetail;
 import utils.DBContext;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 public class BillDetailDAO {
-    private Connection conn;
+    private final DBContext dbContext = new DBContext();
 
-    public BillDetailDAO() {
-        try {
-            conn = new DBContext().getConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Lấy tất cả chi tiết hóa đơn
-    public List<BillDetail> getAllBillDetails() {
+    public List<BillDetail> getAllBillDetails() throws SQLException {
         List<BillDetail> list = new ArrayList<>();
-        String sql = "SELECT BillDetailID, BillID, RoomRent, ElectricityCost, WaterCost, WifiCost FROM BillDetails";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                list.add(new BillDetail(
-                    rs.getInt("BillDetailID"),
-                    rs.getInt("BillID"),
-                    rs.getFloat("RoomRent"),
-                    rs.getFloat("ElectricityCost"),
-                    rs.getFloat("WaterCost"),
-                    rs.getFloat("WifiCost")
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        String sql = "SELECT * FROM BillDetails";
+        try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while(rs.next()) list.add(map(rs));
         }
         return list;
     }
 
-    // Lấy chi tiết hóa đơn theo ID
-    public BillDetail getBillDetailById(int id) {
-        String sql = "SELECT BillDetailID, BillID, RoomRent, ElectricityCost, WaterCost, WifiCost "
-                   + "FROM BillDetails WHERE BillDetailID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    public BillDetail getBillDetailById(int id) throws SQLException {
+        String sql = "SELECT * FROM BillDetails WHERE BillDetailID=?";
+        try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new BillDetail(
-                        rs.getInt("BillDetailID"),
-                        rs.getInt("BillID"),
-                        rs.getFloat("RoomRent"),
-                        rs.getFloat("ElectricityCost"),
-                        rs.getFloat("WaterCost"),
-                        rs.getFloat("WifiCost")
-                    );
-                }
+            try(ResultSet rs = ps.executeQuery()) {
+                if(rs.next()) return map(rs);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    // Thêm mới chi tiết hóa đơn
-    public void addBillDetail(BillDetail bd) {
-        String sql = "INSERT INTO BillDetails (BillID, RoomRent, ElectricityCost, WaterCost, WifiCost) "
-                   + "VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, bd.getBillID());
-            ps.setFloat(2, bd.getRoomrent());
-            ps.setFloat(3, bd.getElectricityCost());
-            ps.setFloat(4, bd.getWaterCost());
-            ps.setFloat(5, bd.getWifiCost());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean insertBillDetail(BillDetail b) throws SQLException {
+        String sql = "INSERT INTO BillDetails (BillID, RoomRent, ElectricityCost, WaterCost, WifiCost) VALUES (?, ?, ?, ?, ?)";
+        return dbContext.execUpdateQuery(sql, b.getBillID(), b.getRoomrent(), b.getElectricityCost(), b.getWaterCost(), b.getWifiCost()) > 0;
     }
 
-    // Cập nhật chi tiết hóa đơn
-    public void updateBillDetail(BillDetail bd) {
-        String sql = "UPDATE BillDetails SET BillID = ?, RoomRent = ?, ElectricityCost = ?, WaterCost = ?, WifiCost = ? "
-                   + "WHERE BillDetailID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, bd.getBillID());
-            ps.setFloat(2, bd.getRoomrent());
-            ps.setFloat(3, bd.getElectricityCost());
-            ps.setFloat(4, bd.getWaterCost());
-            ps.setFloat(5, bd.getWifiCost());
-            ps.setInt(6, bd.getBillDetailID());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean updateBillDetail(BillDetail b) throws SQLException {
+        String sql = "UPDATE BillDetails SET BillID=?, RoomRent=?, ElectricityCost=?, WaterCost=?, WifiCost=? WHERE BillDetailID=?";
+        return dbContext.execUpdateQuery(sql, b.getBillID(), b.getRoomrent(), b.getElectricityCost(), b.getWaterCost(), b.getWifiCost(), b.getBillDetailID()) > 0;
     }
 
-    // Xóa chi tiết hóa đơn
-    public void deleteBillDetail(int id) {
-        String sql = "DELETE FROM BillDetails WHERE BillDetailID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean deleteBillDetail(int id) throws SQLException {
+        String sql = "DELETE FROM BillDetails WHERE BillDetailID=?";
+        return dbContext.execUpdateQuery(sql, id) > 0;
     }
 
-    // Lấy danh sách chi tiết theo hóa đơn
-    public List<BillDetail> getBillDetailsByBillId(int billId) {
-        List<BillDetail> list = new ArrayList<>();
-        String sql = "SELECT BillDetailID, BillID, RoomRent, ElectricityCost, WaterCost, WifiCost "
-                   + "FROM BillDetails WHERE BillID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, billId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new BillDetail(
-                        rs.getInt("BillDetailID"),
-                        rs.getInt("BillID"),
-                        rs.getFloat("RoomRent"),
-                        rs.getFloat("ElectricityCost"),
-                        rs.getFloat("WaterCost"),
-                        rs.getFloat("WifiCost")
-                    ));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
+    private BillDetail map(ResultSet rs) throws SQLException {
+        BillDetail b = new BillDetail();
+        b.setBillDetailID(rs.getInt("BillDetailID"));
+        b.setBillID(rs.getInt("BillID"));
+        b.setRoomrent(rs.getFloat("RoomRent"));
+        b.setElectricityCost(rs.getFloat("ElectricityCost"));
+        b.setWaterCost(rs.getFloat("WaterCost"));
+        b.setWifiCost(rs.getFloat("WifiCost"));
+        return b;
     }
 }

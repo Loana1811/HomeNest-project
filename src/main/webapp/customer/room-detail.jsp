@@ -4,6 +4,7 @@
     Author     : ADMIN
 --%>
 
+<%@page import="model.Block"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.Room" %>
 <%@ page import="java.text.SimpleDateFormat" %>
@@ -112,12 +113,22 @@
                 color: #555;
             }
 
-            .highlight-tags {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-                margin-top: 0.5rem;
+            .highlight-tag {
+                background-color: #e6f9ec;
+                color: #218838;
+                padding: 8px 12px;
+                border-radius: 15px;
+                display: inline-block;
+                max-width: 150px;
+                word-wrap: break-word;
+                text-align: center;
+                font-size: 14px;
+                white-space: normal;
+                line-height: 1.3;
+                overflow-wrap: break-word;
             }
+
+
 
             .badge-tag {
                 display: inline-block;
@@ -136,58 +147,196 @@
                 color: #004080;
                 cursor: default;
             }
+            body {
+                background-color: #f0fdf4; /* 💚 Màu xanh nhạt dịu mắt */
+            }
+
         </style>
     </head>
     <body class="d-flex flex-column min-vh-100">
+        <%-- THÔNG BÁO LỖI (nếu đã gửi request rồi) --%>
+        <%
+            Boolean showSuccess = (Boolean) request.getAttribute("showSuccess");
+            if (showSuccess != null && showSuccess) {
+        %>
+
+        <%
+            }
+        %>
+
+        <%
+            String cancel = request.getParameter("cancel");
+            if ("success".equals(cancel)) {
+        %>
+        <div class="alert alert-warning text-center container mt-4">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            Your request has been successfully canceled.
+        </div>
+        <%
+            }
+        %>
 
         <main class="container my-5 flex-grow-1">
             <% if (room != null) {%>
-            <div class="row">
+            <div class="row align-items-stretch">
+
                 <!-- LEFT COLUMN -->
                 <div class="col-md-8">
                     <div class="card room-card p-4 mb-4">
                         <div class="text-center mb-4">
-                            <img src="<%= request.getContextPath()%>/images/rooms/<%= room.getImagePath() != null ? room.getImagePath() : "room-default.jpg"%>"
+                            <img src="<%= request.getContextPath()%>/<%= room.getImagePath() != null ? room.getImagePath() : "/uploads/default.jpg"%>"
                                  alt="Room Image"
                                  class="room-image"
-                                 onerror="this.onerror=null;this.src='<%= request.getContextPath()%>/images/rooms/room-default.jpg';" />
+                                 onerror="this.onerror=null;this.src='<%= request.getContextPath()%>/uploads/default.jpg';" />
 
                         </div>
+                    </div>
 
+                    <!-- THÔNG TIN PHÒNG -->
+                    <div class="card p-4 mb-4" style="background-color: #ffffff; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
                         <div class="room-info">
                             <h3 class="fw-bold text-center mb-4">Room: <%= room.getRoomNumber()%></h3>
                             <p><strong>Area:</strong> <%= room.getArea()%> m²</p>
                             <p><strong>Status:</strong> <%= room.getRoomStatus()%></p>
-                            <p><strong>Block:</strong> <%= room.getBlockID()%></p>
+                            <%
+                                List<Block> blockList = (List<Block>) request.getAttribute("blockList");
+                                String blockName = "N/A";
+                                if (blockList != null) {
+                                    for (Block b : blockList) {
+                                        if (b.getBlockID() == room.getBlockID()) {
+                                            blockName = b.getBlockName();
+                                            break;
+                                        }
+                                    }
+                                }
+                            %>
+                            <p><strong>Block:</strong> <%= blockName%></p>
+                            <p><strong>Location:</strong> <%= room.getLocation() != null ? room.getLocation() : "N/A"%></p>
                             <p><strong>Post:</strong> <%= postDateStr%></p>
                             <p class="room-price"><strong>Price:</strong> <%= String.format("%,.0f", room.getRentPrice())%> ₫ / month</p>
 
-                            <p><strong>Highlights</strong>
+                            <p><strong>Highlights</strong></p>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
                                 <% if (room.getHighlights() != null && !room.getHighlights().trim().isEmpty()) {
-                                    String[] highlights = room.getHighlights().split(",");
-                                    for (String h : highlights) {%>
-                                <span class="badge-tag"><%= h.trim()%></span>
+                                        String[] highlights = room.getHighlights().split(",");
+                                        for (String h : highlights) {%>
+                                <span class="highlight-tag"><%= h.trim()%></span>
                                 <% }
-                            } else { %>
+                                } else { %>
                                 <span class="text-muted">No highlights available.</span>
                                 <% }%>
-                            </p>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 1.35rem; font-weight: 700;"><strong>Description:</strong></p>
+                        <div class="room-description">
+                            <%= room.getDescription() != null ? room.getDescription() : "No description available."%>
                         </div>
                     </div>
 
-                    <p style="font-size: 1.35rem; font-weight: 700;"><strong>Description:</strong></p>
-                    <div class="room-description">
-                        <%= room.getDescription() != null ? room.getDescription() : "No description available."%>
+                    <%
+                        Boolean alreadyRequested = (Boolean) request.getAttribute("alreadyRequested");
+                        if (alreadyRequested == null)
+                            alreadyRequested = false;
+                    %>
+
+
+
+                    <% if (!alreadyRequested) {%>
+                    <!-- FORM GỬI YÊU CẦU -->
+                    <!-- Nút mở modal -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                            <i class="bi bi-send-fill"></i> Submit Room Request
+                        </button>
                     </div>
+
+                    <!-- Confirmation Modal -->
+                    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-4 shadow">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="confirmModalLabel">Confirm Rental Request</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body fs-5 text-center">
+                                    Are you sure you want to submit a rental request for this room?
+                                    <p class="text-muted mt-3" style="font-size: 0.95rem;">
+                                        You can cancel if you're not sure yet.
+                                    </p>
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <form id="submitRequestForm" action="<%= request.getContextPath()%>/request-room" method="post">
+                                        <input type="hidden" name="roomId" value="<%= room.getRoomID()%>" />
+                                    </form>
+                                    <button type="button" class="btn btn-success px-4" onclick="document.getElementById('submitRequestForm').submit();">
+                                        Yes, Submit
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger px-4" data-bs-dismiss="modal">
+                                        No, Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <% } else {%>
+                    <div class="alert alert-info mt-4 text-center">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Your request is pending review.
+                    </div>
+                    <!-- FORM HUỶ YÊU CẦU -->
+                    <!-- NÚT MỞ MODAL HUỶ YÊU CẦU -->
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
+                            <i class="bi bi-x-circle-fill me-1"></i> Cancel Request
+                        </button>
+                    </div>
+
+  <!-- MODAL XÁC NHẬN HUỶ YÊU CẦU -->
+<div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="confirmCancelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="background-color: #e9fbe9; color: #000000;"> <!-- 💚 Xanh lá nhạt, chữ đen -->
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="confirmCancelLabel">Confirm Cancellation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fs-5 text-center">
+                Are you sure you want to cancel your rental request for this room?
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-outline-secondary me-2 px-4" data-bs-dismiss="modal">
+                    No
+                </button>
+                <form method="post" action="<%= request.getContextPath() %>/customer/cancel-request">
+                    <input type="hidden" name="roomId" value="<%= room.getRoomID() %>"/>
+                    <button type="submit" class="btn btn-danger px-4">
+                        Yes, Cancel Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+                    <% }%>
+
+
                 </div>
 
                 <!-- RIGHT COLUMN -->
-                <div class="col-md-4">
+                <div class="col-md-4 d-flex flex-column gap-3 h-100">
+
                     <!-- CONTACT -->
                     <div class="card contact-card mb-4">
                         <h5 class="fw-bold mb-3">Contact</h5>
                         <div class="d-flex align-items-center mb-3">
-                            <img src="<%= request.getContextPath()%>/images/logo.jpg"
+                            <img src="<%= request.getContextPath()%>/uploads/default.jpg"
                                  alt="Avatar"
                                  class="contact-avatar me-3"
                                  style="object-fit: cover;">
@@ -204,15 +353,15 @@
                     <div class="card highlight-card">
                         <h6 class="fw-bold mb-3">Featured Listings</h6>
                         <% if (featuredRooms != null) {
-                            for (Room r : featuredRooms) {
-                                String posted = (r.getPostedDate() != null) ? sdf.format(r.getPostedDate()) : "N/A";%>
+                                for (Room r : featuredRooms) {
+                                    String posted = (r.getPostedDate() != null) ? sdf.format(r.getPostedDate()) : "N/A";%>
                         <a href="room-detail?id=<%= r.getRoomID()%>" class="text-decoration-none text-dark">
                             <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                               <img src="<%= request.getContextPath() %>/images/rooms/<%= r.getImagePath() != null ? r.getImagePath() : "room-default.jpg" %>"
-
+                                <img src="<%= request.getContextPath()%>/<%= r.getImagePath() != null ? r.getImagePath() : "uploads/default.jpg"%>"
                                      alt="thumbnail"
                                      class="rounded"
-                                     style="width: 64px; height: 64px; object-fit: cover; margin-right: 10px;">
+                                     style="width: 64px; height: 64px; object-fit: cover;" />
+
                                 <div class="flex-grow-1 d-flex flex-column">
                                     <div class="d-flex justify-content-between">
                                         <span class="fw-semibold text-dark">
@@ -226,7 +375,7 @@
                             </div>
                         </a>
                         <% }
-                    } else { %>
+                        } else { %>
                         <p class="text-muted">No featured rooms.</p>
                         <% } %>
                     </div>
@@ -236,9 +385,7 @@
             <div class="alert alert-danger mt-5">No room found.</div>
             <% }%>
         </main>
-
-        <!-- FOOTER -->
-        <jsp:include page="footer.jsp" />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     </body>
 </html>

@@ -25,6 +25,10 @@ public class BillDetail {
         this.wifiCost = wifiCost;
     }
 
+    public BillDetail() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
     public int getBillDetailID() {
         return billDetailID;
     }

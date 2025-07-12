@@ -3,118 +3,118 @@
     Created on : Jun 13, 2025, 6:45:24 PM
     Author     : ADMIN
 --%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.Category" %>
 <%
     Category category = (Category) request.getAttribute("category");
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
         <title>Edit Category</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
         <style>
+            :root {
+                --teal: rgb(0, 128, 128);
+                --light-bg: #f5f7fa;
+            }
             body {
-                font-family: sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                background-color: var(--light-bg);
+                font-family: 'Segoe UI', sans-serif;
+            }
+            .sidebar {
+                width: 260px;
                 height: 100vh;
-                background: #f9f9f9;
-            }
-
-            .form-container {
-                background: #fff;
-                padding: 32px;
-                border-radius: 16px;
-                width: 420px;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            }
-
-            h2 {
-                text-align: center;
-                margin-bottom: 24px;
-            }
-
-            label {
-                display: block;
-                font-weight: bold;
-                margin: 12px 0 6px;
-            }
-
-            input[type="text"], textarea {
-                width: 100%;
-                padding: 10px 14px;
-                border-radius: 6px;
-                border: 1px solid #ccc;
-                margin-bottom: 16px;
-                font-size: 14px;
-            }
-
-            .button-group {
-                display: flex;
-                justify-content: space-between;
-            }
-
-            .btn-cancel {
-                border: 1px solid #007bff;
-                background: white;
-                color: #007bff;
-                padding: 10px 24px;
-                border-radius: 6px;
-                font-weight: bold;
-                cursor: pointer;
-                width: 48%;
-            }
-
-            .btn-submit {
-                background: #28a745;
+                background-color: var(--teal);
                 color: white;
-                border: none;
-                padding: 10px 24px;
-                border-radius: 6px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                padding: 2rem 1rem;
+            }
+            .sidebar h4 {
                 font-weight: bold;
-                cursor: pointer;
-                width: 48%;
+                margin-bottom: 2rem;
             }
-
-            .btn-cancel:hover {
-                background: #e6f0ff;
+            .sidebar a {
+                color: white;
+                text-decoration: none;
+                display: block;
+                margin: 1rem 0;
+                font-weight: 500;
             }
-
-            .btn-submit:hover {
-                background: #218838;
+            .sidebar a:hover {
+                text-decoration: underline;
+            }
+            .main {
+                margin-left: 270px;
+                padding: 2rem;
+            }
+            .btn-teal {
+                background-color: var(--teal);
+                color: white;
+                font-weight: bold;
+                border-radius: 30px;
+            }
+            .btn-teal:hover {
+                background-color: #006666;
+                color: white;
+            }
+            .card {
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 12px;
+                box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+            }
+            .card-header {
+                background-color: #e0f7f7;
+                color: var(--teal);
+                font-weight: bold;
+                font-size: 20px;
+                text-align: center;
+                padding: 1rem 1.5rem;
             }
         </style>
     </head>
     <body>
-
-        <div class="form-container">
-            <h2>Edit Category</h2>
-            <form action="${pageContext.request.contextPath}/admin/category" method="post">
-
-                <input type="hidden" name="action" value="update">
-
-                <input type="hidden" name="categoryID" value="<%= category.getCategoriesID()%>">
-
-                <label>Name</label>
-                <input type="text" name="categoryName" value="<%= category.getCategoriesName()%>" required>
-
-                <label>Description</label>
-                <textarea name="description"><%= category.getDescription()%></textarea>
-
-                <div class="button-group">
-                    <button type="button" class="btn-cancel"
-                            onclick="window.location.href = '${pageContext.request.contextPath}/admin/category?action=list'">
-                        Cancel
-                    </button>
-
-                    <button type="submit" class="btn-submit">Submit</button>
-                </div>
-            </form>
-
-
+        <div class="sidebar">
+            <h4>ADMIN</h4>
+            <a href="rooms?action=list"><i class="bi bi-layout-text-window"></i> Manage Rooms</a>
+            <a href="blocks?action=list"><i class="bi bi-building"></i> Manage Blocks</a>
+            <a href="category?action=list"><i class="bi bi-tags"></i> Manage Categories</a>
         </div>
 
+        <div class="main">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-pencil-square"></i> Edit Category
+                </div>
+                <div class="card-body">
+                    <form action="${pageContext.request.contextPath}/admin/category" method="post">
+                        <input type="hidden" name="action" value="update">
+                        <input type="hidden" name="categoryID" value="<%= category.getCategoriesID()%>">
+
+                        <div class="mb-3">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" name="categoryName" value="<%= category.getCategoriesName()%>" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="4"><%= category.getDescription()%></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="${pageContext.request.contextPath}/admin/category?action=list" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-teal">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

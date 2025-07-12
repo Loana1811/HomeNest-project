@@ -8,13 +8,14 @@ import java.sql.Date;
 
 /**
  *
- * @author ThanhTruc
+ * @author kloane
  */
 public class Room {
-    private int roomID;
+      private int roomID;
     private String roomNumber;
-    private float rentPrice;
-    private float area;
+    private String roomType; // Có thể bỏ nếu không còn trong DB
+    private double rentPrice;
+    private double area;
     private String location;
     private String roomStatus;
     private int blockID;
@@ -24,6 +25,9 @@ public class Room {
     private String description;
     private Date postedDate;
 
+    // Constructors
+    public Room() {
+    }
     public Room(int roomID, String roomNumber, float rentPrice, float area, String location, String roomStatus, int blockID, int categoryID, String highlights, String imagePath, String description, Date postedDate) {
         this.roomID = roomID;
         this.roomNumber = roomNumber;
@@ -39,7 +43,24 @@ public class Room {
         this.postedDate = postedDate;
     }
 
-  
+    public Room(int roomID, String roomNumber, double rentPrice, double area, String location,
+            String roomStatus, int blockID, int categoryID,
+            String highlights, String imagePath, String description, Date postedDate) {
+        this.roomID = roomID;
+        this.roomNumber = roomNumber;
+        this.rentPrice = rentPrice;
+        this.area = area;
+        this.location = location;
+        this.roomStatus = roomStatus;
+        this.blockID = blockID;
+        this.categoryID = categoryID;
+        this.highlights = highlights;
+        this.imagePath = imagePath;
+        this.description = description;
+        this.postedDate = postedDate;
+    }
+
+    // Getters and Setters
     public int getRoomID() {
         return roomID;
     }
@@ -56,20 +77,28 @@ public class Room {
         this.roomNumber = roomNumber;
     }
 
-    public float getRentPrice() {
+    public double getRentPrice() {
         return rentPrice;
     }
 
-    public void setRentPrice(float rentPrice) {
+    public void setRentPrice(double rentPrice) {
         this.rentPrice = rentPrice;
     }
 
-    public float getArea() {
+    public double getArea() {
         return area;
     }
 
-    public void setArea(float area) {
+    public void setArea(double area) {
         this.area = area;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getRoomStatus() {
@@ -127,13 +156,7 @@ public class Room {
     public void setPostedDate(Date postedDate) {
         this.postedDate = postedDate;
     }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
    
+    
+    
 }

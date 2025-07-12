@@ -2,136 +2,54 @@ package dao;
 
 import model.Bill;
 import utils.DBContext;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 public class BillDAO {
-    private Connection conn;
+    private final DBContext dbContext = new DBContext();
 
-    public BillDAO() {
-        try {
-            conn = new DBContext().getConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Lấy tất cả hóa đơn
-    public List<Bill> getAllBills() {
+    public List<Bill> getAllBills() throws SQLException {
         List<Bill> list = new ArrayList<>();
-        String sql = "SELECT BillID, ContractID, BillDate, TotalAmount, BillStatus FROM Bills";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                Bill b = new Bill(
-                    rs.getInt("BillID"),
-                    rs.getInt("ContractID"),
-                    rs.getDate("BillDate"),
-                    rs.getFloat("TotalAmount"),
-                    rs.getString("BillStatus")
-                );
-                list.add(b);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        String sql = "SELECT * FROM Bills";
+        try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while(rs.next()) list.add(map(rs));
         }
         return list;
     }
 
-    // Lấy 1 hóa đơn theo ID
-    public Bill getBillById(int id) {
-        String sql = "SELECT BillID, ContractID, BillDate, TotalAmount, BillStatus "
-                   + "FROM Bills WHERE BillID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    public Bill getBillById(int id) throws SQLException {
+        String sql = "SELECT * FROM Bills WHERE BillID=?";
+        try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Bill(
-                        rs.getInt("BillID"),
-                        rs.getInt("ContractID"),
-                        rs.getDate("BillDate"),
-                        rs.getFloat("TotalAmount"),
-                        rs.getString("BillStatus")
-                    );
-                }
+            try(ResultSet rs = ps.executeQuery()) {
+                if(rs.next()) return map(rs);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    // Thêm mới hóa đơn
-    public void addBill(Bill bill) {
-        String sql = "INSERT INTO Bills (ContractID, BillDate, TotalAmount, BillStatus) "
-                   + "VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, bill.getContractID());
-            ps.setDate(2, bill.getBillDate());
-            ps.setFloat(3, bill.getTotalAmount());
-            ps.setString(4, bill.getBillStatus());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean insertBill(Bill b) throws SQLException {
+        String sql = "INSERT INTO Bills (ContractID, BillDate, TotalAmount, Status) VALUES (?, ?, ?, ?)";
+        return dbContext.execUpdateQuery(sql, b.getContractID(), b.getBillDate(), b.getTotalAmount(), b.getBillStatus()) > 0;
     }
 
-    // Cập nhật hóa đơn
-    public void updateBill(Bill bill) {
-        String sql = "UPDATE Bills SET ContractID = ?, BillDate = ?, TotalAmount = ?, BillStatus = ? "
-                   + "WHERE BillID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, bill.getContractID());
-            ps.setDate(2, bill.getBillDate());
-            ps.setFloat(3, bill.getTotalAmount());
-            ps.setString(4, bill.getBillStatus());
-            ps.setInt(5, bill.getBillID());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean updateBill(Bill b) throws SQLException {
+        String sql = "UPDATE Bills SET ContractID=?, BillDate=?, TotalAmount=?, Status=? WHERE BillID=?";
+        return dbContext.execUpdateQuery(sql, b.getContractID(), b.getBillDate(), b.getTotalAmount(), b.getBillStatus(), b.getBillID()) > 0;
     }
 
-    // Xóa hóa đơn
-    public void deleteBill(int id) {
-        String sql = "DELETE FROM Bills WHERE BillID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean deleteBill(int id) throws SQLException {
+        String sql = "DELETE FROM Bills WHERE BillID=?";
+        return dbContext.execUpdateQuery(sql, id) > 0;
     }
 
-    // Lấy danh sách hóa đơn theo hợp đồng
-    public List<Bill> getBillsByContractId(int contractId) {
-        List<Bill> list = new ArrayList<>();
-        String sql = "SELECT BillID, ContractID, BillDate, TotalAmount, BillStatus "
-                   + "FROM Bills WHERE ContractID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, contractId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Bill b = new Bill(
-                        rs.getInt("BillID"),
-                        rs.getInt("ContractID"),
-                        rs.getDate("BillDate"),
-                        rs.getFloat("TotalAmount"),
-                        rs.getString("BillStatus")
-                    );
-                    list.add(b);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
+    private Bill map(ResultSet rs) throws SQLException {
+        Bill b = new Bill();
+        b.setBillID(rs.getInt("BillID"));
+        b.setContractID(rs.getInt("ContractID"));
+        b.setBillDate(rs.getDate("BillDate"));
+        b.setTotalAmount(rs.getFloat("TotalAmount"));
+        b.setBillStatus(rs.getString("Status"));
+        return b;
     }
 }

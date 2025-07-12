@@ -23,7 +23,12 @@ public class Customer {
     private String customerPassword;
     private String customerStatus;
 
-    public Customer(int customerID, String customerFullName, String phoneNumber, String CCCD, String gender, Date birthDay, String address, String email, String customerPassword, String customerStatus) {
+    public Customer() {
+    }
+
+    public Customer(int customerID, String customerFullName, String phoneNumber, String CCCD,
+            String gender, Date birthDay, String address, String email,
+            String customerPassword, String customerStatus) {
         this.customerID = customerID;
         this.customerFullName = customerFullName;
         this.phoneNumber = phoneNumber;
@@ -115,5 +120,4 @@ public class Customer {
     public void setCustomerStatus(String customerStatus) {
         this.customerStatus = customerStatus;
     }
-
 }

@@ -20,14 +20,13 @@ import java.util.logging.Logger;
 public class DBContext {
     // Public database connection object
 
-    private Connection conn;
+    public Connection conn;
 
     // Update these constants based on your SQL Server config
-    private final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=RentalManagement;encrypt=false;trustServerCertificate=true";
+    private final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=RentalManagement;encrypt=false";
     private final String DB_USER = "sa";
-    // private final String DB_PWD = "18112004";
-//    private final String DB_PWD = "123456";
-private final String DB_PWD = "778824";
+     private final String DB_PWD = "778824";
+
     public DBContext() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");

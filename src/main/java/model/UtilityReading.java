@@ -19,23 +19,62 @@ public class UtilityReading {
 
     public UtilityReading() {}
 
-    public UtilityReading(int readingID, int utilityTypeID, int roomID, Date readingDate,
-                          BigDecimal oldReading, BigDecimal newReading,
-                          BigDecimal priceUsed, BigDecimal oldPrice,
-                          String changedBy, Timestamp utilityReadingCreatedAt) {
+//    public UtilityReading(int readingID, int utilityTypeID, int roomID, Date readingDate,
+//                          BigDecimal oldReading, BigDecimal newReading,
+//                          BigDecimal priceUsed, BigDecimal oldPrice,
+//                          String changedBy, Timestamp utilityReadingCreatedAt) {
+//        this.readingID = readingID;
+//        this.utilityTypeID = utilityTypeID;
+//        this.roomID = roomID;
+//        this.readingDate = readingDate;
+//        this.oldReading = oldReading;
+//        this.newReading = newReading;
+//        this.priceUsed = priceUsed;
+//        this.oldPrice = oldPrice;
+//        this.changedBy = changedBy;
+//        this.utilityReadingCreatedAt = utilityReadingCreatedAt;
+//    }
+public UtilityReading(int readingID, int roomID, int utilityTypeID,
+                      BigDecimal oldReading, BigDecimal newReading,
+                      BigDecimal priceUsed, String changedBy, Date readingDate) {
+    this.readingID = readingID;
+    this.roomID = roomID;
+    this.utilityTypeID = utilityTypeID;
+    this.oldReading = oldReading;
+    this.newReading = newReading;
+    this.priceUsed = priceUsed;
+    this.changedBy = changedBy;
+    this.readingDate = readingDate;
+    this.utilityReadingCreatedAt = new Timestamp(System.currentTimeMillis());
+}
+
+   
+//    public UtilityReading(int readingID, int roomID, int utilityTypeID, double oldIndex, double newIndex,
+//                      BigDecimal priceUsed, String changedBy, Date readingDate) {
+//    this.readingID = readingID;
+//    this.roomID = roomID;
+//    this.utilityTypeID = utilityTypeID;
+//    this.oldReading = BigDecimal.valueOf(oldIndex);
+//    this.newReading = BigDecimal.valueOf(newIndex);
+//    this.priceUsed = BigDecimal.valueOf(priceUsed);
+//    this.changedBy = changedBy;
+//    this.readingDate = readingDate;
+//}
+
+    public UtilityReading(int readingID, int utilityTypeID, int roomID, Date readingDate, BigDecimal oldReading, BigDecimal newReading, BigDecimal oldPrice, String changedBy) {
         this.readingID = readingID;
         this.utilityTypeID = utilityTypeID;
         this.roomID = roomID;
         this.readingDate = readingDate;
         this.oldReading = oldReading;
         this.newReading = newReading;
-        this.priceUsed = priceUsed;
         this.oldPrice = oldPrice;
         this.changedBy = changedBy;
-        this.utilityReadingCreatedAt = utilityReadingCreatedAt;
     }
 
-   
+    public UtilityReading(int i, int roomId, int typeId, BigDecimal oldIndex, double doubleValue, BigDecimal priceUsed, String admin, Date date) {
+    }
+
 
     public int getReadingID() {
         return readingID;

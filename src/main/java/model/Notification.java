@@ -1,30 +1,39 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package model;
 
 import java.sql.Timestamp;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Notification {
 
     private int notificationID;
-    private int customerID;         // FK → Customers
+    private int customerID;
     private String title;
     private String message;
     private boolean isRead;
-    private Timestamp notificationCreatedAt;
-    private Integer sentBy;         
+    private Timestamp notificationCreateAt;
+    private String sentBy;
 
-    public Notification() {}
+    public Notification() {
+    }
 
-    public Notification(int notificationID, int customerID, String title, String message,
-                        boolean isRead, Timestamp notificationCreatedAt, Integer sentBy) {
+    public Notification(int notificationID, int customerID, String title, String message, boolean isRead, Timestamp notificationCreateAt, String sentBy) {
         this.notificationID = notificationID;
         this.customerID = customerID;
         this.title = title;
         this.message = message;
         this.isRead = isRead;
-        this.notificationCreatedAt = notificationCreatedAt;
+        this.notificationCreateAt = notificationCreateAt;
         this.sentBy = sentBy;
     }
 
+    // Getters và Setters
     public int getNotificationID() {
         return notificationID;
     }
@@ -65,21 +74,19 @@ public class Notification {
         this.isRead = isRead;
     }
 
-    public Timestamp getNotificationCreatedAt() {
-        return notificationCreatedAt;
+    public Timestamp getNotificationCreateAt() {
+        return notificationCreateAt;
     }
 
-    public void setNotificationCreatedAt(Timestamp notificationCreatedAt) {
-        this.notificationCreatedAt = notificationCreatedAt;
+    public void setNotificationCreateAt(Timestamp notificationCreateAt) {
+        this.notificationCreateAt = notificationCreateAt;
     }
 
-    public Integer getSentBy() {
+    public String getSentBy() {
         return sentBy;
     }
 
-    public void setSentBy(Integer sentBy) {
+    public void setSentBy(String sentBy) {
         this.sentBy = sentBy;
     }
-
-   
 }
