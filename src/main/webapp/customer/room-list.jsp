@@ -6,7 +6,7 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
-
+ 
 <%@ page import="model.Room" %>
 <%@ page import="model.Category" %>
 
@@ -119,21 +119,7 @@
                 color: white;
             }
 
-
-
-            .select.form-select {
-                background-color: white;
-                border: 2px solid green;
-                border-radius: 5px;
-                padding: 6px;
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-            }
         </style>
-
-
-
     </head>
     <body style="padding-top: 100px; overflow-x: hidden;">
 
@@ -150,11 +136,9 @@
 
                 <!-- Dropdown Category ở giữa -->
                 <div class="flex-grow-1 d-flex justify-content-center">
-                    <form method="get" action="<%= request.getContextPath()%>/customer/room-list" class="mb-0">
+                    <form method="get" action="<%= request.getContextPath() %>/customer/room-list" class="mb-0">
 
-                        <select class="form-select form-select-sm border-success" name="category" onchange="this.form.submit()" style="width: 250px;">
-
-
+                        <select class="form-select form-select-sm" name="category" onchange="this.form.submit()" style="width: 250px;">
                             <option value="">All</option>
                             <%
                                 int selectedCategory = -1;
@@ -178,8 +162,7 @@
 
                 <!-- Nút Filter bên phải -->
                 <div>
-                    <button class="btn btn-outline-success" onclick="toggleFilter()">Filter</button>
-
+                    <button class="btn btn-outline-dark" onclick="toggleFilter()">Filter</button>
                 </div>
 
             </div>
@@ -282,7 +265,7 @@
             <% for (Room r : roomList) {%>
             <div class="col-md-4">
                 <div class="room-card">
-                    <img src="<%= request.getContextPath()%>/images/rooms/<%= r.getImagePath() != null ? r.getImagePath() : "room-default.jpg"%>"
+                    <img src="<%= request.getContextPath() %>/images/rooms/<%= r.getImagePath() != null ? r.getImagePath() : "room-default.jpg" %>"
 
                          onerror="this.onerror=null;this.src='images/rooms/room-default.jpg';"
                          class="room-img" alt="Room Image">

@@ -13,7 +13,6 @@ import java.util.List;
 import model.Category;
 import model.Room;
 import utils.DBContext;
- 
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -70,7 +69,6 @@ public class RoomListServlet extends HttpServlet {
 
             // Lấy danh sách danh mục
             List<Category> categoryList = categoryDAO.getAllCategories();
-            
 
             // Gửi dữ liệu sang JSP
             request.setAttribute("roomList", pagedRooms);

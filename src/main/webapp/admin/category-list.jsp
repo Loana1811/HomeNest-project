@@ -124,12 +124,12 @@
                                 <button type="submit" class="btn btn-edit">Edit</button>
                             </form>
 
-<!--                             Form Delete 
+                            <!-- Form Delete -->
                             <form action="${pageContext.request.contextPath}/admin/category" method="get" style="display:inline;" onsubmit="return confirm('Are you sure?');">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<%= c.getCategoriesID() %>">
                                 <button type="submit" class="btn btn-delete">Delete</button>
-                            </form>-->
+                            </form>
                         </div>
                     </td>
                 </tr>
