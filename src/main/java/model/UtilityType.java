@@ -15,14 +15,14 @@ public class UtilityType {
     private String utilityName;
     private BigDecimal unitPrice;
     private String unit;
-    private boolean isSystem;
+//    private boolean isSystem;
 
-    public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit, boolean isSystem) {
+    public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit) {
         this.utilityTypeID = utilityTypeID;
         this.utilityName = utilityName;
         this.unitPrice = unitPrice;
         this.unit = unit;
-        this.isSystem = isSystem;
+//        this.isSystem = isSystem;
     }
 
     public int getUtilityTypeID() {
@@ -57,12 +57,16 @@ public class UtilityType {
         this.unit = unit;
     }
 
-    public boolean isIsSystem() {
-        return isSystem;
-    }
+//    public boolean isIsSystem() {
+//        return isSystem;
+//    }
+//
+//    public void setIsSystem(boolean isSystem) {
+//        this.isSystem = isSystem;
+//    }
+    public boolean isIndexedType() {
+    String n = utilityName.toLowerCase();
+    return n.contains("điện") || n.contains("electric") || n.contains("nước") || n.contains("water");
+}
 
-    public void setIsSystem(boolean isSystem) {
-        this.isSystem = isSystem;
-    }
-    
 }

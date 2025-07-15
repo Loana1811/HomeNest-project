@@ -4,34 +4,194 @@
  */
 package model;
 
+import java.sql.Date;
+
 /**
  *
  * @author kloane
  */
 public class Room {
-    private int id;
-    private String name;
+      private int roomID;
+    private String roomNumber;
+    private String roomType; // Có thể bỏ nếu không còn trong DB
+    private double rentPrice;
+    private double area;
+    private String location;
+    private String roomStatus;
+    private int blockID;
+    private int categoryID;
+    private String highlights;
+    private String imagePath;
+    private String description;
+    private Date postedDate;
+    private String activeContractCode; // Hợp đồng đang hoạt động/tháng này
+    private boolean hasRecord;         // Đã có utility record chưa?
+    private boolean hasBill;
 
-    public Room(int id, String name) {
-        this.id = id;
-        this.name = name;
+    // Constructors
+    public Room() {
+    }
+    public Room(int roomID, String roomNumber, float rentPrice, float area, String location, String roomStatus, int blockID, int categoryID, String highlights, String imagePath, String description, Date postedDate) {
+        this.roomID = roomID;
+        this.roomNumber = roomNumber;
+        this.rentPrice = rentPrice;
+        this.area = area;
+        this.location = location;
+        this.roomStatus = roomStatus;
+        this.blockID = blockID;
+        this.categoryID = categoryID;
+        this.highlights = highlights;
+        this.imagePath = imagePath;
+        this.description = description;
+        this.postedDate = postedDate;
     }
 
-    public int getId() {
-        return id;
+    public Room(int roomID, String roomNumber, double rentPrice, double area, String location,
+            String roomStatus, int blockID, int categoryID,
+            String highlights, String imagePath, String description, Date postedDate) {
+        this.roomID = roomID;
+        this.roomNumber = roomNumber;
+        this.rentPrice = rentPrice;
+        this.area = area;
+        this.location = location;
+        this.roomStatus = roomStatus;
+        this.blockID = blockID;
+        this.categoryID = categoryID;
+        this.highlights = highlights;
+        this.imagePath = imagePath;
+        this.description = description;
+        this.postedDate = postedDate;
     }
 
-    public String getName() {
-        return name;
+    // Getters and Setters
+    public int getRoomID() {
+        return roomID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setRoomID(int roomID) {
+        this.roomID = roomID;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getRoomNumber() {
+        return roomNumber;
     }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public double getRentPrice() {
+        return rentPrice;
+    }
+
+    public void setRentPrice(double rentPrice) {
+        this.rentPrice = rentPrice;
+    }
+
+    public double getArea() {
+        return area;
+    }
+
+    public void setArea(double area) {
+        this.area = area;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getRoomStatus() {
+        return roomStatus;
+    }
+
+    public void setRoomStatus(String roomStatus) {
+        this.roomStatus = roomStatus;
+    }
+
+    public int getBlockID() {
+        return blockID;
+    }
+
+    public void setBlockID(int blockID) {
+        this.blockID = blockID;
+    }
+
+    public int getCategoryID() {
+        return categoryID;
+    }
+
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
+    }
+
+    public String getHighlights() {
+        return highlights;
+    }
+
+    public void setHighlights(String highlights) {
+        this.highlights = highlights;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getPostedDate() {
+        return postedDate;
+    }
+
+    public void setPostedDate(Date postedDate) {
+        this.postedDate = postedDate;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
+
+    public String getActiveContractCode() {
+        return activeContractCode;
+    }
+
+    public void setActiveContractCode(String activeContractCode) {
+        this.activeContractCode = activeContractCode;
+    }
+
+    public boolean isHasRecord() {
+        return hasRecord;
+    }
+
+    public void setHasRecord(boolean hasRecord) {
+        this.hasRecord = hasRecord;
+    }
+
+    public boolean isHasBill() {
+        return hasBill;
+    }
+
+    public void setHasBill(boolean hasBill) {
+        this.hasBill = hasBill;
+    }
+    
     
     
 }

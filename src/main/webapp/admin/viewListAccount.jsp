@@ -1,7 +1,7 @@
-<%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.Customer" %>
-<%@page import="model.User" %>
+<%@page import="model.Customer"%>
+<%@page import="model.User"%>
+<%@page import="java.util.List"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
@@ -270,22 +270,22 @@
             </div>
 
 
-<!--             Create Button 
-            <div class="create-buttons">
-                <a href="${pageContext.request.contextPath}/admin/account?action=create" class="btn btn-create text-white">
-                    <i class="fas fa-user-plus me-2"></i>Create New Account
-                </a>
-            </div>-->
+            <!--             Create Button 
+                        <div class="create-buttons">
+                            <a href="${pageContext.request.contextPath}/admin/account?action=create" class="btn btn-create text-white">
+                                <i class="fas fa-user-plus me-2"></i>Create New Account
+                            </a>
+                        </div>-->
 
-<!-- Create Button -->
-<div class="create-buttons">
-    <a href="${pageContext.request.contextPath}/admin/account?action=createManager" class="btn btn-create text-white">
-        <i class="fas fa-user-plus me-2"></i> Create Manager
-    </a>
-    <a href="${pageContext.request.contextPath}/admin/account?action=createCustomer" class="btn btn-create text-white">
-        <i class="fas fa-user-plus me-2"></i> Create Customer
-    </a>
-</div>
+            <!-- Create Button -->
+            <div class="create-buttons">
+                <a href="${pageContext.request.contextPath}/admin/account?action=createManager" class="btn btn-create text-white">
+                    <i class="fas fa-user-plus me-2"></i> Create Manager
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/account?action=createCustomer" class="btn btn-create text-white">
+                    <i class="fas fa-user-plus me-2"></i> Create Customer
+                </a>
+            </div>
 
 
 
@@ -335,12 +335,12 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
-<!--                                            <button type="button" class="btn btn-sm btn-outline-warning"
-                                                    onclick="showDisableUserModal(${user.userID}, '${user.userFullName}')">
-                                                <i class="fas fa-user-slash"></i>
-                                            </button>-->
+                                            <!--                                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                                                                                onclick="showDisableUserModal(${user.userID}, '${user.userFullName}')">
+                                                                                            <i class="fas fa-user-slash"></i>
+                                                                                        </button>-->
                                         </c:if>
-                                      
+
                                     </td>
 
                                 </tr>
@@ -353,7 +353,7 @@
                 </tbody>
             </table>
 
-           
+
             <h2 class="section-title">Customers List</h2>
             <table>
                 <thead>
@@ -397,6 +397,13 @@
                                                 onclick="showDisableCustomerModal(${customer.customerID}, '${customer.customerFullName}')">
                                             <i class="fas fa-user-slash"></i>
                                         </button>
+                                        <c:if test="${!cannotDeleteCustomerIds.contains(customer.customerID)}">
+                                            <a href="${pageContext.request.contextPath}/admin/account?action=delete&customerID=${customer.customerID}"
+                                               onclick="return confirm('Are you sure you want to delete this customer? This action cannot be undone.')"
+                                               class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </c:if>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -468,14 +475,14 @@
                                                         document.getElementById('disableUserID').value = id;
                                                         document.getElementById('disableUserName').innerText = name;
                                                         document.getElementById('disableUserForm').action =
-                                                                '${pageContext.request.contextPath}/viewListAccount?action=disableUser';
+                                                                '${pageContext.request.contextPath}/admin/account?action=disableUser';
                                                         new bootstrap.Modal(document.getElementById('disableUserModal')).show();
                                                     }
                                                     function showDisableCustomerModal(id, name) {
                                                         document.getElementById('disableCustomerID').value = id;
                                                         document.getElementById('disableCustomerName').innerText = name;
                                                         document.getElementById('disableCustomerForm').action =
-                                                                '${pageContext.request.contextPath}/viewListAccount?action=disableCustomer';
+                                                                '${pageContext.request.contextPath}/admin/account?action=disableCustomer';
                                                         new bootstrap.Modal(document.getElementById('disableCustomerModal')).show();
                                                     }
         </script>

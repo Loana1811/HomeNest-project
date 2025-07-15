@@ -1,75 +1,142 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 
-/**
- *
- * @author ThanhTruc
- */
 public class Contract {
-    private int contractID;
-    private int tenantID;
-    private int roomID;
-    private Date startDate;
-    private Date endDate;
-    private String contractStatus;
-    private Date contractCreatedAt;
 
-    public Contract(int contractID, int tenantID, int roomID, Date startDate, Date endDate, String contractStatus, Date contractCreatedAt) {
-        this.contractID = contractID;
-        this.tenantID = tenantID;
-        this.roomID = roomID;
+    private int contractId;
+    private int tenantId;
+    private String tenantName;
+    private int roomId;
+    private String roomNumber;
+    private java.util.Date startDate;
+    private java.util.Date endDate;
+    private String contractStatus;
+    private java.util.Date contractCreatedAt;
+    private double amount;
+    private float roomRent;
+    private BigDecimal deposit;
+    private String phone;
+
+    public Contract() {
+    }
+
+    public Contract(int contractId, int tenantId, String tenantName, int roomId, String roomNumber,
+                    java.util.Date startDate, java.util.Date endDate, String contractStatus,
+                    java.util.Date contractCreatedAt, double amount, float roomRent) {
+        this.contractId = contractId;
+        this.tenantId = tenantId;
+        this.tenantName = tenantName;
+        this.roomId = roomId;
+        this.roomNumber = roomNumber;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.contractStatus = contractStatus;
+        this.contractCreatedAt = contractCreatedAt;
+        this.amount = amount;
+        this.roomRent = roomRent;
+    }
+
+    public Contract(int contractId, int tenantId, int roomId,
+                    java.util.Date startDate, java.util.Date endDate, String contractStatus, java.util.Date contractCreatedAt) {
+        this.contractId = contractId;
+        this.tenantId = tenantId;
+        this.roomId = roomId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.contractStatus = contractStatus;
         this.contractCreatedAt = contractCreatedAt;
     }
 
-    public Contract() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Contract(int contractId, int tenantId, String tenantName, int roomId, String roomNumber,
+                    java.util.Date startDate, java.util.Date endDate, String contractStatus,
+                    java.util.Date contractCreatedAt, double amount, BigDecimal deposit, float roomRent) {
+        this.contractId = contractId;
+        this.tenantId = tenantId;
+        this.tenantName = tenantName;
+        this.roomId = roomId;
+        this.roomNumber = roomNumber;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.contractStatus = contractStatus;
+        this.contractCreatedAt = contractCreatedAt;
+        this.amount = amount;
+        this.deposit = deposit;
+        this.roomRent = roomRent;
     }
 
-    public int getContractID() {
-        return contractID;
+    public Contract(int contractId, int tenantId, String tenantName, int roomId, String roomNumber,
+                    java.util.Date startDate, java.util.Date endDate, String contractStatus,
+                    java.util.Date contractCreatedAt, double amount, BigDecimal deposit, float roomRent, String phone) {
+        this.contractId = contractId;
+        this.tenantId = tenantId;
+        this.tenantName = tenantName;
+        this.roomId = roomId;
+        this.roomNumber = roomNumber;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.contractStatus = contractStatus;
+        this.contractCreatedAt = contractCreatedAt;
+        this.amount = amount;
+        this.deposit = deposit;
+        this.roomRent = roomRent;
+        this.phone = phone;
     }
 
-    public void setContractID(int contractID) {
-        this.contractID = contractID;
+    public int getContractId() {
+        return contractId;
     }
 
-    public int getTenantID() {
-        return tenantID;
+    public void setContractId(int contractId) {
+        this.contractId = contractId;
     }
 
-    public void setTenantID(int tenantID) {
-        this.tenantID = tenantID;
+    public int getTenantId() {
+        return tenantId;
     }
 
-    public int getRoomID() {
-        return roomID;
+    public void setTenantId(int tenantId) {
+        this.tenantId = tenantId;
     }
 
-    public void setRoomID(int roomID) {
-        this.roomID = roomID;
+    public String getTenantName() {
+        return tenantName;
     }
 
-    public Date getStartDate() {
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+
+    public int getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public java.util.Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(java.util.Date startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public java.util.Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(java.util.Date endDate) {
         this.endDate = endDate;
     }
 
@@ -81,12 +148,43 @@ public class Contract {
         this.contractStatus = contractStatus;
     }
 
-    public Date getContractCreatedAt() {
+    public java.util.Date getContractCreatedAt() {
         return contractCreatedAt;
     }
 
-    public void setContractCreatedAt(Date contractCreatedAt) {
+    public void setContractCreatedAt(java.util.Date contractCreatedAt) {
         this.contractCreatedAt = contractCreatedAt;
     }
-    
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public float getRoomRent() {
+        return roomRent;
+    }
+
+    public void setRoomRent(float roomRent) {
+        this.roomRent = roomRent;
+    }
+
+    public BigDecimal getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(BigDecimal deposit) {
+        this.deposit = deposit;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }

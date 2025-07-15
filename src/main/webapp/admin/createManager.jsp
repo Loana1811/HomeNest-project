@@ -74,11 +74,8 @@
                     <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required placeholder="Confirm password" />
                 </div>
                 <button type="submit" class="btn btn-primary">Create Manager</button>
-                <a href="${pageContext.request.contextPath}/viewListAccount" class="btn btn-secondary">Back</a>
+                <a href="${pageContext.request.contextPath}/admin/account" class="btn btn-secondary">Back</a>
             </form>
-
-
-
         </div>
         <!-- Modal Popup (Bootstrap 5) -->
         <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
@@ -112,12 +109,12 @@
                     errorMsg = "Valid email is required.";
                 } else if (phoneNumber.value.trim() === "" || !/^\d{10}$/.test(phoneNumber.value.trim())) {
                     errorMsg = "Phone number must be exactly 10 digits.";
-                } else if (password.value.length < 6) {
-                    errorMsg = "Password must be at least 6 characters.";
+                } else if (password.value.length < 8 || !/[A-Z]/.test(password.value) || !/[!@#$%^&*_-]/.test(password.value)) {
+                    errorMsg = "Password must be at least 8 characters, contain at least one uppercase letter, and one special character (!@#$%^&*_-).";
                 } else if (password.value !== confirmPassword.value) {
                     errorMsg = "Passwords do not match.";
                 } else if (blockID.value === "") {
-                    errorMsg = "Manager must select a block!";
+                    errorMsg = "Manager must select a block.";
                 }
 
                 if (errorMsg !== "") {

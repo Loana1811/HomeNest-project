@@ -98,6 +98,7 @@
         let fullName = this.fullName;
         let email = this.email;
         let birthDate = document.getElementById("birthDate");
+        let cccd = this.cccd.value.trim();
 
         let errorMsg = "";
         if (fullName.value.trim() === "") {
@@ -114,7 +115,21 @@
             let age = today.getFullYear() - dob.getFullYear();
             let m = today.getMonth() - dob.getMonth();
             if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; }
-            if (age < 15) errorMsg = "Customer must be at least 15 years old.";
+            if (age < 15) {
+                errorMsg = "Customer must be at least 15 years old.";
+            } else if (age > 100) {
+                errorMsg = "Customer must not be older than 100 years.";
+            }
+        }
+        if (cccd !== "") {
+            if (!/^\d{12}$/.test(cccd)) {
+                errorMsg = "CCCD must be exactly 12 digits.";
+            } else {
+                let firstThree = parseInt(cccd.substring(0, 3));
+                if (firstThree < 1 || firstThree > 96) {
+                    errorMsg = "Invalid CCCD: First three digits must be between 001 and 096.";
+                }
+            }
         }
         if (password.value.length < 6) {
             errorMsg = "Password must be at least 6 characters.";
@@ -133,4 +148,3 @@
 </script>
 </body>
 </html>
-
