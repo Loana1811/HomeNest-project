@@ -4,6 +4,7 @@
  */
 package dao;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,18 +22,14 @@ public class UtilityTypeDAO {
 
     public List<UtilityType> getAll() throws SQLException {
         List<UtilityType> list = new ArrayList<>();
-        String sql = "SELECT UtilityTypeID, UtilityName, UnitPrice, Unit, IsSystem FROM UtilityTypes";
-
+        String sql = "SELECT * FROM UtilityTypes ORDER BY UtilityTypeID";
         try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new UtilityType(
-                        rs.getInt("UtilityTypeID"),
-                        rs.getString("UtilityName"),
-                        rs.getBigDecimal("UnitPrice"),
-                        rs.getString("Unit"),
-                        rs.getBoolean("IsSystem")
-                ));
-
+                int id = rs.getInt("UtilityTypeID");
+                String name = rs.getString("UtilityName");
+                BigDecimal price = rs.getBigDecimal("UnitPrice");
+                String unit = rs.getString("Unit");
+                list.add(new UtilityType(id, name, price, unit));
             }
         }
         return list;
@@ -48,8 +45,8 @@ public class UtilityTypeDAO {
                         id,
                         rs.getString("UtilityName"),
                         rs.getBigDecimal("UnitPrice"),
-                        rs.getString("Unit"),
-                        rs.getBoolean("IsSystem")
+                        rs.getString("Unit")
+                //                        rs.getBoolean("IsSystem")
                 );
 
             }
@@ -107,20 +104,19 @@ public class UtilityTypeDAO {
         return -1;
     }
 
-   public boolean isUtilityTypeInUse(int utilityTypeId) throws SQLException {
-    String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE UtilityTypeID = ? AND (OldReading > 0 OR NewReading > 0)";
+    public boolean isUtilityTypeInUse(int utilityTypeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE UtilityTypeID = ? AND (OldReading > 0 OR NewReading > 0)";
 
-    try (Connection conn = new DBContext().getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-         
-        ps.setInt(1, utilityTypeId); // ✅ Chỉ cần set 1 tham số
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            return rs.getInt(1) > 0;
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, utilityTypeId); // ✅ Chỉ cần set 1 tham số
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
         }
+        return false;
     }
-    return false;
-}
 
     public boolean isUtilityNameExists(String name) throws SQLException {
         String sql = "SELECT COUNT(*) FROM UtilityTypes WHERE UtilityName = ?";
@@ -132,6 +128,28 @@ public class UtilityTypeDAO {
             }
         }
         return false;
+    }
+
+    public List<UtilityType> getUtilitiesByRoomId(int roomId) throws SQLException {
+        List<UtilityType> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT ut.UtilityTypeID, ut.UtilityName, ut.UnitPrice, ut.Unit "
+                + "FROM UtilityTypes ut "
+                + "JOIN UtilityReadings ur ON ut.UtilityTypeID = ur.UtilityTypeID "
+                + "WHERE ur.RoomID = ?";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new UtilityType(
+                        rs.getInt("UtilityTypeID"),
+                        rs.getString("UtilityName"),
+                        rs.getBigDecimal("UnitPrice"),
+                        rs.getString("Unit")
+                ));
+            }
+        }
+        return list;
     }
 
 }

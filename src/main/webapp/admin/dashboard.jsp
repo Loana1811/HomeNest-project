@@ -175,7 +175,7 @@
                 <div class="collapse navbar-collapse" id="navMenu">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
+                            <a class="nav-link" href="<%= ctx%>/Logouts">Logout</a>
                         </li>
                     </ul>
                 </div>
@@ -185,12 +185,12 @@
         <div class="sidebar">
             <h5 class="text-primary">Admin Menu</h5>
             <ul class="nav flex-column">
-                
+
                 <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
+                    <a class="nav-link" href="<%= ctx%>/admin/account">Accounts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/room?action=list">Rooms</a>
+                    <a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a>
@@ -205,7 +205,20 @@
                     <a class="nav-link" href="<%= ctx%>/admin/record-reading">Record Usage</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/statistical">Statistical</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
+                </li>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/adminReport">Report</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/notification?action=viewNotifications">Notification</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/Contracts">Contract</a>
                 </li>
 
 
