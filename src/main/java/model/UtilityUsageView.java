@@ -21,6 +21,9 @@ public class UtilityUsageView {
     private String changedBy;
     private java.sql.Date readingDate;
     private String blockName;
+    private boolean locked;
+    private int roomId;
+    private int utilityTypeId;
 
 //    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, String changedBy, Date readingDate) {
 //        this.readingId = readingId;
@@ -32,15 +35,13 @@ public class UtilityUsageView {
 //        this.changedBy = changedBy;
 //        this.readingDate = readingDate;
 //    }
-
-    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, String changedBy, Date readingDate, String blockName) {
+    public UtilityUsageView(int readingId, String roomNumber, String utilityName, double oldIndex, double newIndex, double priceUsed, Date readingDate, String blockName) {
         this.readingId = readingId;
         this.roomNumber = roomNumber;
         this.utilityName = utilityName;
         this.oldIndex = oldIndex;
         this.newIndex = newIndex;
         this.priceUsed = priceUsed;
-        this.changedBy = changedBy;
         this.readingDate = readingDate;
         this.blockName = blockName;
     }
@@ -61,8 +62,34 @@ public class UtilityUsageView {
         return oldIndex;
     }
 
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
     public double getNewIndex() {
         return newIndex;
+    }
+// Fields
+  
+// Getters and setters
+    public int getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
+    }
+
+    public int getUtilityTypeId() {
+        return utilityTypeId;
+    }
+
+    public void setUtilityTypeId(int utilityTypeId) {
+        this.utilityTypeId = utilityTypeId;
     }
 
     public double getPriceUsed() {

@@ -10,25 +10,22 @@ package model;
  */
 public class Block {
 
-    private int blockID;
+  private int blockID;
     private String blockName;
-    private int maxRoom;
+    private int maxRooms;
     private int roomCount;
     private String blockStatus;
 
-    public Block(int blockID, String blockName, int maxRoom, int roomCount, String blockStatus) {
-        this.blockID = blockID;
-        this.blockName = blockName;
-        this.maxRoom = maxRoom;
-        this.roomCount = roomCount;
-        this.blockStatus = blockStatus;
-    }
-
-   
     public Block() {
     }
 
-    
+    public Block(int blockID, String blockName, int maxRooms, int roomCount, String blockStatus) {
+        this.blockID = blockID;
+        this.blockName = blockName;
+        this.maxRooms = maxRooms;
+        this.roomCount = roomCount;
+        this.blockStatus = blockStatus;
+    }
 
     public int getBlockID() {
         return blockID;
@@ -46,12 +43,12 @@ public class Block {
         this.blockName = blockName;
     }
 
-    public int getMaxRoom() {
-        return maxRoom;
+    public int getMaxRooms() {
+        return maxRooms;
     }
 
-    public void setMaxRoom(int maxRoom) {
-        this.maxRoom = maxRoom;
+    public void setMaxRooms(int maxRooms) {
+        this.maxRooms = maxRooms;
     }
 
     public int getRoomCount() {
@@ -70,4 +67,5 @@ public class Block {
         this.blockStatus = blockStatus;
     }
 
+    
 }

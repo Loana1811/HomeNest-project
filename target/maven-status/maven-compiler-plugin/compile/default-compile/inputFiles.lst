@@ -1,98 +1,102 @@
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\IncurredFee.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminNotificationServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LoginGoogleServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Role.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\TenantDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BillServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityHistoryDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RoomStatusDTO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Block.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RentalRequestDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ContractDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RevenueCategoryDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ExpenseDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BlockDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomDetailsServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ReportDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UtilityReadingServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ResetPasswordServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\EmailLogsDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminViewAccountServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminReportServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\DashboardServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RoleDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\EmailLogs.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Notification.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BillDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\CategoryDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ChangePasswordServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ManageRequestsServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RegisterUserServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\StatisticalServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BillGenerateServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CategoryServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\BillDetail.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Room.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\DBContext.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RentalRequest.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Tenant.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\GoogleUser.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\IncurredFeeTypeDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Payment.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UpdateProfileServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RentalRequestServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\PaymentServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityHistoryView.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CustomerReportServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\User.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Contract.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Expense.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\IncurredFeeTypeServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\PasswordResetDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ForgotPasswordServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\EmailConfig.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RevenueDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\NotificationServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\PaymentDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UserNotification.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\ExpenseCategory.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityType.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\CustomerDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\DashboardDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditCustomerServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityTypeDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityReadingDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ExpenseCategoryDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Revenue.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Category.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CustomerNotification.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BillDetailDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LogoutServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\IncurredFeeType.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RevenueCategory.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminAccountServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ManagerNotification.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityUsageView.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\GoogleUtils.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditUserServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BlockServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Customer.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RegisterCustomerServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\MailUtils.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\IncurredFeeDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\StatisticalDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Report.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CancelRequestServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomListServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UserNotificationDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LoginServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ContractServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\NotificationDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UsageServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UserDAO.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ViewProfileServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UtilityServlet.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityReading.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Bill.java
-C:\Users\ThanhTruc\Documents\Zalo Received Files\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RoomDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ContractDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\PasswordResetDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ChangePasswordServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UserNotification.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\IncurredFeeType.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityUsageView.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\IncurredFeeTypeServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\DashboardDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityTypeDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Contract.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomDetailsServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\DBContext.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\DashboardServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\MailUtils.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Room.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\CategoryDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityHistoryDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityHistoryView.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\NotificationDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RevenueCategory.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\ExpenseCategory.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BlockServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UpdateProfileServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminNotificationServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditUserServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\StatisticalServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Role.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Revenue.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\FormatUtil.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\TenantDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UsageServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminAccountServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditHistoryServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ViewProfileServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\MoneyUtil.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\GoogleUtils.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\IncurredFeeTypeDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityReading.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ForgotPasswordServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ExpenseDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LoginServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\PaymentServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Customer.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RegisterCustomerServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ExpenseCategoryDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RoomStatusDTO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LogoutServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BillDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Report.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\EmailConfig.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RoleDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CancelRequestServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CategoryServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UserNotificationDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\PaymentDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\EmailLogs.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RoomDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BillServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UtilityReadingServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\ReportDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ManageRequestsServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\UtilityServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\NotificationServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BlockDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RevenueDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CustomerReportServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\CustomerDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UtilityReadingDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ManagerNotification.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\AdminReportServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\LoginGoogleServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RevenueCategoryDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Bill.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditCustomerServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Notification.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\BillDetailDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\User.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\RentalRequestDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Category.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\EditReadingServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RegisterUserServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RoomListServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\EmailLogsDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\RentalRequest.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\RentalRequestServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\UserDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\StatisticalDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Block.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ContractServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\UtilityType.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\BillDetail.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\BillGenerateServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\ResetPasswordServlet.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\utils\GoogleUser.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\controller\CustomerNotification.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Expense.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\dao\IncurredFeeDAO.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Tenant.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\IncurredFee.java
+C:\Users\ThanhTruc\Downloads\Finallll\Finallll\HomeNest-project-kloan\HomeNest-project-kloan\HomeNest-project-kloan\src\main\java\model\Payment.java

@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
@@ -15,7 +15,10 @@ public class UtilityType {
     private String utilityName;
     private BigDecimal unitPrice;
     private String unit;
-    private boolean isSystem;
+private boolean isSystem;
+
+    public UtilityType() {
+    }
 
     public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit, boolean isSystem) {
         this.utilityTypeID = utilityTypeID;
@@ -24,6 +27,14 @@ public class UtilityType {
         this.unit = unit;
         this.isSystem = isSystem;
     }
+
+    public UtilityType(int utilityTypeID, String utilityName, BigDecimal unitPrice, String unit) {
+        this.utilityTypeID = utilityTypeID;
+        this.utilityName = utilityName;
+        this.unitPrice = unitPrice;
+        this.unit = unit;
+    }
+
 
     public int getUtilityTypeID() {
         return utilityTypeID;
@@ -64,5 +75,9 @@ public class UtilityType {
     public void setIsSystem(boolean isSystem) {
         this.isSystem = isSystem;
     }
-    
+    public boolean isIndexedType() {
+    String n = utilityName.toLowerCase();
+    return n.contains("điện") || n.contains("electric") || n.contains("nước") || n.contains("water");
+}
+
 }

@@ -18,7 +18,7 @@ public class BillDetailDAO {
     }
 
     public BillDetail getBillDetailById(int id) throws SQLException {
-        String sql = "SELECT * FROM BillDetails WHERE BillDetailID=?";
+        String sql = "SELECT * FROM BillDetails WHERE BillID=?";
         try(Connection c = dbContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()) {
