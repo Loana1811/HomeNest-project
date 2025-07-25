@@ -16,8 +16,15 @@ public class UtilityReading {
     private BigDecimal oldPrice;    // có thể null
     private String changedBy;
     private Timestamp utilityReadingCreatedAt;
+    private boolean isLocked;
+    private int readingId;
+    private boolean isChanged;
+    private String reason;
+    private BigDecimal changedAmount;
+    private String utilityName;
 
-    public UtilityReading() {}
+    public UtilityReading() {
+    }
 
 //    public UtilityReading(int readingID, int utilityTypeID, int roomID, Date readingDate,
 //                          BigDecimal oldReading, BigDecimal newReading,
@@ -34,21 +41,20 @@ public class UtilityReading {
 //        this.changedBy = changedBy;
 //        this.utilityReadingCreatedAt = utilityReadingCreatedAt;
 //    }
-public UtilityReading(int readingID, int roomID, int utilityTypeID,
-                      BigDecimal oldReading, BigDecimal newReading,
-                      BigDecimal priceUsed, String changedBy, Date readingDate) {
-    this.readingID = readingID;
-    this.roomID = roomID;
-    this.utilityTypeID = utilityTypeID;
-    this.oldReading = oldReading;
-    this.newReading = newReading;
-    this.priceUsed = priceUsed;
-    this.changedBy = changedBy;
-    this.readingDate = readingDate;
-    this.utilityReadingCreatedAt = new Timestamp(System.currentTimeMillis());
-}
+    public UtilityReading(int readingID, int roomID, int utilityTypeID,
+            BigDecimal oldReading, BigDecimal newReading,
+            BigDecimal priceUsed, String changedBy, Date readingDate) {
+        this.readingID = readingID;
+        this.roomID = roomID;
+        this.utilityTypeID = utilityTypeID;
+        this.oldReading = oldReading;
+        this.newReading = newReading;
+        this.priceUsed = priceUsed;
+        this.changedBy = changedBy;
+        this.readingDate = readingDate;
+        this.utilityReadingCreatedAt = new Timestamp(System.currentTimeMillis());
+    }
 
-   
 //    public UtilityReading(int readingID, int roomID, int utilityTypeID, double oldIndex, double newIndex,
 //                      BigDecimal priceUsed, String changedBy, Date readingDate) {
 //    this.readingID = readingID;
@@ -60,7 +66,6 @@ public UtilityReading(int readingID, int roomID, int utilityTypeID,
 //    this.changedBy = changedBy;
 //    this.readingDate = readingDate;
 //}
-
     public UtilityReading(int readingID, int utilityTypeID, int roomID, Date readingDate, BigDecimal oldReading, BigDecimal newReading, BigDecimal oldPrice, String changedBy) {
         this.readingID = readingID;
         this.utilityTypeID = utilityTypeID;
@@ -74,7 +79,6 @@ public UtilityReading(int readingID, int roomID, int utilityTypeID,
 
     public UtilityReading(int i, int roomId, int typeId, BigDecimal oldIndex, double doubleValue, BigDecimal priceUsed, String admin, Date date) {
     }
-
 
     public int getReadingID() {
         return readingID;
@@ -90,6 +94,22 @@ public UtilityReading(int readingID, int roomID, int utilityTypeID,
 
     public void setUtilityTypeID(int utilityTypeID) {
         this.utilityTypeID = utilityTypeID;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.isLocked = locked;
+    }
+
+    public int getReadingId() {
+        return readingId;
+    }
+
+    public void setReadingId(int readingId) {
+        this.readingId = readingId;
     }
 
     public int getRoomID() {
@@ -155,4 +175,45 @@ public UtilityReading(int readingID, int roomID, int utilityTypeID,
     public void setUtilityReadingCreatedAt(Timestamp utilityReadingCreatedAt) {
         this.utilityReadingCreatedAt = utilityReadingCreatedAt;
     }
+
+    public boolean isIsLocked() {
+        return isLocked;
+    }
+
+    public void setIsLocked(boolean isLocked) {
+        this.isLocked = isLocked;
+    }
+
+    public boolean isIsChanged() {
+        return isChanged;
+    }
+
+    public void setIsChanged(boolean isChanged) {
+        this.isChanged = isChanged;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public BigDecimal getChangedAmount() {
+        return changedAmount;
+    }
+
+    public void setChangedAmount(BigDecimal changedAmount) {
+        this.changedAmount = changedAmount;
+    }
+
+    public String getUtilityName() {
+        return utilityName;
+    }
+
+    public void setUtilityName(String utilityName) {
+        this.utilityName = utilityName;
+    }
+    
 }

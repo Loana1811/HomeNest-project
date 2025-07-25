@@ -1,10 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title>Edit Manager</title>
+        <title>Chỉnh Sửa Quản Lý</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
         <style>
@@ -95,8 +96,8 @@
     <body>
         <div class="edit-container">
             <div class="edit-header">
-                <h2>Edit Manager</h2>
-                <p>Update manager account information</p>
+                <h2>Chỉnh Sửa Quản Lý</h2>
+                <p>Cập nhật thông tin tài khoản quản lý</p>
             </div>
 
             <c:if test="${not empty error}">
@@ -104,7 +105,7 @@
             </c:if>
             <c:if test="${user.role.roleName eq 'Admin'}">
                 <div class="alert alert-info">
-                    Admin account cannot be edited. (View only)
+                    Tài khoản Admin không thể chỉnh sửa. (Chỉ xem)
                 </div>
             </c:if>
 
@@ -120,18 +121,18 @@
                 <input type="hidden" name="roleID" value="${user.role.roleID}"/>
                 <input type="hidden" id="originalStatus" value="${user.userStatus}"/>
 
-                <!-- Full Name -->
+                <!-- Họ và Tên -->
                 <div class="form-section">
                     <div class="form-floating mb-3">
                         <input type="text" 
                                id="userFullName" 
                                name="fullName" 
                                class="form-control"
-                               placeholder="Full Name" 
-                               value="${user.userFullName}"
+                               placeholder="Họ và Tên" 
+                               value="${not empty param.fullName ? param.fullName : (not empty requestScope.formFullName ? requestScope.formFullName : user.userFullName)}"
                                <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
                                    required />
-                               <label for="userFullName">Full Name <span class="required">*</span></label>
+                               <label for="userFullName">Họ và Tên <span class="required">*</span></label>
                                <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -143,29 +144,29 @@
                                    name="email"
                                    class="form-control"
                                    placeholder="Email"
-                                   value="${user.email}"
+                                   value="${not empty param.email ? param.email : (not empty requestScope.formEmail ? requestScope.formEmail : user.email)}"
                             <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
                                 required />
                             <label for="email">Email <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
-                    <!-- Phone Number -->
+                    <!-- Số Điện Thoại -->
                     <div class="form-section">
                         <div class="form-floating mb-3">
                             <input type="text"
                                    id="phoneNumber"
                                    name="phoneNumber"
                                    class="form-control"
-                                   placeholder="Phone Number"
-                                   value="${user.phoneNumber}"
+                                   placeholder="Số Điện Thoại"
+                                   value="${not empty param.phoneNumber ? param.phoneNumber : (not empty requestScope.formPhoneNumber ? requestScope.formPhoneNumber : user.phoneNumber)}"
                             <c:if test="${user.role.roleName eq 'Admin'}">readonly</c:if>
                                 required />
-                            <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                            <label for="phoneNumber">Số Điện Thoại <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
-                    <!-- Role (readonly, just for info) -->
+                    <!-- Vai Trò (chỉ đọc, chỉ thông tin) -->
                     <div class="form-section">
                         <div class="form-floating mb-3">
                             <input type="text"
@@ -175,7 +176,7 @@
                                    value="${user.role.roleName}" 
                             readonly
                             style="background-color:#eaf4fa;"/>
-                        <label for="role">Role</label>
+                        <label for="role">Vai Trò</label>
                     </div>
                 </div>
 
@@ -183,62 +184,78 @@
                     <div class="form-section">
                         <div class="form-floating mb-3">
                             <select id="blockID" name="blockID" class="form-select" required>
-                                <option value="">Select Block</option>
+                                <option value="">Chọn Khu</option>
                                 <c:forEach var="block" items="${blockList}">
                                     <option value="${block.blockID}" 
-                                            <c:if test="${user.block != null && user.block.blockID == block.blockID}">selected</c:if>>
+                                            <c:if test="${param.blockID == block.blockID or requestScope.formBlockID == block.blockID or (user.block != null and user.block.blockID == block.blockID)}">selected</c:if>>
                                         ${block.blockName}
                                     </option>
                                 </c:forEach>
                             </select>
-                            <label for="blockID">Block <span class="required">*</span></label>
+                            <label for="blockID">Khu <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
                 </c:if>
 
-                <!-- Status -->
+                <!-- Trạng Thái -->
                 <div class="form-section">
                     <div class="form-floating mb-3">
                         <select id="status" name="status" class="form-select" <c:if test="${user.role.roleName eq 'Admin'}">disabled</c:if>>
-                            <option value="Active" <c:if test="${user.userStatus eq 'Active'}">selected</c:if>>Active</option>
-                            <option value="Inactive" <c:if test="${user.userStatus eq 'Inactive'}">selected</c:if>>Inactive</option>
+                            <option value="Active" <c:if test="${param.status eq 'Active' or requestScope.formStatus eq 'Active' or user.userStatus eq 'Active'}">selected</c:if>>Hoạt Động</option>
+                            <option value="Disable" <c:if test="${param.status eq 'Disable' or requestScope.formStatus eq 'Disable' or user.userStatus eq 'Disable'}">selected</c:if>>Không Hoạt Động</option>
                             </select>
-                            <label for="status">Status</label>
+                            <label for="status">Trạng Thái</label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
+                    <!-- Nút Hành Động -->
                     <div class="d-flex justify-content-center gap-3">
                         <button type="submit" class="btn btn-primary btn-custom"
                         <c:if test="${user.role.roleName eq 'Admin'}">disabled</c:if>
-                            >Save</button>
+                            >Lưu</button>
                         <a href="${pageContext.request.contextPath}/admin/account" class="btn btn-secondary btn-custom">
-                        Cancel
+                        Hủy
                     </a>
                 </div>
             </form>
         </div>
 
-        <!-- Reason Modal -->
+        <!-- Modal Lý Do -->
         <div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="reasonModalLabel">Reason for Status Change</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="reasonModalLabel">Lý Do Thay Đổi Trạng Thái</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="statusChangeReason" class="form-label">Reason</label>
-                            <textarea class="form-control" id="statusChangeReason" name="reason" rows="3" required placeholder="Enter reason for status change"></textarea>
-                            <div class="invalid-feedback">Reason is required and must be at least 5 characters.</div>
+                            <label for="statusChangeReason" class="form-label">Lý Do</label>
+                            <textarea class="form-control" id="statusChangeReason" name="reason" rows="3" required placeholder="Nhập lý do thay đổi trạng thái"></textarea>
+                            <div class="invalid-feedback">Lý do là bắt buộc và phải có ít nhất 5 ký tự.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirm</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" id="confirmStatusChange">Xác Nhận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Lỗi -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">Lỗi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body" id="errorModalMessage"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
                     </div>
                 </div>
             </div>
@@ -247,128 +264,100 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script><!-- comment -->
 
-
         <script>
-                    document.addEventListener("DOMContentLoaded", function () {
-                        const form = document.getElementById('editUserForm');
-                        const statusSelect = document.getElementById('status');
-                        const originalStatus = document.getElementById('originalStatus').value;
-                        let selectedStatus = statusSelect.value;
-                        const reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
-                        const reasonInput = document.getElementById('statusChangeReason');
-                        const confirmButton = document.getElementById('confirmStatusChange');
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById('editUserForm');
+                const statusSelect = document.getElementById('status');
+                const originalStatus = document.getElementById('originalStatus').value;
+                let selectedStatus = statusSelect.value;
+                const reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
+                const reasonInput = document.getElementById('statusChangeReason');
+                const confirmButton = document.getElementById('confirmStatusChange');
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
 
-                        // Show modal when status changes
-                        statusSelect.addEventListener('change', function (e) {
-                            selectedStatus = e.target.value;
-                            if (selectedStatus !== originalStatus && selectedStatus !== '') {
-                                reasonModal.show();
-                            }
-                        });
+                // Hiển thị modal khi trạng thái thay đổi
+                statusSelect.addEventListener('change', function (e) {
+                    selectedStatus = e.target.value;
+                    if (selectedStatus !== originalStatus && selectedStatus !== '') {
+                        reasonModal.show();
+                    }
+                });
 
-                        // Handle confirm status change
-                        confirmButton.addEventListener('click', function () {
-                            const reason = reasonInput.value.trim();
-                            if (reason.length < 5) {
-                                reasonInput.classList.add('is-invalid');
-                                return;
-                            }
-                            reasonInput.classList.remove('is-invalid');
-                            // Remove any existing reason field to avoid duplicates
-                            const existingReasonField = form.querySelector('input[name="reason"]');
-                            if (existingReasonField) {
-                                existingReasonField.remove();
-                            }
-                            // Add reason to form as hidden input
-                            const reasonField = document.createElement('input');
-                            reasonField.type = 'hidden';
-                            reasonField.name = 'reason';
-                            reasonField.value = reason;
-                            form.appendChild(reasonField);
-                            reasonModal.hide();
-                        });
+                // Xử lý xác nhận thay đổi trạng thái
+                confirmButton.addEventListener('click', function () {
+                    const reason = reasonInput.value.trim();
+                    if (reason.length < 5) {
+                        reasonInput.classList.add('is-invalid');
+                        return;
+                    }
+                    reasonInput.classList.remove('is-invalid');
+                    // Xóa trường lý do cũ để tránh trùng lặp
+                    const existingReasonField = form.querySelector('input[name="reason"]');
+                    if (existingReasonField) {
+                        existingReasonField.remove();
+                    }
+                    // Thêm lý do vào form dưới dạng input ẩn
+                    const reasonField = document.createElement('input');
+                    reasonField.type = 'hidden';
+                    reasonField.name = 'reason';
+                    reasonField.value = reason;
+                    form.appendChild(reasonField);
+                    reasonModal.hide();
+                });
 
-                        // Reset reason input when modal is hidden, but keep selected status
-                        document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
-                            reasonInput.value = '';
-                            reasonInput.classList.remove('is-invalid');
-                            // Only revert status if no reason was confirmed
-                            if (!form.querySelector('input[name="reason"]')) {
-                                statusSelect.value = originalStatus;
-                                selectedStatus = originalStatus;
-                            }
-                        });
+                // Đặt lại input lý do khi modal bị ẩn, nhưng giữ trạng thái đã chọn
+                document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
+                    reasonInput.value = '';
+                    reasonInput.classList.remove('is-invalid');
+                    // Chỉ quay lại trạng thái cũ nếu không có lý do được xác nhận
+                    if (!form.querySelector('input[name="reason"]')) {
+                        statusSelect.value = originalStatus;
+                        selectedStatus = originalStatus;
+                    }
+                });
 
-                        form.addEventListener('submit', function (e) {
-                            let isValid = true;
+                form.addEventListener('submit', function (e) {
+                    let errorMsg = "";
 
-                            // Full Name
-                            const fullName = document.getElementById('userFullName');
-                            if (fullName.value.trim() === "") {
-                                showError(fullName, "Full name is required.");
-                                isValid = false;
-                            } else {
-                                hideError(fullName);
-                            }
+                    // Họ và Tên
+                    const fullName = document.getElementById('userFullName');
+                    if (fullName.value.trim() === "") {
+                        errorMsg += "Họ và tên là bắt buộc.\n";
+                    }
 
-                            // Email
-                            const email = document.getElementById('email');
-                            if (!/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value.trim())) {
-                                showError(email, "Email is not valid.");
-                                isValid = false;
-                            } else {
-                                hideError(email);
-                            }
+                    // Email
+                    const email = document.getElementById('email');
+                    if (!/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value.trim())) {
+                        errorMsg += "Email không hợp lệ.\n";
+                    }
 
-                            // Phone number
-                            const phone = document.getElementById('phoneNumber');
-                            if (!/^\d{10,11}$/.test(phone.value.trim())) {
-                                showError(phone, "Phone number must be 10-11 digits.");
-                                isValid = false;
-                            } else {
-                                hideError(phone);
-                            }
+                    // Số điện thoại
+                    const phone = document.getElementById('phoneNumber');
+                    if (!/^\d{10,11}$/.test(phone.value.trim())) {
+                        errorMsg += "Số điện thoại phải từ 10-11 chữ số.\n";
+                    }
 
-                            // Block (for Manager role)
-                            const blockSelect = document.getElementById('blockID');
-                            if (blockSelect && !blockSelect.value) {
-                                showError(blockSelect, "Block is required for Manager.");
-                                isValid = false;
-                            } else if (blockSelect) {
-                                hideError(blockSelect);
-                            }
+                    // Khu (cho vai trò Quản Lý)
+                    const blockSelect = document.getElementById('blockID');
+                    if (blockSelect && blockSelect.value === "") {
+                        errorMsg += "Khu là bắt buộc cho Quản Lý.\n";
+                    }
 
-                            // Status
-                            if (!statusSelect.value) {
-                                showError(statusSelect, "Status is required.");
-                                isValid = false;
-                            } else if (statusSelect.value !== originalStatus && !form.querySelector('input[name="reason"]')) {
-                                showError(statusSelect, "Reason is required for status change.");
-                                reasonModal.show();
-                                isValid = false;
-                            } else {
-                                hideError(statusSelect);
-                            }
+                    // Trạng thái
+                    if (!statusSelect.value) {
+                        errorMsg += "Trạng thái là bắt buộc.\n";
+                    } else if (statusSelect.value !== originalStatus && !form.querySelector('input[name="reason"]')) {
+                        errorMsg += "Lý do là bắt buộc cho thay đổi trạng thái.\n";
+                        reasonModal.show();
+                    }
 
-                            if (!isValid) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }
-                        });
-                        function showError(input, msg) {
-                            input.classList.add('is-invalid');
-                            const err = input.parentElement.querySelector('.invalid-feedback');
-                            if (err)
-                                err.innerText = msg;
-                        }
-
-                        function hideError(input) {
-                            input.classList.remove('is-invalid');
-                            const err = input.parentElement.querySelector('.invalid-feedback');
-                            if (err)
-                                err.innerText = "";
-                        }
-                    });
+                    if (errorMsg !== "") {
+                        e.preventDefault();
+                        document.getElementById("errorModalMessage").innerText = errorMsg;
+                        errorModal.show();
+                    }
+                });
+            });
         </script>
     </body>
 </html>

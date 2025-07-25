@@ -7,6 +7,7 @@
     String ctx = request.getContextPath();
 %>
 
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -65,66 +66,6 @@
         </style>
     </head>
     <body>
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">🏠 HomeNest</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navMenu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- SIDEBAR -->
-         <div class="sidebar">
-            <h5 class="text-primary">Admin Menu</h5>
-            <ul class="nav flex-column">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/utility?action=list">Utilities</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/record-reading">Record Usage</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/statistical">Statistical</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
-                </li>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/adminReport">Report</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/notification?action=viewNotifications">Notification</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/Contracts">Contract</a>
-                </li>
-
-
-            </ul>
-        </div>
 
 
         <!-- MAIN CONTENT -->
@@ -136,16 +77,31 @@
                 <p class="text-muted fst-italic">Monthly usage statistics</p>
             </div>
 
-            <!-- Toolbar -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
+            <!-- FILTER FORM -->
+            <form method="get" action="${pageContext.request.contextPath}/admin/usage" class="row g-3 mb-4">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Billing Month</label>
-                    <input type="month" class="form-control" value="2025-06" style="width: 200px;" />
+                    <input type="month" name="month" class="form-control" value="${param.month}" />
                 </div>
-                <button class="btn btn-success">
-                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Export to Excel
-                </button>
-            </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Room Name</label>
+                    <input type="text" name="room" class="form-control" value="${param.room}" placeholder="e.g., A101" />
+                </div>
+
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-filter-circle"></i> Filter
+                    </button>
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <a href="utility?action=record" class="btn btn-outline-teal">
+                        📜 Record Utility
+                    </a>
+                </div>
+
+            </form>
+
 
             <% if (groupedUsages == null) { %>
             <div class="alert alert-danger">❌ Data not found.</div>
@@ -170,8 +126,9 @@
                                     <th colspan="2">Reading</th>
                                     <th rowspan="2">Used</th>
                                     <th rowspan="2">Total Price(₫)</th>
-                                    <th rowspan="2">Record By</th>
                                     <th rowspan="2">Reading Date</th>
+                                    <th rowspan="2">Edit</th>
+
                                 </tr>
                                 <tr class="text-center">
                                     <th>Previous</th>
@@ -187,8 +144,18 @@
                                     <td><%= u.getNewIndex()%></td>
                                     <td><%= u.getNewIndex() - u.getOldIndex()%></td>
                                     <td><%= u.getPriceUsed()%></td>
-                                    <td><%= u.getChangedBy()%></td>
                                     <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(u.getReadingDate())%></td>
+                                   <td class="text-center">
+    <% if (!u.isLocked()) { %>
+    <a class="btn btn-sm btn-warning"
+       href="<%= ctx %>/admin/edit-reading?readingId=<%= u.getReadingId() %>">✏️</a>
+    <% } %>
+<!--    <a class="btn btn-sm btn-info"
+       href="<%= ctx %>/admin/edit-history?roomId=<%= u.getRoomId() %>&utilityTypeId=<%= u.getUtilityTypeId() %>&date=<%= u.getReadingDate() %>">🕓</a>-->
+</td>
+
+
+
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -201,5 +168,18 @@
         </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            window.addEventListener('load', function () {
+                if (performance.navigation.type === 1 || performance.getEntriesByType("navigation")[0].type === "reload") {
+                    const url = new URL(window.location.href);
+                    if (url.searchParams.has('room') || url.searchParams.has('month')) {
+                        url.searchParams.delete('room');
+                        url.searchParams.delete('month');
+                        window.location.replace(url.toString());
+                    }
+                }
+            });
+        </script>
+
     </body>
 </html>

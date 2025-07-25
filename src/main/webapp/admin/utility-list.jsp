@@ -1,202 +1,216 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
-<%@ page import="java.util.List, model.UtilityType" %>
+<%@ page import="java.util.List, model.UtilityType, model.IncurredFeeType" %>
+
 <%
     List<UtilityType> systemList = (List<UtilityType>) request.getAttribute("systemList");
-    List<UtilityType> userList = (List<UtilityType>) request.getAttribute("userList");
+    List<IncurredFeeType> feeList = (List<IncurredFeeType>) request.getAttribute("feeList");
+  String ctx = request.getContextPath();
     String error = (String) request.getAttribute("error");
 %>
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-            body {
-                background-color: #f8f9fa;
-                font-family: 'Segoe UI', sans-serif;
-                color: #343a40;
-            }
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
+        <!-- MAIN CONTENT -->
+      <div class="main-content">
+            <h3 class="mb-3">🧾 Utilities Management</h3>
+            <% if (error != null) { %>
+            <div class="alert alert-danger"><%= error %></div>
+            <% } %>
 
-            h3 {
-                font-weight: bold;
-                margin-bottom: 1.5rem;
-            }
+            <div class="mb-3 d-flex gap-3">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUtilityModal">➕ Add Utility</button>
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addFeeModal">+ Add Fee</button>
 
-            .btn-primary {
-                font-weight: 500;
-                font-size: 16px;
-                padding: 10px 20px;
-                border-radius: 8px;
-            }
 
-            table {
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            }
-
-            table thead {
-                background-color: #0d6efd;
-                color: white;
-            }
-
-            table th, table td {
-                vertical-align: middle !important;
-                text-align: center;
-            }
-
-            .table td {
-                padding: 12px;
-            }
-
-            .btn-outline-primary, .btn-outline-danger {
-                margin: 0 2px;
-            }
-
-            .section-header {
-                font-size: 1.25rem;
-                font-weight: 600;
-                margin-top: 2rem;
-                margin-bottom: 0.75rem;
-                color: #0d6efd;
-            }
-
-            .alert-info, .alert-danger {
-                border-radius: 8px;
-                font-size: 14px;
-            }
-
-            .btn-outline-secondary {
-                margin-top: 20px;
-                font-weight: 500;
-                border-radius: 6px;
-            }
-
-            .btn-outline-secondary i {
-                margin-right: 5px;
-            }
-
-            .modal-title {
-                font-weight: bold;
-            }
-        </style>
-
-        <meta charset="UTF-8">
-        <title>Utility List</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </head>
-    <body class="container mt-4">
-
-        <h3 class="mb-3">🧾 Manage Utilities</h3>
-
-        <% if (error != null) {%>
-        <div class="alert alert-danger"><%= error%></div>
-        <% } %>
-
-        <div class="mb-3">
-            <a href="utility?action=create" class="btn btn-primary">➕ Add Utility</a>
-        </div>
-
-        <h5 class="mt-4">🔐 System-defined Utilities</h5>
-        <% if (systemList != null && !systemList.isEmpty()) { %>
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Name</th>
-                    <th>Unit</th>
-                    <th>Price (VND)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% for (UtilityType u : systemList) {%>
-                <tr>
-                    <td><%= u.getUtilityName()%></td>
-                    <td><%= u.getUnit()%></td>
-                    <td><%= String.format("%,.0f", u.getUnitPrice().doubleValue())%></td>
-                    <td>
-                        <a href="utility?action=edit&id=<%= u.getUtilityTypeID()%>" class="btn btn-sm btn-outline-primary">✏️</a>
-                        <span class="text-warning" title="Default utility cannot be deleted.">⚠️</span>
-                    </td>
-                </tr>
-                <% } %>
-            </tbody>
-        </table>
-        <% } else { %>
-        <div class="alert alert-info">No system-defined utilities found.</div>
-        <% } %>
-
-        <h5 class="mt-4">🧑‍💻 User-defined Utilities</h5>
-        <% if (userList != null && !userList.isEmpty()) { %>
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Name</th>
-                    <th>Unit</th>
-                    <th>Price (VND)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% for (UtilityType u : userList) {%>
-                <tr>
-                    <td><%= u.getUtilityName()%></td>
-                    <td><%= u.getUnit()%></td>
-                    <td><%= String.format("%,.0f", u.getUnitPrice().doubleValue())%></td>
-                    <td>
-                        <a href="utility?action=edit&id=<%= u.getUtilityTypeID()%>" class="btn btn-sm btn-outline-primary">✏️</a>
-                        <a href="#" class="btn btn-sm btn-outline-danger"
-                           data-bs-toggle="modal"
-                           data-bs-target="#confirmDeleteModal"
-                           onclick="setDeleteId(<%= u.getUtilityTypeID()%>)">🗑️</a>
-                    </td>
-                </tr>
-                <% } %>
-            </tbody>
-        </table>
-        <% } else { %>
-        <div class="alert alert-info">No user-defined utilities found.</div>
-        <% }%>
-
-        <div class="mt-4">
-            <a href="utility?action=history" class="btn btn-outline-secondary">📜 View Price History</a>
-        </div>
-
-        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form action="utility" method="get">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" id="deleteUtilityId">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title text-danger">⚠️ Confirm Delete</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            Are you sure you want to delete this utility?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-danger">✅ Yes, delete</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancel</button>
-                        </div>
-
-                    </div>
-                </form>
             </div>
 
+            <!-- SYSTEM UTILITIES -->
+            <h5 class="mt-4">🔐 System-defined Utilities</h5>
+            <% if (systemList != null && !systemList.isEmpty()) { %>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Unit</th>
+                        <th>Price (VND)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (UtilityType u : systemList) { %>
+                    <tr>
+                        <td><%= u.getUtilityName() %></td>
+                        <td><%= u.getUnit() %></td>
+                        <td><%= String.format("%,.0f", u.getUnitPrice().doubleValue()) %></td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary"
+                               data-bs-toggle="modal"
+                               data-bs-target="#editUtilityModal"
+                               onclick="openEditModal(<%= u.getUtilityTypeID() %>)">✏️</a>
+                            <span class="text-warning" title="Default utility cannot be deleted.">⚠️</span>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+            <% } else { %>
+            <div class="alert alert-info">No system-defined utilities found.</div>
+            <% } %>
+
+            <!-- INCURRED FEES -->
+            <h5 class="mt-4">💰 Incurred Fees</h5>
+            <% if (feeList != null && !feeList.isEmpty()) { %>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Default Amount (VND)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (IncurredFeeType fee : feeList) { %>
+                    <tr>
+                        <td><%= fee.getFeeName() %></td>
+                        <td><%= String.format("%,.0f", fee.getDefaultAmount().doubleValue()) %></td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary"
+                               data-bs-toggle="modal"
+                               data-bs-target="#editFeeModal"
+                               onclick="openEditFeeModal(<%= fee.getIncurredFeeTypeID() %>)">✏️</a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteFeeModal"
+                                    onclick="setDeleteFeeId(<%= fee.getIncurredFeeTypeID() %>)">🗑️</button>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+            <% } else { %>
+            <div class="alert alert-info">No incurred fees found.</div>
+            <% } %>
+
+            <!-- PRICE HISTORY BUTTON -->
+            <div class="mt-4">
+                <a href="utility?action=history" class="btn btn-outline-secondary">📜 View Price History</a>
+            </div>
+
+            <!-- MODALS & SCRIPTS -->
+
+            <!-- MODAL: ADD UTILITY (nếu bạn có modal này riêng thì giữ nguyên hoặc include) -->
+            <jsp:include page="create-utilitySystem.jsp" /> <!-- Sửa thành createUtility.jsp nếu là tiện ích -->
+
+            <!-- MODAL: EDIT UTILITY (dynamic load, giống cũ) -->
+            <div class="modal fade" id="editUtilityModal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content" id="editModalContent">
+                        <!-- Content from server will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: ADD FEE -->
+
+            <jsp:include page="incurredFeeType-add.jsp" />
+
+
+            <!-- MODAL: EDIT FEE (dynamic load) -->
+            <div class="modal fade" id="editFeeModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" id="editFeeModalContent">
+                        <!-- Nội dung sẽ được load động -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: DELETE FEE -->
+            <div class="modal fade" id="confirmDeleteFeeModal" tabindex="-1" aria-labelledby="confirmDeleteFeeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form action="<%= request.getContextPath() %>/admin/feeType" method="get">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" id="deleteFeeId">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-danger">⚠️ Confirm Delete</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete this fee?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger">✅ Yes, delete</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JS SUPPORT -->
+            <script>
+                function setDeleteFeeId(id) {
+                    document.getElementById('deleteFeeId').value = id;
+                }
+
+                function openEditFeeModal(id) {
+                    fetch('<%= request.getContextPath()%>/admin/feeType?action=editModal&id=' + id)
+                            .then(response => {
+                                if (!response.ok)
+                                    throw new Error("HTTP error " + response.status);
+                                return response.text();
+                            })
+                            .then(html => {
+                                const modalContent = document.getElementById('editFeeModalContent');
+                                modalContent.innerHTML = html;
+                                if (window.editFeeModalObj) {
+                                    window.editFeeModalObj.hide();
+                                    window.editFeeModalObj.dispose();
+                                }
+                                window.editFeeModalObj = new bootstrap.Modal(document.getElementById('editFeeModal'));
+                                window.editFeeModalObj.show();
+                            })
+                            .catch(err => {
+                                alert("⚠️ Cannot load edit form for fee.");
+                            });
+                }
+            </script>
+
+            <!-- SCRIPT: OPEN EDIT UTILITY MODAL (giống code cũ của bạn) -->
+            <script>
+                function openEditModal(id) {
+                    fetch('<%= request.getContextPath()%>/admin/utility?action=editModal&id=' + id)
+                            .then(response => {
+                                if (!response.ok)
+                                    throw new Error("HTTP error " + response.status);
+                                return response.text();
+                            })
+                            .then(html => {
+                                const modalContent = document.getElementById('editModalContent');
+                                modalContent.innerHTML = html;
+                                if (window.editModalObj) {
+                                    window.editModalObj.hide();
+                                    window.editModalObj.dispose();
+                                }
+                                window.editModalObj = new bootstrap.Modal(document.getElementById('editUtilityModal'));
+                                window.editModalObj.show();
+                            })
+                            .catch(err => {
+                                console.error("⚠️ Failed to load modal:", err);
+                                alert("⚠️ Cannot load edit form. Check console for details.");
+                            });
+                }
+            </script>
+
+            <div class="mt-4">
+                <a href="<%= ctx%>/admin/dashboard" class="btn btn-outline-secondary">
+                    ← Back to Dashboard
+                </a>
+            </div>
+                   
         </div>
 
-        <script>
-            function setDeleteId(id) {
-                document.getElementById('deleteUtilityId').value = id;
-            }
-        </script>
-        <div class="mt-4">
-            <a href="<%= request.getContextPath()%>/admin/dashboard" class="btn btn-outline-secondary">
-                ← Back to Dashboard
-            </a>
-        </div>
-
-    </body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+ 
+</body>
+   
 </html>

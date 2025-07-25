@@ -1,169 +1,17 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ page import="java.util.List, model.UtilityType, model.IncurredFeeType" %>
+
 <%
     List<UtilityType> systemList = (List<UtilityType>) request.getAttribute("systemList");
     List<IncurredFeeType> feeList = (List<IncurredFeeType>) request.getAttribute("feeList");
-  
+  String ctx = request.getContextPath();
     String error = (String) request.getAttribute("error");
-    String ctx = request.getContextPath();
 %>
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Manage Utilities & Fees</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-        <style>
-            body {
-                padding-top: 56px;
-                background-color: #f8f9fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .sidebar {
-                width: 240px;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                bottom: 0;
-                background-color: #ffffff;
-                border-right: 1px solid #e0e0e0;
-                padding: 1rem;
-                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-                z-index: 1030;
-            }
-            .sidebar h5 {
-                font-weight: 700;
-                margin-bottom: 1rem;
-            }
-            .sidebar .nav-link {
-                padding: 10px 14px;
-                margin-bottom: 6px;
-                color: #333;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-            .sidebar .nav-link:hover,
-            .sidebar .nav-link.active {
-                background: #0d6efd;
-                color: white;
-            }
-            main {
-                margin-left: 260px;
-                padding: 2rem 1rem;
-            }
-            @media (max-width: 768px) {
-                .sidebar {
-                    display: none;
-                }
-                main {
-                    margin-left: 0;
-                }
-            }
-            h3 {
-                font-weight: bold;
-                margin-bottom: 1.5rem;
-            }
-            .btn-primary, .btn-success {
-                font-weight: 500;
-                font-size: 16px;
-                padding: 10px 20px;
-                border-radius: 8px;
-            }
-            table {
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            }
-            thead {
-                background-color: #0d6efd;
-                color: white;
-            }
-            th, td {
-                text-align: center;
-                vertical-align: middle !important;
-                padding: 12px;
-            }
-            .btn-outline-primary, .btn-outline-danger {
-                margin: 0 2px;
-            }
-            .alert-info, .alert-danger {
-                border-radius: 8px;
-                font-size: 14px;
-            }
-            .modal-title {
-                font-weight: bold;
-            }
 
-        </style>
-    </head>
-    <body>
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">🏠 HomeNest</a>
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#navMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navMenu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <div class="sidebar">
-            <h5 class="text-primary">Admin Menu</h5>
-            <ul class="nav flex-column">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/utility?action=list">Utilities</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/record-reading">Record Usage</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/statistical">Statistical</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
-                </li>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/adminReport">Report</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/notification?action=viewNotifications">Notification</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/Contracts">Contract</a>
-                </li>
-
-
-            </ul>
-        </div>
-
-
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
         <!-- MAIN CONTENT -->
-        <main>
-            <h3 class="mb-3">🧾 Manage Utilities & Fees</h3>
+      <div class="main-content">
+            <h3 class="mb-3">🧾 Utilities Management</h3>
             <% if (error != null) { %>
             <div class="alert alert-danger"><%= error %></div>
             <% } %>
@@ -358,8 +206,11 @@
                     ← Back to Dashboard
                 </a>
             </div>
-        </main>
+                   
+        </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+ 
+</body>
+   
 </html>

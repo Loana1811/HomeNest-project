@@ -33,7 +33,10 @@
             }
         }
     }
+    
 %>
+
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -42,50 +45,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            body {
-                padding-top: 56px;
-                background-color: #f1f4f8;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            }
-
-            /* Sidebar Styling */
-            .sidebar {
-                width: 240px;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                bottom: 0;
-                background-color: #ffffff;
-                border-right: 1px solid #e0e0e0;
-                padding: 1rem;
-                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-            }
-
-            .sidebar h5 {
-                font-weight: 700;
-                margin-bottom: 1rem;
-            }
-
-            .sidebar .nav-link {
-                padding: 10px 14px;
-                margin-bottom: 6px;
-                color: #333;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-
-            .sidebar .nav-link:hover,
-            .sidebar .nav-link.active {
-                background: #0d6efd;
-                color: white;
-            }
-
-            /* Main content */
-            main {
-                margin-left: 260px;
-                padding: 2rem;
-            }
+          
 
             /* Card Stats */
             .card-stat {
@@ -165,54 +125,7 @@
 
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">🏠 HomeNest</a>
-                <button class="navbar-toggler" type="button" 
-                        data-bs-toggle="collapse" data-bs-target="#navMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navMenu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <div class="sidebar">
-            <h5 class="text-primary">Admin Menu</h5>
-            <ul class="nav flex-column">
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/room?action=list">Rooms</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/utility?action=list">Utilities</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/record-reading">Record Usage</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a>
-                </li>
-
-
-            </ul>
-        </div>
-
-
+      
         <main>
             <h2>📊 Admin Dashboard</h2>
             <div class="row g-3 mb-4">

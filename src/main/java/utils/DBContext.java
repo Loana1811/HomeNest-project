@@ -18,14 +18,14 @@ import java.util.logging.Logger;
  * @author kloane
  */
 public class DBContext {
-    // Public database connection object
 
-    private Connection conn;
+    // Public database connection object
+    public Connection conn;
 
     // Update these constants based on your SQL Server config
-    private final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=RentalManagement;encrypt=false";
+    private final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=RentalManagement_New;encrypt=false";
     private final String DB_USER = "sa";
-     private final String DB_PWD = "123456";
+    private final String DB_PWD = "123456";
 
     public DBContext() {
         try {
@@ -86,4 +86,5 @@ public class DBContext {
             return ps.executeUpdate();
         }
     }
+
 }

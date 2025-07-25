@@ -11,12 +11,14 @@ import java.sql.Date;
  * @author ThanhTruc
  */
 public class RentalRequest {
+
     private int requestID;
     private int customerID;
-    private  int roomID;
+    private int roomID;
     private Date requestDate;
     private String requestStatus;
-    private int approvedBy;
+    private Integer approvedBy;
+
     private Date approvedDate;
 
     public RentalRequest(int requestID, int customerID, int roomID, Date requestDate, String requestStatus, int approvedBy, Date approvedDate) {
@@ -30,7 +32,7 @@ public class RentalRequest {
     }
 
     public RentalRequest() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
     }
 
     public int getRequestID() {
@@ -73,11 +75,11 @@ public class RentalRequest {
         this.requestStatus = requestStatus;
     }
 
-    public int getApprovedBy() {
+    public Integer getApprovedBy() {
         return approvedBy;
     }
 
-    public void setApprovedBy(int approvedBy) {
+    public void setApprovedBy(Integer approvedBy) {
         this.approvedBy = approvedBy;
     }
 
@@ -88,5 +90,5 @@ public class RentalRequest {
     public void setApprovedDate(Date approvedDate) {
         this.approvedDate = approvedDate;
     }
-    
+
 }

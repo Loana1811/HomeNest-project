@@ -22,61 +22,78 @@ import utils.DBContext;
 public class UtilityHistoryDAO {
 
     public List<UtilityHistoryView> getHistory() throws SQLException {
-    List<UtilityHistoryView> list = new ArrayList<>();
-    String sql
-        = "SELECT ur.UtilityTypeID, "
-        + "  ISNULL(ut.UtilityName, "
-        + "    CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
-        + "         THEN SUBSTRING(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) + 1, LEN(ur.ChangedBy)) "
-        + "         ELSE ur.ChangedBy END"
-        + "  ) AS UtilityName, "
-        + "  ur.OldPrice, ur.PriceUsed AS NewPrice, ur.UtilityReadingCreatedAt AS ChangeAt, "
-        + "  CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
-        + "         THEN LEFT(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) - 1) "
-        + "         ELSE ur.ChangedBy END AS ChangedBy "
-        + "FROM UtilityReadings ur "
-        + "LEFT JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
-        + "WHERE ur.OldPrice IS NOT NULL "
-        + "ORDER BY ur.UtilityReadingCreatedAt DESC";
+        List<UtilityHistoryView> list = new ArrayList<>();
+        String sql
+                = "SELECT ur.UtilityTypeID, "
+                + "  ISNULL(ut.UtilityName, "
+                + "    CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
+                + "         THEN SUBSTRING(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) + 1, LEN(ur.ChangedBy)) "
+                + "         ELSE ur.ChangedBy END"
+                + "  ) AS UtilityName, "
+                + "  ur.OldPrice, ur.PriceUsed AS NewPrice, ur.UtilityReadingCreatedAt AS ChangeAt, "
+                + "  CASE WHEN CHARINDEX('|', ur.ChangedBy) > 0 "
+                + "         THEN LEFT(ur.ChangedBy, CHARINDEX('|', ur.ChangedBy) - 1) "
+                + "         ELSE ur.ChangedBy END AS ChangedBy "
+                + "FROM UtilityReadings ur "
+                + "LEFT JOIN UtilityTypes ut ON ur.UtilityTypeID = ut.UtilityTypeID "
+                + "WHERE ur.OldPrice IS NOT NULL "
+                + "ORDER BY ur.UtilityReadingCreatedAt DESC";
 
-    try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
-        while (rs.next()) {
-            list.add(new UtilityHistoryView(
-                    rs.getInt("UtilityTypeID"),
-                    rs.getString("UtilityName"),
-                    rs.getBigDecimal("OldPrice"),
-                    rs.getBigDecimal("NewPrice"),
-                    rs.getString("ChangedBy"),
-                    rs.getDate("ChangeAt")
-            ));
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new UtilityHistoryView(
+                        rs.getInt("UtilityTypeID"),
+                        rs.getString("UtilityName"),
+                        rs.getBigDecimal("OldPrice"),
+                        rs.getBigDecimal("NewPrice"),
+                        rs.getString("ChangedBy"),
+                        rs.getDate("ChangeAt")
+                ));
+            }
+        }
+        return list;
+    }
+
+    public void insertHistory(
+            int utilityTypeId, String utilityName,
+            double oldPrice, double newPrice,
+            String changedBy, Date date
+    ) throws SQLException {
+        String sql = "INSERT INTO UtilityReadings "
+                + "(UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, OldPrice, PriceUsed, ChangedBy, UtilityReadingCreatedAt) "
+                + "VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?)";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, utilityTypeId);
+            ps.setInt(2, 1);
+            ps.setDate(3, date);
+            ps.setDouble(4, oldPrice);
+            ps.setDouble(5, newPrice);
+            ps.setString(6, changedBy + "|" + utilityName);
+            ps.setDate(7, date);
+            ps.executeUpdate();
         }
     }
-    return list;
-}
-
-public void insertHistory(
-        int utilityTypeId, String utilityName,
-        double oldPrice, double newPrice,
-        String changedBy, Date date
-) throws SQLException {
-    String sql = "INSERT INTO UtilityReadings "
-            + "(UtilityTypeID, RoomID, ReadingDate, OldReading, NewReading, OldPrice, PriceUsed, ChangedBy, UtilityReadingCreatedAt) "
-            + "VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?)";
-
-    try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, utilityTypeId);
-        ps.setInt(2, 1); 
-        ps.setDate(3, date);
-        ps.setDouble(4, oldPrice);
-        ps.setDouble(5, newPrice);
-        ps.setString(6, changedBy + "|" + utilityName);
-        ps.setDate(7, date);
-        ps.executeUpdate();
-    }
-}
 
     public void insertHistory(int id, String utilityName, BigDecimal oldPrice, BigDecimal price, String admin, Date valueOf) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    public void insertHistoryForIncurredFee(int feeTypeId, String feeName,
+            double oldPrice, double newPrice,
+            String changedBy, Date date) throws SQLException {
+        String sql = "INSERT INTO IncurredFees "
+                + "(IncurredFeeTypeID, BillID, Amount, OldFeeAmount, FeeModifiedBy, FeeModifiedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, feeTypeId);
+            ps.setNull(2, java.sql.Types.INTEGER); // BillID
+            ps.setDouble(3, newPrice);             // Amount
+            ps.setDouble(4, oldPrice);             // OldFeeAmount
+            ps.setString(5, changedBy);            // FeeModifiedBy
+            ps.setDate(6, date);                   // FeeModifiedAt
+            ps.executeUpdate();
+        }
+    }
 }
