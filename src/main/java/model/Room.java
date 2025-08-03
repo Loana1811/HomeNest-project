@@ -5,6 +5,7 @@
 package model;
 
 import java.sql.Date;
+import java.util.Base64;
 
 /**
  *
@@ -14,13 +15,13 @@ public class Room {
 
     private int roomID;
     private String roomNumber;
-  
+
     private double rentPrice;
     private double area;
     private String location;
     private String roomStatus;
     private int blockID;
-    private String imagePath;
+    private byte[] imagePath;
     private String description;
     private Date postedDate;
     private String activeContractCode; // Hợp đồng đang hoạt động/tháng này
@@ -30,11 +31,12 @@ public class Room {
     private int isWifiFree;
     private int isWaterFree;
     private int isElectricityFree;
+
     // Constructors
     public Room() {
     }
 
-    public Room(int roomID, String roomNumber, double rentPrice, double area, String location, String roomStatus, int blockID, String imagePath, String description, Date postedDate, String activeContractCode, boolean hasRecord, boolean hasBill, int isTrashFree, int isWifiFree, int isWaterFree, int isElectricityFree) {
+    public Room(int roomID, String roomNumber, double rentPrice, double area, String location, String roomStatus, int blockID, byte[] imagePath, String description, Date postedDate, String activeContractCode, boolean hasRecord, boolean hasBill, int isTrashFree, int isWifiFree, int isWaterFree, int isElectricityFree) {
         this.roomID = roomID;
         this.roomNumber = roomNumber;
         this.rentPrice = rentPrice;
@@ -53,10 +55,8 @@ public class Room {
         this.isWaterFree = isWaterFree;
         this.isElectricityFree = isElectricityFree;
     }
-    
-    
 
-    public Room(int roomID, String roomNumber, float rentPrice, float area, String location, String roomStatus, int blockID, String imagePath, String description, Date postedDate) {
+    public Room(int roomID, String roomNumber, float rentPrice, float area, String location, String roomStatus, int blockID, byte[] imagePath, String description, Date postedDate) {
         this.roomID = roomID;
         this.roomNumber = roomNumber;
         this.rentPrice = rentPrice;
@@ -70,8 +70,8 @@ public class Room {
     }
 
     public Room(int roomID, String roomNumber, double rentPrice, double area, String location,
-            String roomStatus, int blockID, 
-   String imagePath, String description, Date postedDate) {
+            String roomStatus, int blockID,
+            byte[] imagePath, String description, Date postedDate) {
         this.roomID = roomID;
         this.roomNumber = roomNumber;
         this.rentPrice = rentPrice;
@@ -165,12 +165,11 @@ public class Room {
         this.blockID = blockID;
     }
 
- 
-    public String getImagePath() {
+    public byte[] getImagePath() {
         return imagePath;
     }
 
-    public void setImagePath(String imagePath) {
+    public void setImagePath(byte[] imagePath) {
         this.imagePath = imagePath;
     }
 
@@ -223,26 +222,33 @@ public class Room {
     }
 
     @Override
-public String toString() {
-    return "Room{" +
-            "roomID=" + roomID +
-            ", roomNumber='" + roomNumber + '\'' +
-            ", rentPrice=" + rentPrice +
-            ", area=" + area +
-            ", location='" + location + '\'' +
-            ", roomStatus='" + roomStatus + '\'' +
-            ", blockID=" + blockID +
-            ", imagePath='" + imagePath + '\'' +
-            ", description='" + description + '\'' +
-            ", postedDate=" + postedDate +
-            ", activeContractCode='" + activeContractCode + '\'' +
-            ", hasRecord=" + hasRecord +
-            ", hasBill=" + hasBill +
-            ", isTrashFree=" + isTrashFree +
-            ", isWifiFree=" + isWifiFree +
-            ", isWaterFree=" + isWaterFree +
-            ", isElectricityFree=" + isElectricityFree +
-            '}';
-}
+    public String toString() {
+        return "Room{"
+                + "roomID=" + roomID
+                + ", roomNumber='" + roomNumber + '\''
+                + ", rentPrice=" + rentPrice
+                + ", area=" + area
+                + ", location='" + location + '\''
+                + ", roomStatus='" + roomStatus + '\''
+                + ", blockID=" + blockID
+                + ", imagePath='" + imagePath + '\''
+                + ", description='" + description + '\''
+                + ", postedDate=" + postedDate
+                + ", activeContractCode='" + activeContractCode + '\''
+                + ", hasRecord=" + hasRecord
+                + ", hasBill=" + hasBill
+                + ", isTrashFree=" + isTrashFree
+                + ", isWifiFree=" + isWifiFree
+                + ", isWaterFree=" + isWaterFree
+                + ", isElectricityFree=" + isElectricityFree
+                + '}';
+    }
+
+    public String getImageBase64() {
+        if (imagePath != null && imagePath.length > 0) {
+            return Base64.getEncoder().encodeToString(imagePath);
+        }
+        return null;
+    }
 
 }

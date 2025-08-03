@@ -8,280 +8,263 @@ String ctx = request.getContextPath();
 <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Admin Report Management</title>
-        <style>
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
+<head>
+    <meta charset="UTF-8">
+    <title>Report Management</title>
+    <style>
+        :root {
+            --primary-color: #1e3b8a;
+            --secondary-color: #3f5fa6;
+            --light-bg: #f4f7fc;
+            --border-color: #e0e0e0;
+            --success-bg: #d1fae5;
+            --error-bg: #fee2e2;
+        }
 
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 80px 20px 20px 250px; /* avoid sidebar/header */
+        }
 
-            h1 {
-                color: #333;
-                border-bottom: 2px solid #eee;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-            }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+            animation: fadeIn 0.5s ease-in-out;
+        }
 
-            .filter-section {
-                margin-bottom: 20px;
-                padding: 15px;
-                background-color: #f9f9f9;
-                border-radius: 5px;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }
+        h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
 
-            th, td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
+        .filter-section {
+            background-color: #eef2ff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-            th {
-                background-color: #4CAF50;
-                color: white;
-                position: sticky;
-                top: 0;
-            }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-            tr:hover {
-                background-color: #f5f5f5;
-            }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
 
-            .status-pending {
-                color: #FF9800;
-                font-weight: bold;
-            }
+        th {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: sticky;
+            top: 0;
+        }
 
-            .status-inprogress {
-                color: #2196F3;
-                font-weight: bold;
-            }
+        tbody tr:hover {
+            background-color: #f0f4ff;
+            transition: background-color 0.3s ease;
+        }
 
-            .status-resolved {
-                color: #4CAF50;
-                font-weight: bold;
-            }
+        .status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
 
-            .status-closed {
-                color: #607D8B;
-                font-weight: bold;
-            }
+        .status-inprogress {
+            color: #3b82f6;
+            font-weight: 600;
+        }
 
-            select {
-                padding: 6px;
-                border-radius: 4px;
-                border: 1px solid #ddd;
-            }
+        .status-resolved {
+            color: #10b981;
+            font-weight: 600;
+        }
 
-            .btn {
-                padding: 6px 12px;
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                transition: background-color 0.3s;
-            }
+        .status-closed {
+            color: #6b7280;
+            font-weight: 600;
+        }
 
-            .btn:hover {
-                background-color: #45a049;
-            }
+        select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
 
-            .message {
-                padding: 10px;
-                margin-bottom: 20px;
-                border-radius: 4px;
-            }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s;
+            cursor: pointer;
+        }
 
-            .success {
-                background-color: #dff0d8;
-                color: #3c763d;
-            }
+        .btn:hover {
+            background-color: #162e6f;
+            transform: translateY(-1px);
+        }
 
-            .error {
-                background-color: #f2dede;
-                color: #a94442;
-            }
+        .message {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+        }
 
-            .empty-state {
-                text-align: center;
-                padding: 40px;
-                color: #777;
-            }
+        .success {
+            background-color: var(--success-bg);
+            color: #065f46;
+        }
 
-            .action-form {
-                display: flex;
-                gap: 5px;
-            }
+        .error {
+            background-color: var(--error-bg);
+            color: #991b1b;
+        }
 
-            .disabled-form {
-                opacity: 0.6;
-                pointer-events: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Admin Report Management</h1>
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
 
-            <%-- Display success/error messages --%>
-            <%
-                String message = (String) session.getAttribute("message");
-                String error = (String) session.getAttribute("error");
-            
-                if (message != null) {
-            %>
-            <div class="message success">
-                <%= message %>
-            </div>
-            <%
-                    session.removeAttribute("message");
-                }
-            
-                if (error != null) {
-            %>
-            <div class="message error">
-                <%= error %>
-            </div>
-            <%
-                    session.removeAttribute("error");
-                }
-            %>
+        .action-form {
+            display: flex;
+            gap: 6px;
+        }
 
-            <div class="filter-section">
-                <form method="get" action="adminReport">
-                    <label for="statusFilter">Filter by Status:</label>
-                    <select name="statusFilter" id="statusFilter">
-                        <option value="" <%= "".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>All Statuses</option>
-                        <option value="Pending" <%= "Pending".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Pending</option>
-                        <option value="InProgress" <%= "InProgress".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>In Progress</option>
-                        <option value="Resolved" <%= "Resolved".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Resolved</option>
-                        <option value="Closed" <%= "Closed".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Closed</option>
+        .disabled-form {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Report Management</h1>
+
+    <%-- Messages --%>
+    <%
+        String message = (String) session.getAttribute("message");
+        String error = (String) session.getAttribute("error");
+    %>
+    <% if (message != null) { %>
+        <div class="message success"><%= message %></div>
+        <% session.removeAttribute("message"); %>
+    <% } %>
+    <% if (error != null) { %>
+        <div class="message error"><%= error %></div>
+        <% session.removeAttribute("error"); %>
+    <% } %>
+
+    <div class="filter-section">
+        <form method="get" action="adminReport">
+            <label for="statusFilter">Filter by Status:</label>
+            <select name="statusFilter" id="statusFilter">
+                <option value="" <%= "".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>All</option>
+                <option value="Pending" <%= "Pending".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Pending</option>
+                <option value="InProgress" <%= "InProgress".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>In Progress</option>
+                <option value="Resolved" <%= "Resolved".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Resolved</option>
+                <option value="Closed" <%= "Closed".equals(request.getAttribute("currentFilter")) ? "selected" : "" %>>Closed</option>
+            </select>
+            <button type="submit" class="btn">Apply</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Room</th>
+            <th>Contract Period</th>
+            <th>Description</th>
+            <th>Reported At</th>
+            <th>Status</th>
+            <th>Handled By</th>
+            <th>Resolved At</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <%
+            List<Report> reports = (List<Report>) request.getAttribute("reports");
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            if (reports != null && !reports.isEmpty()) {
+                for (Report report : reports) {
+        %>
+        <tr>
+            <td><%= report.getCustomerName() != null ? report.getCustomerName() : "N/A" %></td>
+            <td><%= report.getRoomNumber() != null ? report.getRoomNumber() : "N/A" %></td>
+            <td>
+                <% if (report.getStartDate() != null) { %>
+                    <%= sdf.format(report.getStartDate()) %> -
+                    <%= report.getEndDate() != null ? sdf.format(report.getEndDate()) : "Ongoing" %>
+                <% } else { %>
+                    N/A
+                <% } %>
+            </td>
+            <td><%= report.getIssueDescription() != null ? report.getIssueDescription() : "N/A" %></td>
+            <td><%= report.getReportCreatedAt() != null ? df.format(report.getReportCreatedAt()) : "N/A" %></td>
+            <td class="status-<%= report.getReportStatus().toLowerCase() %>"><%= report.getReportStatus() %></td>
+            <td>
+                <% if (report.getResolvedBy() != null) {
+                    if (report.getResolvedBy() == 1) out.print("Admin");
+                    else if (report.getResolvedBy() == 2) out.print("Manager");
+                    else out.print("Unknown");
+                } else { %>-<% } %>
+            </td>
+            <td><%= report.getResolvedDate() != null ? df.format(report.getResolvedDate()) : "-" %></td>
+            <td>
+                <% if ("Closed".equals(report.getReportStatus())) { %>
+                <div class="action-form disabled-form">
+                    <select disabled><option selected>Closed</option></select>
+                    <button class="btn" disabled>Update</button>
+                </div>
+                <% } else { %>
+                <form class="action-form" method="post" action="adminReport">
+                    <input type="hidden" name="reportID" value="<%= report.getReportID() %>"/>
+                    <input type="hidden" name="action" value="resolve"/>
+                    <select name="reportStatus">
+                        <option value="Pending" <%= "Pending".equals(report.getReportStatus()) ? "selected" : "" %>>Pending</option>
+                        <option value="InProgress" <%= "InProgress".equals(report.getReportStatus()) ? "selected" : "" %>>In Progress</option>
+                        <option value="Resolved" <%= "Resolved".equals(report.getReportStatus()) ? "selected" : "" %>>Resolved</option>
+                        <option value="Closed" <%= "Closed".equals(report.getReportStatus()) ? "selected" : "" %>>Closed</option>
                     </select>
-
-                    <button type="submit" class="btn">Apply Filter</button>
+                    <button type="submit" class="btn">Update</button>
                 </form>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Report ID</th>
-                        <th>Customer</th>
-                        <th>Room Number</th>
-                        <th>Contract Period</th>
-                        <th>Issue Description</th>
-                        <th>Report Date</th>
-                        <th>Status</th>
-                        <th>Resolved By</th>
-                        <th>Resolution Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%
-                        List<Report> reports = (List<Report>) request.getAttribute("reports");
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                        SimpleDateFormat contractDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                    
-                        if (reports != null && !reports.isEmpty()) {
-                            for (Report report : reports) {
-                    %>
-                    <tr>
-                        <td><%= report.getReportID() %></td>
-                        <td><%= report.getCustomerName() != null ? report.getCustomerName() : "N/A" %></td>
-                        <td><%= report.getRoomNumber() != null ? report.getRoomNumber() : "N/A" %></td>
-                        <td>
-                            <% if (report.getStartDate() != null) { %>
-                            <%= contractDateFormat.format(report.getStartDate()) %> - 
-                            <%= report.getEndDate() != null ? contractDateFormat.format(report.getEndDate()) : "Ongoing" %>
-                            <% } else { %>
-                            N/A
-                            <% } %>
-                        </td>
-                        <td><%= report.getIssueDescription() != null ? report.getIssueDescription() : "N/A" %></td>
-                        <td><%= report.getReportCreatedAt() != null ? dateFormat.format(report.getReportCreatedAt()) : "N/A" %></td>
-                        <td class="status-<%= report.getReportStatus().toLowerCase() %>">
-                            <%= report.getReportStatus() %>
-                        </td>
-                        <td>
-                            <% if (report.getResolvedBy() != null) {
-                            if (report.getResolvedBy() == 1) { %>
-                            Admin
-                            <% } else if (report.getResolvedBy() == 2) { %>
-                            Manager
-                            <% } else { %>
-                            Unknown
-                            <% }
-                        } else { %>
-                            -
-                            <% } %>
-                        </td>
-                        <td>
-                            <% if (report.getResolvedDate() != null) { %>
-                            <%= dateFormat.format(report.getResolvedDate()) %>
-                            <% } else { %>
-                            -
-                            <% } %>
-                        </td>
-                        <td>
-                            <% if ("Closed".equals(report.getReportStatus())) { %>
-                                <div class="action-form disabled-form">
-                                    <select name="reportStatus" disabled>
-                                        <option value="Closed" selected>Closed</option>
-                                    </select>
-                                    <button type="submit" class="btn" disabled>Update</button>
-                                </div>
-                            <% } else { %>
-                                <form class="action-form" method="post" action="adminReport">
-                                    <input type="hidden" name="reportID" value="<%= report.getReportID() %>"/>
-                                    <input type="hidden" name="action" value="resolve"/>
-                                    <select name="reportStatus">
-                                        <option value="Pending" <%= "Pending".equals(report.getReportStatus()) ? "selected" : "" %>>Pending</option>
-                                        <option value="InProgress" <%= "InProgress".equals(report.getReportStatus()) ? "selected" : "" %>>In Progress</option>
-                                        <option value="Resolved" <%= "Resolved".equals(report.getReportStatus()) ? "selected" : "" %>>Resolved</option>
-                                        <option value="Closed" <%= "Closed".equals(report.getReportStatus()) ? "selected" : "" %>>Closed</option>
-                                    </select>
-                                    <button type="submit" class="btn">Update</button>
-                                </form>
-                            <% } %>
-                        </td>
-                    </tr>
-                    <%
-                            }
-                        } else {
-                    %>
-                    <tr>
-                        <td colspan="10" class="empty-state">
-                            No reports found
-                        </td>
-                    </tr>
-                    <%
-                        }
-                    %>
-                </tbody>
-            </table>
-            <a href="<%= request.getContextPath()%>/admin/dashboard" class="btn btn-secondary">
-                ← Back to Dashboard
-            </a>
-        </div>
-    </body>
+                <% } %>
+            </td>
+        </tr>
+        <%
+                }
+            } else {
+        %>
+        <tr>
+            <td colspan="9" class="empty-state">No reports found</td>
+        </tr>
+        <% } %>
+        </tbody>
+    </table>
+</div>
+</body>
 </html>

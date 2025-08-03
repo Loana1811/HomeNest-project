@@ -114,7 +114,6 @@ public class RoomListServlet extends HttpServlet {
 
             // Lấy danh sách danh mục phòng
             //List<Category> categoryList = categoryDAO.getAllCategories();
-
             List<Block> blockList = blockDAO.getAllBlocks();
             List<String> locationList = roomDAO.getAllLocations();
             request.setAttribute("blockList", blockList);

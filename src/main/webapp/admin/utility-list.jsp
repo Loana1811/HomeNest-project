@@ -16,12 +16,16 @@
             <div class="alert alert-danger"><%= error %></div>
             <% } %>
 
-            <div class="mb-3 d-flex gap-3">
+              <div class="mb-3 d-flex gap-3">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUtilityModal">➕ Add Utility</button>
-                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addFeeModal">+ Add Fee</button>
 
 
             </div>
+
+<!-- Placeholder chứa modal sẽ load qua AJAX -->
+<div id="addUtilityModalContainer"></div>
+
+
 
             <!-- SYSTEM UTILITIES -->
             <h5 class="mt-4">🔐 System-defined Utilities</h5>
@@ -56,39 +60,7 @@
             <div class="alert alert-info">No system-defined utilities found.</div>
             <% } %>
 
-            <!-- INCURRED FEES -->
-            <h5 class="mt-4">💰 Incurred Fees</h5>
-            <% if (feeList != null && !feeList.isEmpty()) { %>
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Default Amount (VND)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% for (IncurredFeeType fee : feeList) { %>
-                    <tr>
-                        <td><%= fee.getFeeName() %></td>
-                        <td><%= String.format("%,.0f", fee.getDefaultAmount().doubleValue()) %></td>
-                        <td>
-                            <a href="#" class="btn btn-sm btn-outline-primary"
-                               data-bs-toggle="modal"
-                               data-bs-target="#editFeeModal"
-                               onclick="openEditFeeModal(<%= fee.getIncurredFeeTypeID() %>)">✏️</a>
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#confirmDeleteFeeModal"
-                                    onclick="setDeleteFeeId(<%= fee.getIncurredFeeTypeID() %>)">🗑️</button>
-                        </td>
-                    </tr>
-                    <% } %>
-                </tbody>
-            </table>
-            <% } else { %>
-            <div class="alert alert-info">No incurred fees found.</div>
-            <% } %>
+           
 
             <!-- PRICE HISTORY BUTTON -->
             <div class="mt-4">

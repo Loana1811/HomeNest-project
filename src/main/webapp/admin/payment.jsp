@@ -4,13 +4,14 @@
 
 <%
     java.time.LocalDate currentDate = java.time.LocalDate.now();
-%>
-
+      String ctx = request.getContextPath();  
+    %>  
+    <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>  
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Thu tiền hóa đơn</title>
+        <title>Collect bills</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
@@ -24,22 +25,22 @@
     </head>
     <body>
         <div class="container bg-white rounded shadow p-4">
-            <h3 class="mb-4 text-primary">💵 Ghi nhận thu tiền</h3>
+            <h3 class="mb-4 text-primary">💵 Record cash receipts</h3>
 
             <!-- Thông tin tổng tiền -->
             <c:if test="${not empty bill}">
-                <p><strong>Tổng tiền hóa đơn:</strong>
+                <p><strong>Total bill:</strong>
                     <fmt:formatNumber value="${bill.totalAmount}" type="number" groupingUsed="true"/> đ
                 </p>
-                <p><strong>Khách đã thanh toán:</strong>
+                <p><strong>Customer paid:</strong>
                     <fmt:formatNumber value="${totalPaid}" type="number" groupingUsed="true"/> đ
                 </p>
-                <p><strong>Còn nợ:</strong>
+                <p><strong>Remaining:</strong>
                     <fmt:formatNumber value="${amountRemaining}" type="number" groupingUsed="true"/> đ
                 </p>
             </c:if>
 
-            <!-- Hiển thị thông báo -->
+            <!-- Thông báo -->
             <c:if test="${not empty success}">
                 <div class="alert alert-success">${success}</div>
             </c:if>
@@ -54,36 +55,39 @@
                     <input type="hidden" name="billId" value="${bill.billID}" />
 
                     <div class="mb-3">
-                        <label class="form-label">Số tiền khách thanh toán (đ)</label>
-                        <input type="text" class="form-control" name="amountPaid" required placeholder="Ví dụ: 5000000" />
+                        <label class="form-label">Amount paid by customer (VND)</label>
+                        <input type="text" class="form-control" name="amountPaid" required
+                               placeholder="Nhập đúng số: ${amountRemaining}" />
+                        <div class="form-text">⚠️ You must only enter the exact amount owed.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Phương thức thanh toán</label>
+                        <label class="form-label">Payment method</label>
                         <select class="form-select" name="paymentMethod">
-                            <option value="CASH">Trả tiền mặt</option>
-                            <option value="BANK">Chuyển khoản</option>
+                            <option value="CASH">Cash</option>
+                            <option value="BANK">Bank</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Lý do thu tiền / Ghi chú</label>
-                        <input type="text" class="form-control" name="paymentNote" placeholder="Ví dụ: Thu tiền tháng 7" />
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-control" name="paymentNote" placeholder="VD: Thu tiền tháng 7" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Ngày nhận tiền</label>
+                        <label class="form-label">Date of receipt</label>
                         <input type="date" class="form-control" name="paymentDate"
                                value="<%= currentDate.toString()%>" required />
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100">Xác nhận thu tiền</button>
+                    <button type="submit" class="btn btn-success w-100">Confirmation of payment</button>
                 </form>
             </c:if>
 
             <div class="text-center mt-3">
-                <a href="${pageContext.request.contextPath}/admin/bill?action=view&billId=${bill.billID}" class="btn btn-outline-secondary">
-                    ← Quay lại hóa đơn
+                <a href="${pageContext.request.contextPath}/admin/bill?action=view&billId=${bill.billID}"
+                   class="btn btn-outline-secondary">
+                    ← Back to the bill
                 </a>
             </div>
         </div>

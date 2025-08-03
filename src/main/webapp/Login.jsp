@@ -12,6 +12,9 @@
     }
 %>
 
+
+
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -125,7 +128,7 @@
             </div>
 
             <div class="d-grid mt-3">
-                <a href="SortTour" class="btn btn-secondary">Back to Homepage</a>
+                <a href="<%= request.getContextPath() %>/customer/room-list" class="btn btn-secondary">Back to Homepage</a>
             </div>
 
             <div class="text-end mb-3">
@@ -136,6 +139,5 @@
                 Don't have an account? <a href="<%= request.getContextPath()%>/RegisterCustomer">Register here</a>
             </div>
         </div>
-
     </body>
 </html>

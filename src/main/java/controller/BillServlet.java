@@ -2,11 +2,14 @@ package controller;
 
 import dao.*;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import java.io.ByteArrayOutputStream;
 import model.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
@@ -19,6 +22,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @WebServlet("/admin/bill")
+@MultipartConfig(
+    maxFileSize = 1024 * 1024 * 5, // 5MB max file size
+    maxRequestSize = 1024 * 1024 * 10 // 10MB max request size
+)
 public class BillServlet extends HttpServlet {
 
     private final BillDAO billDAO = new BillDAO();
@@ -108,6 +115,25 @@ public class BillServlet extends HttpServlet {
 
                     // Lấy chỉ số tiện ích đã ghi
                     List<UtilityReading> readings = readingDAO.getReadingsByRoomAndMonth(roomId, month);
+                    // ✅ Thêm đoạn này ngay sau đó:
+                    boolean isEditable = true;
+                    boolean canCreateBill = false;
+
+                    for (UtilityReading ur : readings) {
+                        Timestamp createdAt = ur.getUtilityReadingCreatedAt();
+                        if (createdAt != null) {
+                            LocalDate createdDate = createdAt.toLocalDateTime().toLocalDate();
+                            LocalDate today = LocalDate.now();
+                            long days = ChronoUnit.DAYS.between(createdDate, today);
+                            if (days >= 3) {
+                                isEditable = false;
+                                canCreateBill = true;
+                                break;
+                            }
+                        }
+                    }
+                    req.setAttribute("isEditable", isEditable);
+                    req.setAttribute("canCreateBill", canCreateBill);
                     List<UtilityType> allTypes = utilityTypeDAO.getAll();
 
                     Map<Integer, UtilityReading> readingMap = new HashMap<>();
@@ -302,6 +328,9 @@ public class BillServlet extends HttpServlet {
             }
 
             if ("list".equals(action) || action == null) {
+               PaymentConfirmationDAO confirmationDAO = new PaymentConfirmationDAO();
+        List<Map<String, Object>> pendingProofs = confirmationDAO.getPendingProofs();
+        req.setAttribute("pendingProofs", pendingProofs);
                 String selectedMonth = req.getParameter("month");
                 if (selectedMonth == null) {
                     selectedMonth = LocalDate.now().toString().substring(0, 7); // yyyy-MM
@@ -318,9 +347,45 @@ public class BillServlet extends HttpServlet {
                 req.setAttribute("selectedMonth", selectedMonth);
                 req.setAttribute("billSummary", billSummary);
                 System.out.println(billSummary);
+                BillFeedbackDAO feedbackDAO = new BillFeedbackDAO();
+                List<BillFeedback> pendingFeedbacks = feedbackDAO.getAllPendingFeedbacks();
+                req.setAttribute("pendingFeedbacks", pendingFeedbacks);
                 req.getRequestDispatcher("/admin/bill-list.jsp").forward(req, resp);
                 return;
+            }// Add this block in doGet
+    if ("viewProof".equals(action)) {
+        try {
+            int confId = Integer.parseInt(req.getParameter("confId"));
+            PaymentConfirmationDAO dao = new PaymentConfirmationDAO();
+            PaymentConfirmation conf = dao.getById(confId);
+            if (conf != null && conf.getImageData() != null) {
+                byte[] data = conf.getImageData();
+            String contentType = "application/octet-stream"; // Fallback
+
+            // Detect JPEG: FF D8 FF
+            if (data.length >= 3 && data[0] == (byte)0xFF && data[1] == (byte)0xD8 && data[2] == (byte)0xFF) {
+                contentType = "image/jpeg";
             }
+            // Detect PNG: 89 50 4E 47 0D 0A 1A 0A
+            else if (data.length >= 8 && data[0] == (byte)0x89 && data[1] == (byte)0x50 && data[2] == (byte)0x4E && 
+                     data[3] == (byte)0x47 && data[4] == (byte)0x0D && data[5] == (byte)0x0A && 
+                     data[6] == (byte)0x1A && data[7] == (byte)0x0A) {
+                contentType = "image/png";
+            }
+
+            resp.setContentType(contentType);
+            resp.setContentLength(data.length);
+            resp.getOutputStream().write(data);
+            resp.getOutputStream().flush();
+        } else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error viewing image");
+    }
+    return;
+    }
 
             if ("edit".equals(action)) {
                 int billId = Integer.parseInt(req.getParameter("billId"));
@@ -492,19 +557,37 @@ public class BillServlet extends HttpServlet {
                 }
                 req.setAttribute("isLastMonth", isLastMonth);
 
+                // Determine user role from session
+                HttpSession session = req.getSession();
+                String userType = (String) session.getAttribute("userType");
+                String userRole = "";
+
+                if ("Customer".equals(userType)) {
+                    userRole = "customer";
+                    // Load payment confirmations for customer view
+                    PaymentConfirmationDAO confirmationDAO = new PaymentConfirmationDAO();
+                    List<PaymentConfirmation> confirmations = confirmationDAO.getConfirmationsByBillId(billId);
+                    req.setAttribute("confirmations", confirmations);
+                } else if ("User".equals(userType)) {
+                    Integer roleID = (Integer) session.getAttribute("roleID");
+                    if (roleID != null) {
+                        userRole = (roleID == 1) ? "admin" : "manager";  // Assume 1=Admin, adjust as needed
+                    }
+                }
+                req.setAttribute("userRole", userRole);
+
                 req.getRequestDispatcher("/admin/bill-view.jsp").forward(req, resp);
                 return;
             } else if ("print".equals(action)) {
                 int billId = Integer.parseInt(req.getParameter("billId"));
 
                 Bill bill = billDAO.getBillById(billId);
-                BillDetail detail = detailDAO.getBillDetailById(billId);
                 Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
                 Room room = roomDAO.getRoomById(contract.getRoomId());
 
-                // Lấy tiện ích
                 String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
                 List<UtilityReading> dbReadings = readingDAO.getLatestReadingsByRoomAndMonth(room.getRoomID(), billMonth);
+
                 Map<Integer, UtilityReading> readingMap = new HashMap<>();
                 for (UtilityReading ur : dbReadings) {
                     readingMap.put(ur.getUtilityTypeID(), ur);
@@ -519,12 +602,11 @@ public class BillServlet extends HttpServlet {
                     if (ur != null) {
                         finalReadings.add(ur);
                     } else if ("month".equalsIgnoreCase(ut.getUnit())) {
-                        // Nếu là tiện ích tháng như rác, wifi thì tạo reading ảo
                         UtilityReading dummy = new UtilityReading();
                         dummy.setUtilityTypeID(ut.getUtilityTypeID());
                         dummy.setRoomID(room.getRoomID());
                         dummy.setOldReading(BigDecimal.ZERO);
-                        dummy.setNewReading(BigDecimal.ONE); // đã dùng 1 đơn vị
+                        dummy.setNewReading(BigDecimal.ONE);
                         dummy.setPriceUsed(ut.getUnitPrice());
                         dummy.setChangedBy("default");
                         dummy.setReadingDate(Date.valueOf(bill.getBillDate().toLocalDate()));
@@ -538,27 +620,19 @@ public class BillServlet extends HttpServlet {
                     feeTypeMap.put(ft.getIncurredFeeTypeID(), ft);
                 }
 
-                // ✅ Kiểm tra nếu là tháng cuối
                 boolean isLastMonth = false;
                 if (contract.getEndDate() != null && bill.getBillDate() != null) {
                     YearMonth billYm = YearMonth.from(bill.getBillDate().toLocalDate());
-                    LocalDate endDate = ((java.sql.Date) contract.getEndDate()).toLocalDate(); // ✅ Sửa ở đây
+                    LocalDate endDate = ((java.sql.Date) contract.getEndDate()).toLocalDate();
                     YearMonth endYm = YearMonth.from(endDate);
-
                     isLastMonth = billYm.equals(endYm);
                 }
 
-                // ✅ Tính số tiền phải thu (có thể trừ cọc nếu là tháng cuối)
                 BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
                 BigDecimal totalAmount = bill.getTotalAmount();
+                BigDecimal amountDue = isLastMonth ? totalAmount.subtract(deposit) : totalAmount;
 
-                BigDecimal amountDue = isLastMonth
-                        ? totalAmount.subtract(deposit)
-                        : totalAmount;
-
-                // Gửi data sang JSP
                 req.setAttribute("bill", bill);
-                req.setAttribute("detail", detail);
                 req.setAttribute("contract", contract);
                 req.setAttribute("room", room);
                 req.setAttribute("readings", finalReadings);
@@ -570,6 +644,7 @@ public class BillServlet extends HttpServlet {
 
                 req.getRequestDispatcher("/admin/bill-print.jsp").forward(req, resp);
                 return;
+
             } else if ("cancel".equals(action)) {
                 String billIdStr = req.getParameter("billId");
                 String blockId = req.getParameter("blockId");
@@ -580,27 +655,24 @@ public class BillServlet extends HttpServlet {
                 }
 
                 int billId = Integer.parseInt(billIdStr);
-                BillDAO dao = new BillDAO();
-
                 if (blockId == null || blockId.isEmpty()) {
-                    blockId = dao.getBlockIdByBillId(billId); // ✅ fallback
+                    blockId = billDAO.getBlockIdByBillId(billId);
                 }
 
-                if (!dao.isBillSent(billId)) {
-                    dao.deleteBillFully(billId);
+                if (!billDAO.isBillSent(billId)) {
+                    billDAO.deleteBillFully(billId);
                     req.getSession().setAttribute("success", "✅ Hủy hóa đơn thành công.");
                 } else {
                     req.getSession().setAttribute("success", "❌ Hóa đơn đã gửi, không thể hủy.");
                 }
 
                 resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list");
-
                 return;
             }
 
-            // --------- Action không hợp lệ ---------
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Action không hợp lệ.");
-        } catch (ServletException | IOException | NumberFormatException | SQLException e) {
+
+        } catch (Exception e) {
             throw new ServletException("Error loading bills", e);
         }
     }
@@ -610,11 +682,11 @@ public class BillServlet extends HttpServlet {
         String month = req.getParameter("month");
         String contractIdStr = req.getParameter("contractId");
         String roomIdStr = req.getParameter("roomId");
+        String action = req.getParameter("action");
 
-        if ("edit".equals(req.getParameter("action"))) {
+        if ("edit".equals(action)) {
             try {
                 int billId = Integer.parseInt(req.getParameter("billId"));
-                float roomRent = Float.parseFloat(req.getParameter("roomRent"));
                 float electricity = Float.parseFloat(req.getParameter("electricity"));
                 float water = Float.parseFloat(req.getParameter("water"));
                 float wifi = Float.parseFloat(req.getParameter("wifi"));
@@ -623,27 +695,23 @@ public class BillServlet extends HttpServlet {
 
                 Bill bill = billDAO.getBillById(billId);
                 bill.setBillStatus(status);
-                BigDecimal totalBase = BigDecimal.valueOf(roomRent)
+
+                // ✅ Lấy Contract để truy xuất Room
+                Contract contract = contractDAO.getContractById(bill.getContractID());
+                Room room = roomDAO.getRoomById(contract.getRoomId());
+                BigDecimal roomRent = BigDecimal.valueOf(room.getRentPrice());
+
+                // ✅ Tính tổng tiền cơ bản
+                BigDecimal totalBase = roomRent
                         .add(BigDecimal.valueOf(electricity))
                         .add(BigDecimal.valueOf(water))
                         .add(BigDecimal.valueOf(wifi))
                         .add(BigDecimal.valueOf(trash));
-
                 bill.setTotalAmount(totalBase);
-// sẽ cập nhật lại sau khi cộng phụ phí
                 billDAO.updateBill(bill);
 
-                BillDetail detail = detailDAO.getBillDetailById(billId);
-                detail.setRoomrent(roomRent);
-                detail.setElectricityCost(electricity);
-                detail.setWaterCost(water);
-                detail.setWifiCost(wifi);
-//        detail.setTrashCost(trash); // ✳️ nếu có cột này
-                detailDAO.updateBillDetail(detail);
-
-                // ✅ Cập nhật chỉ số tiện ích
+                // ✅ Cập nhật UtilityReading (dữ liệu chỉ số)
                 List<UtilityType> utilityTypes = utilityTypeDAO.getAll();
-                Contract contract = contractDAO.getContractById(bill.getContractID());
                 int roomId = contract.getRoomId();
                 String readingMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
                 Date readingDate = Date.valueOf(readingMonth + "-01");
@@ -669,7 +737,7 @@ public class BillServlet extends HttpServlet {
 
                         priceUsed = newReading.subtract(oldReading).multiply(ut.getUnitPrice());
                     } else {
-                        priceUsed = ut.getUnitPrice(); // tiện ích theo tháng: mặc định 1 đơn vị
+                        priceUsed = ut.getUnitPrice(); // tiện ích theo tháng
                     }
 
                     UtilityReading existing = readingDAO.getReading(roomId, ut.getUtilityTypeID(), readingMonth);
@@ -694,16 +762,10 @@ public class BillServlet extends HttpServlet {
                     }
                 }
 
-                // ✅ Cập nhật phụ phí
-                BigDecimal total = BigDecimal.ZERO
-                        .add(BigDecimal.valueOf(roomRent))
-                        .add(BigDecimal.valueOf(electricity))
-                        .add(BigDecimal.valueOf(water))
-                        .add(BigDecimal.valueOf(wifi))
-                        .add(BigDecimal.valueOf(trash));
-
+                // ✅ Tổng tiền sau khi cộng phụ phí
+                BigDecimal total = totalBase;
                 List<IncurredFeeType> feeTypes = incurredFeeTypeDAO.getAll();
-                feeDAO.deleteFeesByBillId(billId); // xóa cũ để cập nhật lại
+                feeDAO.deleteFeesByBillId(billId);
 
                 for (IncurredFeeType ft : feeTypes) {
                     String param = req.getParameter("extraFee_" + ft.getIncurredFeeTypeID());
@@ -723,10 +785,9 @@ public class BillServlet extends HttpServlet {
                     }
                 }
 
-                // Trừ tiền cọc nếu là tháng cuối
+                // ✅ Trừ tiền cọc nếu là tháng cuối
                 BigDecimal deposit = contract.getDeposit() != null ? contract.getDeposit() : BigDecimal.ZERO;
                 total = total.subtract(deposit);
-
                 bill.setTotalAmount(total);
 
                 billDAO.updateBill(bill);
@@ -737,8 +798,7 @@ public class BillServlet extends HttpServlet {
             } catch (Exception e) {
                 throw new ServletException("Update bill failed", e);
             }
-        }
-        if ("send".equals(req.getParameter("action"))) {
+        } else if ("send".equals(action)) {
             try {
                 int billId = Integer.parseInt(req.getParameter("billId"));
 
@@ -746,6 +806,8 @@ public class BillServlet extends HttpServlet {
                 Bill bill = billDAO.getBillById(billId);
                 Contract contract = contractDAO.getContractWithRoomAndTenantByContractId(bill.getContractID());
                 Room room = roomDAO.getRoomById(contract.getRoomId());
+                TenantDAO tenantDAO = new TenantDAO();
+                int customerId = tenantDAO.getCustomerIdByTenantId(contract.getTenantId());
 
                 String billMonth = bill.getBillDate().toLocalDate().toString().substring(0, 7);
 
@@ -812,10 +874,21 @@ public class BillServlet extends HttpServlet {
 
                 // 6. Gửi thông báo
                 Notification noti = new Notification();
-                noti.setCustomerID(contract.getTenantId());
+                noti.setCustomerID(customerId);
+
                 noti.setTitle("📄 Hóa đơn mới tháng " + billMonth);
-                noti.setMessage("Hóa đơn cho phòng " + contract.getRoomNumber()
-                        + " đã được tạo. Tổng tiền phải thanh toán: " + dueAmount.toPlainString() + "đ.");
+                String detailLink = String.format(
+                        "<a href='http://localhost:8080/HomeNest/admin/bill?action=view&billId=%d&fromNotification=true' target='_blank'>Xem chi tiết hóa đơn</a>",
+                        billId
+                );
+
+                noti.setMessage(String.format(
+                        "Hóa đơn cho phòng %s đã được tạo. Tổng tiền phải thanh toán: %sđ. %s",
+                        contract.getRoomNumber(),
+                        dueAmount.toPlainString(),
+                        detailLink
+                ));
+
                 noti.setRead(false);
                 noti.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
 
@@ -842,9 +915,120 @@ public class BillServlet extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list");
                 return;
             }
-        }
+        } else if ("markPaid".equals(action)) {
+            try {
+                int billID = Integer.parseInt(req.getParameter("billID"));
 
-// ✅ Fix: Nếu month là null, "null", hoặc rỗng → dùng tháng hiện tại
+                BillDAO billDAO = new BillDAO();
+
+                boolean updated = billDAO.markBillAsPaid(billID);
+                if (updated) {
+                    req.getSession().setAttribute("success", "Bill marked as PAID successfully.");
+                    resp.sendRedirect("bill?action=view&billId=" + billID);
+                    return;
+                } else {
+                    req.getSession().setAttribute("error", "Failed to update bill status.");
+                    resp.sendRedirect("bill?action=view&billId=" + billID);
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                req.getSession().setAttribute("error", "An error occurred while updating bill status.");
+                resp.sendRedirect("bill?action=list");
+                return;
+            }
+        } else if ("uploadProof".equals(action)) {
+            String billIdStr = req.getParameter("billId");
+            int billId = Integer.parseInt(billIdStr);
+            try {
+                Part filePart = req.getPart("proofImage");
+                if (filePart == null || filePart.getSize() <= 0) {
+                    req.getSession().setAttribute("error", "❌ No file uploaded or file is empty.");
+                    resp.sendRedirect(req.getContextPath() + "/admin/bill?action=view&billId=" + billId);
+                    return;
+                }
+
+                try (InputStream inputStream = filePart.getInputStream();
+                     ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) > -1) {
+                        baos.write(buffer, 0, len);
+                    }
+                    baos.flush();
+                    byte[] imageData = baos.toByteArray();
+
+                    // Get bill and contract
+                    Bill bill = billDAO.getBillById(billId);
+                    if (bill == null) {
+                        throw new ServletException("Bill not found for ID: " + billId);
+                    }
+                    Contract contract = contractDAO.getContractById(bill.getContractID());
+                    if (contract == null) {
+                        throw new ServletException("Contract not found for Bill ID: " + billId);
+                    }
+
+                    // Get tenantId from contract (fixed method name to standard camelCase)
+                    int tenantId = contract.getTenantId();
+                    if (tenantId <= 0) {
+                        throw new ServletException("Invalid Tenant ID: " + tenantId);
+                    }
+
+                    // Get customerId for notification
+                    TenantDAO tenantDAO = new TenantDAO();
+                    int customerId = tenantDAO.getCustomerIdByTenantId(tenantId);
+                    if (customerId <= 0) {
+                        throw new ServletException("Customer not found for Tenant ID: " + tenantId);
+                    }
+
+                    // Get or create payment
+                    PaymentDAO paymentDAO = new PaymentDAO();
+                    int paymentId = paymentDAO.getOrCreatePaymentForBill(billId);
+                    if (paymentId <= 0) {
+                        throw new ServletException("Failed to get or create Payment for Bill ID: " + billId);
+                    }
+
+                    // Insert confirmation
+                    PaymentConfirmation conf = new PaymentConfirmation();
+                    conf.setPaymentID(paymentId);
+                    conf.setTenantID(tenantId);
+                    conf.setImageData(imageData);
+                    conf.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    PaymentConfirmationDAO confirmationDAO = new PaymentConfirmationDAO();
+                    int confirmationId = confirmationDAO.insert(conf);
+                    if (confirmationId <= 0) {
+                        throw new ServletException("Failed to insert PaymentConfirmation for Payment ID: " + paymentId);
+                    }
+
+                    // Create notification for customer
+                    Notification noti = new Notification();
+                    noti.setCustomerID(customerId);
+                    noti.setTitle("📄 Payment Proof Uploaded");
+                    noti.setMessage(String.format(
+                        "Payment proof for bill #%d (Room %s) has been successfully uploaded. Awaiting admin approval.",
+                        bill.getBillID(), contract.getRoomNumber()
+                    ));
+                    noti.setRead(false);
+                    noti.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    HttpSession session = req.getSession(false);
+                    Integer adminUserId = (session != null && session.getAttribute("userId") != null)
+                        ? (Integer) session.getAttribute("userId")
+                        : null;
+                    noti.setSentBy(adminUserId); // Optional: null if sent by system
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.insert(noti);
+
+                    // Set success message and redirect back to bill view
+                    req.getSession().setAttribute("success", "✅ Upload proof successful! Notification sent.");
+                    resp.sendRedirect(req.getContextPath() + "/admin/bill?action=view&billId=" + billId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                req.getSession().setAttribute("error", "❌ Upload failed: " + e.getMessage());
+                resp.sendRedirect(req.getContextPath() + "/admin/bill?action=view&billId=" + billId);
+            }
+            return;
+        }
         // ✅ Fix: Nếu month là null, "null", hoặc rỗng → dùng tháng hiện tại
         if (month == null || month.trim().isEmpty() || "null".equalsIgnoreCase(month)) {
             month = LocalDate.now().toString().substring(0, 7); // yyyy-MM
@@ -993,7 +1177,8 @@ public class BillServlet extends HttpServlet {
             bill.setTotalAmount(total);
             billDAO.updateBill(bill);
 
-            resp.sendRedirect(req.getContextPath() + "/admin/bill?action=list");
+            resp.sendRedirect(req.getContextPath() + "/admin/bill?action=step&step=2&month=" + month
+                    + "&roomId=" + roomId + "&contractId=" + contractId);
 
         } catch (Exception e) {
             throw new ServletException("Error generating bills", e);

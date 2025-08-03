@@ -5,11 +5,12 @@
 <%
 String ctx = request.getContextPath();
 %>
-<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
+
 <html>
 <head>
     <title>HỢP ĐỒNG THUÊ NHÀ Ở</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -149,13 +150,7 @@ String ctx = request.getContextPath();
             Diện tích: ${room.area != null ? room.area : 'Chưa cung cấp'} m²<br>
             Mô tả: ${room.description != null ? room.description : 'Không có mô tả'}<br>
             Tình trạng: ${room.roomStatus != null ? room.roomStatus : 'Chưa xác định'}<br>
-            Tiện ích kèm theo:
-            <ul>
-                <li>Điện: ${room.isElectricityFree != null ? (room.isElectricityFree == 1 ? 'Miễn phí' : 'Tính phí') : 'Chưa xác định'}</li>
-                <li>Nước: ${room.isWaterFree != null ? (room.isWaterFree == 1 ? 'Miễn phí' : 'Tính phí') : 'Chưa xác định'}</li>
-                <li>Wifi: ${room.isWifiFree != null ? (room.isWifiFree == 1 ? 'Miễn phí' : 'Tính phí') : 'Chưa xác định'}</li>
-                <li>Rác: ${room.isTrashFree != null ? (room.isTrashFree == 1 ? 'Miễn phí' : 'Tính phí') : 'Chưa xác định'}</li>
-            </ul>
+            
         </div>
 
         <div class="contract-section">
@@ -243,9 +238,9 @@ String ctx = request.getContextPath();
         </div>
 
         <div class="text-center mt-4">
-            <button onclick="window.print()" class="btn btn-teal">In Hợp Đồng</button>
-            <a href="contracts/generatePdf?id=${contract.contractId}" class="btn btn-teal ms-2" target="_blank">Tải PDF</a>
-            <a href="<%=ctx%>/Contracts" class="btn btn-secondary ms-2">Quay Lại</a>
+            <button onclick="window.print()" class="btn btn-teal">Print</button>
+            <a href="contracts/generatePdf?id=${contract.contractId}" class="btn btn-teal ms-2" target="_blank">Download PDF</a>
+            <a href="<%=ctx%>/Contracts" class="btn btn-secondary ms-2">Back</a>
         </div>
     </div>
 </div>

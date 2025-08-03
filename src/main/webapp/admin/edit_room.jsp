@@ -18,43 +18,136 @@
     List<Block> blockList = (List<Block>) request.getAttribute("blockList");
     List<Category> categoryList = (List<Category>) request.getAttribute("categoryList");
     String error = (String) request.getAttribute("error");
+ String ctx = request.getContextPath();  
 %>
-
+    <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>  
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
         <title>Edit Room</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: #f1f9f8;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .form-container {
-                max-width: 700px;
-                background: #fff;
-                margin: 50px auto;
-                padding: 30px;
-                border-radius: 1rem;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            }
-            .form-label {
-                font-weight: bold;
-                color: #006666;
-            }
-            .btn-primary {
-                border-radius: 30px;
-                background-color: #006666;
-            }
-            .btn-primary:hover {
-                background-color: #004c4c;
-            }
-            .highlight-label {
-                font-weight: normal;
-                font-size: 14px;
-            }
-        </style>
+       <style>
+    body {
+        background: #f0f4f8;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-container {
+        max-width: 750px;
+        background: #ffffff;
+        margin: 60px auto;
+        padding: 35px 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h3 {
+        text-align: center;
+        color: #1e3b8a;
+        font-weight: 600;
+        margin-bottom: 30px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #1e3b8a;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        padding: 10px 14px;
+        border: 1px solid #ced4da;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #1e3b8a;
+        box-shadow: 0 0 0 0.2rem rgba(30, 59, 138, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #1e3b8a;
+        border: none;
+        border-radius: 30px;
+        font-weight: 500;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #163174;
+        transform: scale(1.02);
+    }
+
+    .btn-secondary {
+        border-radius: 30px;
+    }
+   .form-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #1e293b;
+    }
+
+    .form-control,
+    .form-select,
+    textarea {
+        border-radius: 25px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 18px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .form-check-label {
+        margin-left: 6px;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .form-check-input {
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+    }
+
+    .room-img {
+        width: 100%;
+        max-width: 320px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-top: 8px;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .alert-danger {
+        border-radius: 10px;
+        font-size: 15px;
+    }
+
+    .form-check-inline {
+        margin-right: 12px;
+    }
+
+    .form-check-input:checked {
+        background-color: #1e3b8a;
+        border-color: #1e3b8a;
+    }
+</style>
+
     </head>
     <body>
 
@@ -146,13 +239,11 @@
                         <input type="file" class="form-control" name="image" accept="image/*" />
 
                         <%-- Hiển thị hình ảnh cũ nếu có --%>
-                        <% if (room.getImagePath() != null && !room.getImagePath().isEmpty()) { %>
                         <div class="mt-2">
                             <label class="form-label">Current Image:</label><br/>
                             <!-- Hiển thị ảnh bằng cách kết hợp context path với đường dẫn ảnh -->
-                            <img src="<%= request.getContextPath() + "/" + room.getImagePath() %>" class="img-thumbnail mt-2" style="max-height: 200px;" />
+                            <img src="<%= request.getContextPath() %>/room-image?id=<%= room.getRoomID() %>" class="room-img" alt="Room Image"/>
                         </div>
-                        <% } %>
                     </div>
 
                     <!-- Description -->

@@ -59,13 +59,11 @@ public class BlockServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    @Override
+     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
+        if (action == null) action = "list";
 
         switch (action) {
             case "new":
@@ -74,38 +72,11 @@ public class BlockServlet extends HttpServlet {
                 request.getRequestDispatcher("/admin/add_block.jsp").forward(request, response);
                 break;
 
-            case "edit":
-                try {
-                int idEdit = Integer.parseInt(request.getParameter("id"));
-                Block blockEdit = blockDAO.getBlockById(idEdit);
-                if (blockEdit != null) {
-                    request.setAttribute("block", blockEdit);
-                    request.setAttribute("action", "update");
-                    request.getRequestDispatcher("/admin/edit_block.jsp").forward(request, response);
-                } else {
-                    response.sendRedirect("blocks?action=list");
-                }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-                response.sendRedirect("blocks?action=list");
-            }
-            break;
-
-            case "delete":
-                try {
-                int idDelete = Integer.parseInt(request.getParameter("id"));
-                blockDAO.deleteBlock(idDelete);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-            response.sendRedirect("blocks?action=list");
-            break;
-
             case "list":
             default:
-                List<Block> blockList = blockDAO.getAllBlocks();
-                request.setAttribute("blockList", blockList);
-                request.getRequestDispatcher("/admin/list_blocks.jsp").forward(request, response);
+                List<Block> blocks = blockDAO.getAllBlocks();
+                request.setAttribute("blockList", blocks);
+request.getRequestDispatcher("/admin/list_blocks.jsp").forward(request, response);
                 break;
         }
     }
@@ -118,98 +89,74 @@ public class BlockServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    @Override
+     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String action = request.getParameter("action");
 
-        try {
-            if ("insert".equals(action)) {
-                Block block = extractBlockFromRequest(request);
+        if ("insert".equals(action)) {
+            Block block = extractBlockFromRequest(request);
 
-                // Validation
-                if (block.getBlockName() == null || block.getBlockName().trim().isEmpty()) {
-                    request.setAttribute("message", "Block name is required.");
-                    request.setAttribute("alertType", "error");
-                    forwardBackToForm(request, response, block, "insert");
-                    return;
-                }
-                if (block.getMaxRooms() <= 0) {
-                    request.setAttribute("message", "Max number of rooms must be a number greater than 0.");
-                    request.setAttribute("alertType", "error");
-                    forwardBackToForm(request, response, block, "insert");
-                    return;
-                }
-
-                boolean success = blockDAO.addBlock(block);
-                if (success) {
-                    request.setAttribute("message", "Block added successfully.");
-                    request.setAttribute("alertType", "success");
-                } else {
-                    request.setAttribute("message", "Block name already exists.");  
-                    request.setAttribute("alertType", "error");
-                    forwardBackToForm(request, response, block, "insert");
-                    return;
-                }
-
-                response.sendRedirect("blocks?action=list");
-
-            } else if ("update".equals(action)) {
-                Block block = extractBlockFromRequest(request);
-                blockDAO.updateBlock(block);
-                response.sendRedirect("blocks?action=list");
+            if (block.getBlockName() == null || block.getBlockName().trim().isEmpty()) {
+                request.setAttribute("message", "Block name is required.");
+                request.setAttribute("alertType", "error");
+                forwardBackToForm(request, response, block);
+                return;
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("message", "An error occurred: " + e.getMessage());
-            request.setAttribute("alertType", "error");
-            forwardBackToForm(request, response, null, "insert");
+            if (blockDAO.isBlockNameExists(block.getBlockName())) {
+                request.setAttribute("message", "Block name already exists.");
+                request.setAttribute("alertType", "error");
+                forwardBackToForm(request, response, block);
+                return;
+            }
+
+            boolean success = blockDAO.addBlock(block);
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/blocks?action=list");
+            } else {
+                request.setAttribute("message", "Failed to insert block. Please try again.");
+                request.setAttribute("alertType", "error");
+                forwardBackToForm(request, response, block);
+            }
         }
     }
 
     private Block extractBlockFromRequest(HttpServletRequest request) {
+        String name = request.getParameter("blockName");
+        int roomCount = parseIntOrDefault(request.getParameter("roomCount"), 0);
+        int availableRooms = roomCount; // mặc định available = roomCount
+        String status = "Available"; // hoặc lấy từ form nếu có
+
         Block block = new Block();
-
-        // 👇 Thêm phần này để lấy BlockID khi cập nhật
-        try {
-            String idStr = request.getParameter("id");
-            if (idStr != null && !idStr.isEmpty()) {
-                block.setBlockID(Integer.parseInt(idStr));
-            }
-        } catch (NumberFormatException e) {
-            block.setBlockID(0); // hoặc xử lý khác nếu cần
-        }
-
-        block.setBlockName(request.getParameter("blockName"));
-
-        try {
-            String maxRoomsStr = request.getParameter("maxRooms");
-            if (maxRoomsStr != null && !maxRoomsStr.isEmpty()) {
-                block.setMaxRooms(Integer.parseInt(maxRoomsStr));
-            } else {
-                block.setMaxRooms(0);
-            }
-        } catch (NumberFormatException e) {
-            block.setMaxRooms(0);
-        }
+        block.setBlockName(name);
+        block.setRoomCount(roomCount);
+        block.setAvailableRooms(availableRooms);
+        block.setBlockStatus(status);
 
         return block;
     }
 
-    private void forwardBackToForm(HttpServletRequest request, HttpServletResponse response, Block block, String action)
-            throws ServletException, IOException {
-        if (block != null) {
-            request.setAttribute("block", block);
+    private int parseIntOrDefault(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            return defaultValue;
         }
-        request.setAttribute("action", action);
+    }
+
+    private void forwardBackToForm(HttpServletRequest request, HttpServletResponse response, Block block)
+            throws ServletException, IOException {
+        request.setAttribute("block", block);
+        request.setAttribute("action", "insert");
         request.getRequestDispatcher("/admin/add_block.jsp").forward(request, response);
     }
 
     /**
      * Returns a short description of the servlet.
      *
-     * @return a String containing servlet description
+* @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {

@@ -34,6 +34,18 @@ public class UtilityReadingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        // ✅ Check đăng nhập và quyền
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            resp.sendRedirect(req.getContextPath() + "/error.jsp");
+            return;
+        }
+
+        model.User currentUser = (model.User) session.getAttribute("currentUser");
+        if (currentUser.getRole() == null || currentUser.getRole().getRoleID() != 1) {
+            resp.sendRedirect(req.getContextPath() + "/error.jsp");
+            return;
+        }
         try {
             String blockIdStr = req.getParameter("blockId");
             String roomIdStr = req.getParameter("roomId");
@@ -95,128 +107,141 @@ public class UtilityReadingServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        try {
-            List<Block> blocks = blockDAO.getAllBlocks();
-            List<Object[]> roomList = roomDAO.getAllRoomIdName();
-            List<UtilityType> utilityTypes = typeDAO.getAll();
-            Map<Integer, Double> oldIndexMap = new HashMap<>();
+   @Override
+protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
 
-            req.setAttribute("blocks", blocks);
-            req.setAttribute("rooms", roomList);
-            req.setAttribute("utilityTypes", utilityTypes);
+    // ✅ Kiểm tra đăng nhập và quyền
+    HttpSession session = req.getSession(false);
+    if (session == null || session.getAttribute("currentUser") == null) {
+        resp.sendRedirect(req.getContextPath() + "/error.jsp");
+        return;
+    }
 
-            String roomIdStr = req.getParameter("roomId");
-            String readingMonth = req.getParameter("readingMonth");
-            String blockId = req.getParameter("blockId");
+    model.User currentUser = (model.User) session.getAttribute("currentUser");
+    int roleId = currentUser.getRole().getRoleID();
 
-            if (roomIdStr == null || readingMonth == null || roomIdStr.isEmpty() || readingMonth.isEmpty()) {
-                req.setAttribute("error", "Thiếu thông tin phòng hoặc tháng.");
-                req.getRequestDispatcher("/admin/utility-record.jsp").forward(req, resp);
-                return;
-            }
+    if (roleId != 1 && roleId != 2) { // Chỉ Admin và Manager được phép
+        resp.sendRedirect(req.getContextPath() + "/error.jsp");
+        return;
+    }
 
-            int roomId = Integer.parseInt(roomIdStr);
-            LocalDate firstOfMonth = LocalDate.parse(readingMonth + "-01");
-            Date readingDate = Date.valueOf(firstOfMonth);
+    // ✅ Chọn đường dẫn JSP phù hợp
+    String jspPath = (roleId == 1) ? "/admin/utility-record.jsp" : "/manager/manager-utility.jsp";
 
-            // Lấy thông tin phòng để kiểm tra tiện ích miễn phí
-            Room room = roomDAO.getRoomById(roomId);
+    try {
+        List<Block> blocks = blockDAO.getAllBlocks();
+        List<Object[]> roomList = roomDAO.getAllRoomIdName();
+        List<UtilityType> utilityTypes = typeDAO.getAll();
+        Map<Integer, Double> oldIndexMap = new HashMap<>();
 
-            req.setAttribute("selectedRoomId", roomIdStr);
-            req.setAttribute("readingMonth", readingMonth);
-            req.setAttribute("selectedBlockId", blockId);
+        req.setAttribute("blocks", blocks);
+        req.setAttribute("rooms", roomList);
+        req.setAttribute("utilityTypes", utilityTypes);
 
-            if (dao.hasReadingForMonth(roomId, readingMonth)) {
-                for (UtilityType ut : utilityTypes) {
-                    double old = dao.getLatestIndex(roomId, ut.getUtilityTypeID(), readingMonth);
-                    oldIndexMap.put(ut.getUtilityTypeID(), old);
-                }
-                req.setAttribute("oldIndexMap", oldIndexMap);
-                req.setAttribute("error", "❌ Phòng này đã ghi chỉ số trong kỳ " + readingMonth + ", không thể ghi lại.");
-                req.getRequestDispatcher("/admin/utility-record.jsp").forward(req, resp);
-                return;
-            }
+        String roomIdStr = req.getParameter("roomId");
+        String readingMonth = req.getParameter("readingMonth");
+        String blockId = req.getParameter("blockId");
 
+        if (roomIdStr == null || readingMonth == null || roomIdStr.isEmpty() || readingMonth.isEmpty()) {
+            req.setAttribute("error", "Thiếu thông tin phòng hoặc tháng.");
+            req.getRequestDispatcher(jspPath).forward(req, resp);
+            return;
+        }
+
+        int roomId = Integer.parseInt(roomIdStr);
+        LocalDate firstOfMonth = LocalDate.parse(readingMonth + "-01");
+        Date readingDate = Date.valueOf(firstOfMonth);
+
+        Room room = roomDAO.getRoomById(roomId);
+
+        req.setAttribute("selectedRoomId", roomIdStr);
+        req.setAttribute("readingMonth", readingMonth);
+        req.setAttribute("selectedBlockId", blockId);
+
+        if (dao.hasReadingForMonth(roomId, readingMonth)) {
             for (UtilityType ut : utilityTypes) {
                 double old = dao.getLatestIndex(roomId, ut.getUtilityTypeID(), readingMonth);
                 oldIndexMap.put(ut.getUtilityTypeID(), old);
             }
             req.setAttribute("oldIndexMap", oldIndexMap);
+            req.setAttribute("error", "❌ Phòng này đã ghi chỉ số trong kỳ " + readingMonth + ", không thể ghi lại.");
+            req.getRequestDispatcher(jspPath).forward(req, resp);
+            return;
+        }
 
-            String[] typeIds = req.getParameterValues("typeIds");
-            if (typeIds == null || typeIds.length == 0) {
-                req.setAttribute("error", "Không có tiện ích nào được chọn.");
-                req.getRequestDispatcher("/admin/utility-record.jsp").forward(req, resp);
-                return;
-            }
+        for (UtilityType ut : utilityTypes) {
+            double old = dao.getLatestIndex(roomId, ut.getUtilityTypeID(), readingMonth);
+            oldIndexMap.put(ut.getUtilityTypeID(), old);
+        }
+        req.setAttribute("oldIndexMap", oldIndexMap);
 
-            for (String typeIdStr : typeIds) {
-                int typeId = Integer.parseInt(typeIdStr);
-                UtilityType type = typeDAO.getById(typeId);
-                String utilityName = type.getUtilityName().toLowerCase();
+        String[] typeIds = req.getParameterValues("typeIds");
+        if (typeIds == null || typeIds.length == 0) {
+            req.setAttribute("error", "Không có tiện ích nào được chọn.");
+            req.getRequestDispatcher(jspPath).forward(req, resp);
+            return;
+        }
 
-                boolean isFree = (utilityName.contains("electricity") && room.getIsElectricityFree() == 0)
-                        || (utilityName.contains("water") && room.getIsWaterFree() == 0)
-                        || (utilityName.contains("wifi") && room.getIsWifiFree() == 0)
-                        || (utilityName.contains("trash") && room.getIsTrashFree() == 0);
+        for (String typeIdStr : typeIds) {
+            int typeId = Integer.parseInt(typeIdStr);
+            UtilityType type = typeDAO.getById(typeId);
+            String utilityName = type.getUtilityName().toLowerCase();
 
-                if (isFree) {
-                    // Ghi tiện ích miễn phí = 0
-                    UtilityReading ur = new UtilityReading();
-                    ur.setRoomID(roomId);
-                    ur.setUtilityTypeID(typeId);
-                    ur.setOldReading(BigDecimal.ZERO);
-                    ur.setNewReading(BigDecimal.ZERO);
-                    ur.setPriceUsed(BigDecimal.ZERO);
-                    ur.setChangedBy("admin");
-                    ur.setReadingDate(readingDate);
-                    dao.insertUtilityReading(ur);
-                    continue;
-                }
+            boolean isFree = (utilityName.contains("electricity") && room.getIsElectricityFree() == 0)
+                    || (utilityName.contains("water") && room.getIsWaterFree() == 0)
+                    || (utilityName.contains("wifi") && room.getIsWifiFree() == 0)
+                    || (utilityName.contains("trash") && room.getIsTrashFree() == 0);
 
-                // Nếu không miễn phí → đọc chỉ số và tính toán
-                String newIndexStr = req.getParameter("new_" + typeId);
-                if (newIndexStr == null || newIndexStr.isEmpty()) {
-                    continue;
-                }
-
-                BigDecimal newIndex = new BigDecimal(newIndexStr);
-                double oldVal = oldIndexMap.get(typeId);
-                BigDecimal oldIndex = BigDecimal.valueOf(oldVal);
-                BigDecimal unitPrice = type.getUnitPrice();
-                if (unitPrice == null) {
-                    unitPrice = BigDecimal.ZERO;
-                }
-
-                if (newIndex.compareTo(oldIndex) <= 0) {
-                    req.setAttribute("error", "❌ Chỉ số mới của " + type.getUtilityName() + " phải lớn hơn chỉ số cũ.");
-                    req.getRequestDispatcher("/admin/utility-record.jsp").forward(req, resp);
-                    return;
-                }
-
-                BigDecimal priceUsed = newIndex.subtract(oldIndex).multiply(unitPrice);
-
+            if (isFree) {
                 UtilityReading ur = new UtilityReading();
                 ur.setRoomID(roomId);
                 ur.setUtilityTypeID(typeId);
-                ur.setOldReading(oldIndex);
-                ur.setNewReading(newIndex);
-                ur.setPriceUsed(priceUsed);
-                ur.setChangedBy("admin");
+                ur.setOldReading(BigDecimal.ZERO);
+                ur.setNewReading(BigDecimal.ZERO);
+                ur.setPriceUsed(BigDecimal.ZERO);
+                ur.setChangedBy(currentUser.getUserFullName());
                 ur.setReadingDate(readingDate);
-
                 dao.insertUtilityReading(ur);
+                continue;
             }
 
-            resp.sendRedirect(req.getContextPath() + "/admin/bill?action=step&step=1&blockId=" + blockId);
+            String newIndexStr = req.getParameter("new_" + typeId);
+            if (newIndexStr == null || newIndexStr.isEmpty()) {
+                continue;
+            }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ServletException(e);
+            BigDecimal newIndex = new BigDecimal(newIndexStr);
+            double oldVal = oldIndexMap.get(typeId);
+            BigDecimal oldIndex = BigDecimal.valueOf(oldVal);
+            BigDecimal unitPrice = type.getUnitPrice() != null ? type.getUnitPrice() : BigDecimal.ZERO;
+
+            if (newIndex.compareTo(oldIndex) <= 0) {
+                req.setAttribute("error", "❌ Chỉ số mới của " + type.getUtilityName() + " phải lớn hơn chỉ số cũ.");
+                req.getRequestDispatcher(jspPath).forward(req, resp);
+                return;
+            }
+
+            BigDecimal priceUsed = newIndex.subtract(oldIndex).multiply(unitPrice);
+
+            UtilityReading ur = new UtilityReading();
+            ur.setRoomID(roomId);
+            ur.setUtilityTypeID(typeId);
+            ur.setOldReading(oldIndex);
+            ur.setNewReading(newIndex);
+            ur.setPriceUsed(priceUsed);
+            ur.setChangedBy(currentUser.getUserFullName());
+            ur.setReadingDate(readingDate);
+
+            dao.insertUtilityReading(ur);
         }
+
+        resp.sendRedirect(req.getContextPath() + "/admin/bill?action=step&step=1&blockId=" + blockId);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new ServletException(e);
     }
+}
 
 }

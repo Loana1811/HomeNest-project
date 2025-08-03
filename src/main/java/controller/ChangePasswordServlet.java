@@ -1,98 +1,55 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dao.CustomerDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import model.Customer;
 
-/**
- *
- * @author ADMIN
- */
 @WebServlet(name = "ChangePasswordServlet", urlPatterns = {"/customer/change-password"})
 public class ChangePasswordServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ChangePasswordServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ChangePasswordServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("customer") == null) {
-            response.sendRedirect(request.getContextPath() + "/Login");
+            response.sendRedirect(request.getContextPath() + "/Login.jsp");
             return;
         }
 
-        request.getRequestDispatcher("/change-password.jsp").forward(request, response);
+        String role = (String) session.getAttribute("role");
+        if (role == null || !"customer".equals(role)) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
+
+        request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        Customer customer = (Customer) session.getAttribute("customer");
-
-        if (customer == null) {
-            response.sendRedirect("login.jsp");
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("customer") == null) {
+            response.sendRedirect(request.getContextPath() + "/Login.jsp");
             return;
         }
 
+ 
+
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        // Lấy dữ liệu từ form
         String currentPassword = request.getParameter("currentPassword");
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
@@ -101,54 +58,44 @@ public class ChangePasswordServlet extends HttpServlet {
         String hashedCurrent = dao.hashMD5(currentPassword);
         String hashedNew = dao.hashMD5(newPassword);
 
-        // Kiểm tra mật khẩu hiện tại
+        // Kiểm tra mật khẩu hiện tại có đúng không
         if (!hashedCurrent.equals(customer.getCustomerPassword())) {
-            request.setAttribute("error", "Current password is incorrect.");
+            request.setAttribute("error", "Mật khẩu hiện tại không chính xác.");
             request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
             return;
         }
 
-        // Kiểm tra mật khẩu mới và xác nhận
+        // Kiểm tra xác nhận mật khẩu mới
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "New password and confirmation do not match.");
+            request.setAttribute("error", "Mật khẩu mới không khớp.");
             request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
             return;
         }
 
-        // Regex kiểm tra độ mạnh của mật khẩu
+        // Kiểm tra định dạng mật khẩu mới
         String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9\\s])[A-Za-z\\d[^\\s]]{8,20}$";
         if (!newPassword.matches(passwordPattern)) {
-            request.setAttribute("error", "Password must be 8–20 characters long, include uppercase, lowercase, digit, special character, and contain no whitespace.");
+            request.setAttribute("error", "Mật khẩu mới phải từ 8–20 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt và không chứa khoảng trắng.");
             request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
             return;
         }
 
         // Cập nhật mật khẩu mới
-        customer.setCustomerPassword(hashedNew);
-        // Cập nhật mật khẩu mới
         try {
-            dao.updatePassword(customer.getEmail(), hashedNew); // ✅ Đổi hàm này
-            customer.setCustomerPassword(hashedNew); // Cập nhật lại trên session
+            dao.updatePassword(customer.getEmail(), hashedNew);
+            customer.setCustomerPassword(hashedNew);
             session.setAttribute("customer", customer);
-
-            session.setAttribute("success", "Password changed successfully!");
-            response.sendRedirect(request.getContextPath() + "/customer/view-profile.jsp");
-
+            request.setAttribute("success", "✅ Đổi mật khẩu thành công!");
+            request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
         } catch (SQLException ex) {
             Logger.getLogger(ChangePasswordServlet.class.getName()).log(Level.SEVERE, null, ex);
-            request.setAttribute("error", "Error occurred while changing password.");
+            request.setAttribute("error", "❌ Có lỗi xảy ra khi thay đổi mật khẩu.");
             request.getRequestDispatcher("/customer/change-password.jsp").forward(request, response);
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Xử lý thay đổi mật khẩu cho người dùng";
+    }
 }

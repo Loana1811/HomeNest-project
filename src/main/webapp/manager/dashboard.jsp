@@ -192,6 +192,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/manager/notification?idManager=<%= idUser%>">Notification Management</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx %>/admin/usage"> Usage Management</a>
+                </li>
 
                 <li class="nav-item">
                     <a class="nav-link" href="<%= ctx%>/manager/manage-requests?idManager=<%= idUser%>">Rental Request Management</a>

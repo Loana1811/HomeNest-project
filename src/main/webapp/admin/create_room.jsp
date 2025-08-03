@@ -31,35 +31,97 @@
         <meta charset="UTF-8">
         <title><%= "insert".equals(formAction) ? "Create New Room" : "Update Room"%></title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: #eafaf9;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .form-container {
-                max-width: 700px;
-                background: #fff;
-                margin: 50px auto;
-                padding: 30px;
-                border-radius: 1rem;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            }
-            .form-label {
-                font-weight: bold;
-                color: #007777;
-            }
-            .btn-primary {
-                border-radius: 30px;
-                background-color: #007777;
-            }
-            .btn-primary:hover {
-                background-color: #005f5f;
-            }
-            .highlight-label {
-                font-weight: normal;
-                font-size: 14px;
-            }
-        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+       <style>
+    body {
+        background-color: #f9fcff;
+        font-family: 'Segoe UI', sans-serif;
+        color: #1f2937;
+    }
+
+    .form-container {
+        max-width: 720px;
+        background: #ffffff;
+        margin: 50px auto;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        transition: 0.3s ease-in-out;
+    }
+
+    h3.text-center {
+        font-weight: 700;
+        color: #1e3a8a;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #1e293b;
+    }
+
+    .form-control,
+    .form-select,
+    textarea {
+        border-radius: 25px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 18px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .form-check-label {
+        margin-left: 6px;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .form-check-input {
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn-primary {
+        background-color: #2563eb;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .btn-primary:hover {
+        background-color: #1e40af;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    .alert-danger {
+        font-weight: 500;
+        font-size: 15px;
+        padding: 12px;
+        border-radius: 10px;
+    }
+</style>
+
     </head>
     <body>
         <div class="container">
@@ -79,7 +141,7 @@
                                value="<%= room.getRoomNumber() != null ? room.getRoomNumber() : ""%>" required />
                     </div>
                     <% if (error != null) {%>
-                    <div class="alert alert-danger text-center fw-bold mt-3" style="font-size: 16px;">
+<div class="alert alert-danger text-center fw-bold mt-3" style="font-size: 16px;">
                         ⚠️ <%= error%>
                     </div>
                     <% }%>
@@ -133,7 +195,7 @@
                         <label class="form-label">Free Services:</label><br/>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" name="isElectricityFree" value="0" <%= room.getIsElectricityFree() == 0 ? "checked" : "" %> />
-                            <label class="form-check-label">Electricity</label>
+<label class="form-check-label">Electricity</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" name="isWaterFree" value="0" <%= room.getIsWaterFree() == 0 ? "checked" : "" %> />
@@ -156,7 +218,7 @@
                     <!-- Room Image -->
                     <div class="mb-3">
                         <label class="form-label">Room Image:</label>
-                        <input type="file" class="form-control" name="image" accept="image/*" />
+                        <input type="file" class="form-control" name="${pageContext.request.contextPath}/img/logo.png" alt="Logo" class="qr-code mb-2">
                     </div>
 
                     <!-- Description -->
@@ -165,17 +227,7 @@
                         <textarea class="form-control" name="description" rows="4"><%= room.getDescription() != null ? room.getDescription() : ""%></textarea>
                     </div>
 
-                    <!-- Hiển thị hình ảnh cũ nếu có -->
-                    <% if (room.getImagePath() != null) {%>
-                    <div class="mb-3">
-                        <label class="form-label">Current Image:</label><br/>
-                       <img src="<%= request.getContextPath() + "/" + room.getImagePath() %>" class="img-thumbnail mt-2" width="200"
-     onerror="this.src='<%= request.getContextPath() %>/uploads/default.jpg'"/>
-
-                        <input type="hidden" name="existingImagePath" value="<%= room.getImagePath()%>" />
-                    </div>
-                    <% } %>
-
+                  
                     <!-- Error Message -->
                     <% if (error != null) {%>
                     <div class="alert alert-danger mt-3"><%= error%></div>

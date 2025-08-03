@@ -45,7 +45,7 @@ public class AdminAccountServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null || !"Admin".equals(currentUser.getRole().getRoleName())) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/Login");
             return;
         }
 
@@ -83,9 +83,11 @@ public class AdminAccountServlet extends HttpServlet {
                     }
                     int userID = Integer.parseInt(userIDStr);
                     User user = userDAO.getUserById(userID);
+                    System.out.println("User fetched: " + (user != null ? user.getUserFullName() : "null"));
                     List<Block> blockListEdit = null;
                     if (user != null && user.getRole() != null && "Manager".equals(user.getRole().getRoleName())) {
                         blockListEdit = blockDAO.getAllBlocks();
+                        System.out.println("Block list size: " + (blockListEdit != null ? blockListEdit.size() : 0));
                     }
                     request.setAttribute("user", user);
                     request.setAttribute("blockList", blockListEdit);
@@ -127,7 +129,7 @@ public class AdminAccountServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null || !"Admin".equals(currentUser.getRole().getRoleName())) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/Login");
             return;
         }
 
@@ -331,87 +333,84 @@ public class AdminAccountServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/account");
     }
 
- private void addManager(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
-    String fullName = request.getParameter("fullName");
-    String email = request.getParameter("email");
-    String phoneNumber = request.getParameter("phoneNumber");
-    String password = request.getParameter("password");
-    String confirmPassword = request.getParameter("confirmPassword");
-    String blockIDStr = request.getParameter("blockID");
+    private void addManager(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String phoneNumber = request.getParameter("phoneNumber");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+        String blockIDStr = request.getParameter("blockID");
 
+        request.setAttribute("formFullName", fullName);
+        request.setAttribute("formEmail", email);
+        request.setAttribute("formPhoneNumber", phoneNumber);
+        request.setAttribute("formPassword", password);
+        request.setAttribute("formConfirmPassword", confirmPassword);
+        request.setAttribute("formBlockID", blockIDStr);
 
-    request.setAttribute("formFullName", fullName);
-    request.setAttribute("formEmail", email);
-    request.setAttribute("formPhoneNumber", phoneNumber);
-    request.setAttribute("formPassword", password);
-    request.setAttribute("formConfirmPassword", confirmPassword);
-    request.setAttribute("formBlockID", blockIDStr);
+        if (fullName == null || fullName.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || phoneNumber == null || phoneNumber.trim().isEmpty()
+                || password == null || password.trim().isEmpty()
+                || confirmPassword == null || confirmPassword.trim().isEmpty()
+                || blockIDStr == null || blockIDStr.trim().isEmpty()) {
+            request.setAttribute("error", "Tất cả các trường là bắt buộc.");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("error", "Mật khẩu không khớp.");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
+        if (!phoneNumber.matches("\\d{10}")) { // Chỉ kiểm tra 10 chữ số, tiền tố đã kiểm tra ở client-side
+            request.setAttribute("error", "Số điện thoại phải có đúng 10 chữ số.");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
+        if (userDAO.isEmailExists(email.trim())) {
+            request.setAttribute("error", "Email đã tồn tại!");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
 
-    if (fullName == null || fullName.trim().isEmpty()
-            || email == null || email.trim().isEmpty()
-            || phoneNumber == null || phoneNumber.trim().isEmpty()
-            || password == null || password.trim().isEmpty()
-            || confirmPassword == null || confirmPassword.trim().isEmpty()
-            || blockIDStr == null || blockIDStr.trim().isEmpty()) {
-        request.setAttribute("error", "Tất cả các trường là bắt buộc.");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
-    }
-    if (!password.equals(confirmPassword)) {
-        request.setAttribute("error", "Mật khẩu không khớp.");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
-    }
-    if (!phoneNumber.matches("\\d{10}")) { // Chỉ kiểm tra 10 chữ số, tiền tố đã kiểm tra ở client-side
-        request.setAttribute("error", "Số điện thoại phải có đúng 10 chữ số.");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
-    }
-    if (userDAO.isEmailExists(email.trim())) {
-        request.setAttribute("error", "Email đã tồn tại!");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
-    }
-   
-    int blockID = Integer.parseInt(blockIDStr);
-    if (userDAO.hasActiveManager(blockID)) {
-        request.setAttribute("error", "Khu này đã có quản lý đang hoạt động. Vui lòng vô hiệu hóa quản lý hiện tại trước.");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
-    }
+        int blockID = Integer.parseInt(blockIDStr);
+        if (userDAO.hasActiveManager(blockID)) {
+            request.setAttribute("error", "Khu này đã có quản lý đang hoạt động. Vui lòng vô hiệu hóa quản lý hiện tại trước.");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
 
-    User user = new User();
-    user.setUserFullName(fullName.trim());
-    user.setEmail(email.trim());
-    user.setPhoneNumber(phoneNumber.trim());
-   
-    
-    user.setPassword(password); 
-    user.setRoleID(2); 
-    user.setUserStatus("Active");
-    user.setBlockID(Integer.parseInt(blockIDStr));
+        User user = new User();
+        user.setUserFullName(fullName.trim());
+        user.setEmail(email.trim());
+        user.setPhoneNumber(phoneNumber.trim());
 
-    boolean success = userDAO.addUser(user);
-    if (!success) {
-        request.setAttribute("error", "Không thể tạo tài khoản quản lý.");
-        List<Block> blockList = blockDAO.getAllBlocks();
-        request.setAttribute("blockList", blockList);
-        request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
-        return;
+        user.setPassword(password);
+        user.setRoleID(2);
+        user.setUserStatus("Active");
+        user.setBlockID(Integer.parseInt(blockIDStr));
+
+        boolean success = userDAO.addUser(user);
+        if (!success) {
+            request.setAttribute("error", "Không thể tạo tài khoản quản lý.");
+            List<Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+            request.getRequestDispatcher("/admin/createManager.jsp").forward(request, response);
+            return;
+        }
+        response.sendRedirect(request.getContextPath() + "/admin/account");
     }
-    response.sendRedirect(request.getContextPath() + "/admin/account");
-}
-
 
     public void addCustomer(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
         String fullName = request.getParameter("fullName");

@@ -10,99 +10,76 @@ import model.Tenant;
 
 public class ContractDAO extends DBContext {
 
-   public ArrayList<Contract> getAllContracts() {
-    ArrayList<Contract> contracts = new ArrayList<>();
-    String query = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, c.ContractCreatedAt, " +
-                   "cu.CustomerFullName AS TenantName, " +
-                   "r.RoomNumber, r.RentPrice, r.Area, r.Location, r.BlockID, r.Description, " +
-                   "r.IsElectricityFree, r.IsWaterFree, r.IsWifiFree, r.IsTrashFree " +
-                   "FROM Contracts c " +
-                   "JOIN Tenants t ON c.TenantID = t.TenantID " +
-                   "JOIN Customers cu ON t.CustomerID = cu.CustomerID " +
-                   "JOIN Rooms r ON c.RoomID = r.RoomID";
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-        while (rs.next()) {
-            Contract contract = new Contract(
-                rs.getInt("ContractID"),
-                rs.getInt("TenantID"),
-                rs.getInt("RoomID"),
-                rs.getDate("StartDate"),
-                rs.getDate("EndDate"),
-                rs.getString("ContractStatus"),
-                rs.getDate("ContractCreatedAt")
-            );
-            contract.setTenantName(rs.getString("TenantName"));
-            contract.setRoomNumber(rs.getString("RoomNumber"));
-            contract.setRoomRent(rs.getBigDecimal("RentPrice")); // Changed to BigDecimal
-            contract.setArea(rs.getFloat("Area"));
-            contract.setLocation(rs.getString("Location"));
-            contract.setBlockId(rs.getInt("BlockID"));
-            contract.setDescription(rs.getString("Description"));
-            contract.setElectricityFree(rs.getBoolean("IsElectricityFree"));
-            contract.setWaterFree(rs.getBoolean("IsWaterFree"));
-            contract.setWifiFree(rs.getBoolean("IsWifiFree"));
-            contract.setTrashFree(rs.getBoolean("IsTrashFree"));
-            contracts.add(contract);
+    public ArrayList<Contract> getAllContracts() {
+        ArrayList<Contract> contracts = new ArrayList<>();
+        String query = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, c.ContractCreatedAt, "
+                + "cu.CustomerFullName AS TenantName, "
+                + "r.RoomNumber, r.RentPrice, r.Area, r.Location, r.BlockID, r.Description, "
+                + "r.IsElectricityFree, r.IsWaterFree, r.IsWifiFree, r.IsTrashFree "
+                + "FROM Contracts c "
+                + "JOIN Tenants t ON c.TenantID = t.TenantID "
+                + "JOIN Customers cu ON t.CustomerID = cu.CustomerID "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Contract contract = new Contract(
+                        rs.getInt("ContractID"),
+                        rs.getInt("TenantID"),
+                        rs.getInt("RoomID"),
+                        rs.getDate("StartDate"),
+                        rs.getDate("EndDate"),
+                        rs.getString("ContractStatus"),
+                        rs.getDate("ContractCreatedAt")
+                );
+                contract.setTenantName(rs.getString("TenantName"));
+                contract.setRoomNumber(rs.getString("RoomNumber"));
+                contract.setRoomRent(rs.getBigDecimal("RentPrice")); // Changed to BigDecimal
+                contract.setArea(rs.getFloat("Area"));
+                contract.setLocation(rs.getString("Location"));
+                contract.setBlockId(rs.getInt("BlockID"));
+                contract.setDescription(rs.getString("Description"));
+                contract.setElectricityFree(rs.getBoolean("IsElectricityFree"));
+                contract.setWaterFree(rs.getBoolean("IsWaterFree"));
+                contract.setWifiFree(rs.getBoolean("IsWifiFree"));
+                contract.setTrashFree(rs.getBoolean("IsTrashFree"));
+                contracts.add(contract);
+            }
+            System.out.println("? Total contracts retrieved: " + contracts.size());
+        } catch (SQLException ex) {
+            System.out.println("? SQL Query Error: " + ex.getMessage());
         }
-        System.out.println("? Total contracts retrieved: " + contracts.size());
-    } catch (SQLException ex) {
-        System.out.println("? SQL Query Error: " + ex.getMessage());
+        return contracts;
     }
-    return contracts;
-}
-    public boolean addContract(int tenantId, int roomId, java.sql.Date startDate, java.sql.Date endDate) {
-    String query = "INSERT INTO Contracts (TenantID, RoomID, StartDate, EndDate, ContractStatus, ContractCreatedAt) " +
-                   "VALUES (?, ?, ?, ?, ?, ?)";
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-        // Default status is "Active", CreatedAt is current timestamp
-        String contractStatus = "Active";
-        Timestamp contractCreatedAt = new Timestamp(System.currentTimeMillis());
 
-        ps.setInt(1, tenantId);
-        ps.setInt(2, roomId);
-        ps.setDate(3, startDate);
-        ps.setDate(4, endDate);
-        ps.setString(5, contractStatus);
-        ps.setTimestamp(6, contractCreatedAt);
+    public int addContract(int tenantId, int roomId, java.sql.Date startDate, java.sql.Date endDate) {
+        String insertQuery = "INSERT INTO Contracts (TenantID, RoomID, StartDate, EndDate, ContractStatus, ContractCreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
 
-        int result = ps.executeUpdate();
-        if (result > 0) {
-            // Fetch room details for notification
-            String roomQuery = "SELECT RoomNumber, RentPrice, Area, Location, BlockID, Description, " +
-                              "IsElectricityFree, IsWaterFree, IsWifiFree, IsTrashFree " +
-                              "FROM Rooms WHERE RoomID = ?";
-            try (PreparedStatement roomPs = conn.prepareStatement(roomQuery)) {
-                roomPs.setInt(1, roomId);
-                ResultSet rs = roomPs.executeQuery();
-                if (rs.next()) {
-                    // Create notification with room details
-                    TenantDAO tenantDAO = new TenantDAO();
-                    Tenant tenant = tenantDAO.getTenantById(tenantId);
-                    Notification notifyCustomer = new Notification();
-                    notifyCustomer.setCustomerID(tenant.getCustomerID());
-                    notifyCustomer.setTitle("Hợp đồng đã được tạo");
-                    notifyCustomer.setMessage(String.format(
-                        "Hợp đồng thuê phòng %s (Giá: %sđ, Diện tích: %sm², Vị trí: %s, BlockID: %d) đã được tạo thành công.",
-                        rs.getString("RoomNumber"),
-                        rs.getBigDecimal("RentPrice").toString(),
-                        rs.getFloat("Area"),
-                        rs.getString("Location"),
-                        rs.getInt("BlockID")
-                    ));
-                    notifyCustomer.setSentBy(1); // Admin
-                    notifyCustomer.setRead(false);
-                    notifyCustomer.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
-                    NotificationDAO notiDAO = new NotificationDAO();
-                    notiDAO.insertNotification(notifyCustomer);
+            String contractStatus = "Pending";
+            Timestamp contractCreatedAt = new Timestamp(System.currentTimeMillis());
+
+            ps.setInt(1, tenantId);
+            ps.setInt(2, roomId);
+            ps.setDate(3, startDate);
+            ps.setDate(4, endDate);
+            ps.setString(5, contractStatus);
+            ps.setTimestamp(6, contractCreatedAt);
+
+            int result = ps.executeUpdate();
+
+            if (result > 0) {
+                try ( ResultSet rsId = ps.getGeneratedKeys()) {
+                    if (rsId.next()) {
+                        return rsId.getInt(1); // Trả về ContractID
+                    }
                 }
             }
-            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return -1;
     }
-    return false;
-}
 
     public void updateContract(Contract contract) throws SQLException {
         String query = "UPDATE Contracts SET TenantID = ?, RoomID = ?, StartDate = ?, EndDate = ?, ContractStatus = ? WHERE ContractID = ?";
@@ -181,7 +158,6 @@ public class ContractDAO extends DBContext {
 
         return false;
     }
-    
 
     public ArrayList<Contract> getContractHistoryByTenantId(int tenantId) {
         ArrayList<Contract> contracts = new ArrayList<>();
@@ -217,128 +193,219 @@ public class ContractDAO extends DBContext {
         }
         return contracts;
     }
-    
+
     public List<Contract> getActiveContractsInMonth(String month) throws SQLException {
-    List<Contract> list = new ArrayList<>();
-    String sql =
-        "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, " +
-        "       r.RoomNumber, r.RentPrice " +
-        "FROM Contracts c " +
-        "JOIN Rooms r ON c.RoomID = r.RoomID " +
-        "WHERE c.ContractStatus = 'Active' " +
-        "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? " +
-        "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)";
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setString(1, month);
-        ps.setString(2, month);
-        try (ResultSet rs = ps.executeQuery()) {
+        List<Contract> list = new ArrayList<>();
+        String sql
+                = "SELECT c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, "
+                + "       r.RoomNumber, r.RentPrice "
+                + "FROM Contracts c "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "WHERE c.ContractStatus = 'Active' "
+                + "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? "
+                + "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, month);
+            ps.setString(2, month);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Contract c = new Contract();
+                    c.setContractId(rs.getInt("ContractID"));
+                    c.setTenantId(rs.getInt("TenantID"));
+                    c.setRoomId(rs.getInt("RoomID"));
+                    c.setStartDate(rs.getDate("StartDate"));
+                    c.setEndDate(rs.getDate("EndDate"));
+                    c.setContractStatus(rs.getString("ContractStatus"));
+                    c.setRoomNumber(rs.getString("RoomNumber"));    // <-- tên phòng
+                    c.setRoomRent(rs.getBigDecimal("RentPrice"));       // <-- giá thuê
+                    list.add(c);
+                }
+            }
+        }
+        return list;
+    }
+
+    public float getRoomRentByContractId(int contractId) throws SQLException {
+        String sql = "SELECT r.RentPrice "
+                + "FROM Contracts c "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "WHERE c.ContractID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, contractId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getFloat("RentPrice");
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    public Contract getActiveContractOfRoomInMonth(int roomId, String month) throws SQLException {
+        String sql
+                = "SELECT TOP 1 c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, "
+                + "       r.RoomNumber, r.RentPrice "
+                + "FROM Contracts c "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "WHERE c.ContractStatus = 'Active' "
+                + "  AND c.RoomID = ? "
+                + "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? "
+                + "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)"
+                + "ORDER BY c.StartDate DESC"; // Nếu có nhiều hợp đồng trùng, lấy hợp đồng bắt đầu mới nhất
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setString(2, month);
+            ps.setString(3, month);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Contract c = new Contract();
+                    c.setContractId(rs.getInt("ContractID"));
+                    c.setTenantId(rs.getInt("TenantID"));
+                    c.setRoomId(rs.getInt("RoomID"));
+                    c.setStartDate(rs.getDate("StartDate"));
+                    c.setEndDate(rs.getDate("EndDate"));
+                    c.setContractStatus(rs.getString("ContractStatus"));
+                    c.setRoomNumber(rs.getString("RoomNumber"));
+                    c.setRoomRent(rs.getBigDecimal("RentPrice"));
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Contract getContractWithRoomAndTenantByContractId(int contractId) {
+        String sql
+                = "SELECT c.*, r.RoomNumber, r.RoomID, "
+                + "       cu.CustomerFullName AS CustomerFullName, cu.PhoneNumber "
+                + "FROM Contracts c "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "JOIN Tenants t ON c.TenantID = t.TenantID "
+                + "JOIN Customers cu ON t.CustomerID = cu.CustomerID "
+                + "WHERE c.ContractID = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, contractId);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Contract c = new Contract();
+                    c.setContractId(rs.getInt("ContractID"));
+                    c.setRoomId(rs.getInt("RoomID"));
+                    c.setTenantId(rs.getInt("TenantID"));
+                    c.setStartDate(rs.getDate("StartDate"));
+                    c.setEndDate(rs.getDate("EndDate"));
+                    c.setDeposit(rs.getBigDecimal("Deposit"));
+                    c.setRoomNumber(rs.getString("RoomNumber"));
+                    c.setTenantName(rs.getString("CustomerFullName"));
+                    c.setPhone(rs.getString("PhoneNumber")); // 👈 Thêm dòng này
+                    return c;
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public boolean applyContract(int contractId) {
+        String sql = "UPDATE Contracts "
+                + "SET ContractStatus = ?, CustomerRespondedAt = ? "
+                + "WHERE ContractID = ? AND ContractStatus = 'Pending'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "Active");
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, contractId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Contract> getContractsByCustomerId(int customerId) throws SQLException {
+        List<Contract> list = new ArrayList<>();
+        String sql
+                = "SELECT c.ContractID, c.TenantID, r.RoomID, r.RoomNumber, c.StartDate, c.EndDate, "
+                + "      c.ContractStatus, c.ContractCreatedAt "
+                + "FROM Contracts c "
+                + "JOIN Tenants t ON c.TenantID = t.TenantID "
+                + "JOIN Rooms r ON c.RoomID = r.RoomID "
+                + "WHERE t.CustomerID = ? ";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            System.out.println("Executing query for customerId: " + customerId); // Debug log
+            ps.setInt(1, customerId);
+            ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 Contract c = new Contract();
                 c.setContractId(rs.getInt("ContractID"));
                 c.setTenantId(rs.getInt("TenantID"));
                 c.setRoomId(rs.getInt("RoomID"));
+                c.setRoomNumber(rs.getString("RoomNumber")); // Ensure this field is used
                 c.setStartDate(rs.getDate("StartDate"));
                 c.setEndDate(rs.getDate("EndDate"));
                 c.setContractStatus(rs.getString("ContractStatus"));
-                c.setRoomNumber(rs.getString("RoomNumber"));    // <-- tên phòng
-                c.setRoomRent(rs.getBigDecimal("RentPrice"));       // <-- giá thuê
+                c.setContractCreatedAt(rs.getTimestamp("ContractCreatedAt"));
                 list.add(c);
             }
+            System.out.println("Found " + list.size() + " contracts for customerId: " + customerId); // Debug log
+        } catch (SQLException e) {
+            System.err.println("SQL Exception: " + e.getMessage()); // Log the exception
+            throw e; // Re-throw to propagate the error
+        }
+        return list;
+    }
+
+    public boolean rejectContract(int contractId) {
+        String sql = "UPDATE Contracts "
+                + "SET ContractStatus = ?, CustomerRespondedAt = ? "
+                + "WHERE ContractID = ? AND ContractStatus = 'Pending'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "Terminated");
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, contractId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
-    return list;
-}
-    
-    public float getRoomRentByContractId(int contractId) throws SQLException {
-    String sql = "SELECT r.RentPrice " +
-                 "FROM Contracts c " +
-                 "JOIN Rooms r ON c.RoomID = r.RoomID " +
-                 "WHERE c.ContractID = ?";
 
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, contractId);
-        try (ResultSet rs = ps.executeQuery()) {
+    public boolean updateContractStatus(int contractId, String status) throws SQLException {
+        String sql = "UPDATE Contracts SET ContractStatus = ? WHERE ContractID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setInt(2, contractId);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public Contract getActiveContractByRoom(int roomId) throws SQLException {
+        String sql = "SELECT * FROM Contracts WHERE RoomID = ? AND ContractStatus = 'Active'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getFloat("RentPrice");
+                Contract contract = new Contract();
+                contract.setContractId(rs.getInt("ContractID"));
+                contract.setStartDate(rs.getDate("StartDate"));
+                contract.setEndDate(rs.getDate("EndDate"));
+                contract.setRoomId(rs.getInt("RoomID"));
+                contract.setContractStatus(rs.getString("ContractStatus"));
+                // bạn thêm các trường khác nếu cần
+                return contract;
             }
         }
+        return null;
     }
-
-    return 0;
-}
-     public Contract getActiveContractOfRoomInMonth(int roomId, String month) throws SQLException {
-    String sql =
-        "SELECT TOP 1 c.ContractID, c.TenantID, c.RoomID, c.StartDate, c.EndDate, c.ContractStatus, " +
-        "       r.RoomNumber, r.RentPrice " +
-        "FROM Contracts c " +
-        "JOIN Rooms r ON c.RoomID = r.RoomID " +
-        "WHERE c.ContractStatus = 'Active' " +
-        "  AND c.RoomID = ? " +
-        "  AND FORMAT(c.StartDate, 'yyyy-MM') <= ? " +
-        "  AND (c.EndDate IS NULL OR FORMAT(c.EndDate, 'yyyy-MM') >= ?)" +
-        "ORDER BY c.StartDate DESC"; // Nếu có nhiều hợp đồng trùng, lấy hợp đồng bắt đầu mới nhất
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, roomId);
-        ps.setString(2, month);
-        ps.setString(3, month);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Contract c = new Contract();
-                c.setContractId(rs.getInt("ContractID"));
-                c.setTenantId(rs.getInt("TenantID"));
-                c.setRoomId(rs.getInt("RoomID"));
-                c.setStartDate(rs.getDate("StartDate"));
-                c.setEndDate(rs.getDate("EndDate"));
-                c.setContractStatus(rs.getString("ContractStatus"));
-                c.setRoomNumber(rs.getString("RoomNumber"));
-                c.setRoomRent(rs.getBigDecimal("RentPrice"));
-                return c;
-            }
-        }
-    }
-    return null;
-}
-
-    public Contract getContractWithRoomAndTenantByContractId(int contractId) {
-    String sql =
-        "SELECT c.*, r.RoomNumber, r.RoomID, " +
-        "       cu.CustomerFullName AS CustomerFullName, cu.PhoneNumber " +
-        "FROM Contracts c " +
-        "JOIN Rooms r ON c.RoomID = r.RoomID " +
-        "JOIN Tenants t ON c.TenantID = t.TenantID " +
-        "JOIN Customers cu ON t.CustomerID = cu.CustomerID " +
-        "WHERE c.ContractID = ?";
-
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-
-        ps.setInt(1, contractId);
-
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Contract c = new Contract();
-                c.setContractId(rs.getInt("ContractID"));
-                c.setRoomId(rs.getInt("RoomID"));
-                c.setTenantId(rs.getInt("TenantID"));
-                c.setStartDate(rs.getDate("StartDate"));
-                c.setEndDate(rs.getDate("EndDate"));
-                c.setDeposit(rs.getBigDecimal("Deposit"));
-                c.setRoomNumber(rs.getString("RoomNumber"));
-                c.setTenantName(rs.getString("CustomerFullName"));
-                c.setPhone(rs.getString("PhoneNumber")); // 👈 Thêm dòng này
-                return c;
-            }
-        }
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-
-    return null;
-}
-
 
 }

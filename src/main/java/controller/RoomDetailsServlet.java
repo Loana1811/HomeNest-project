@@ -79,39 +79,57 @@ public class RoomDetailsServlet extends HttpServlet {
             int roomId = Integer.parseInt(idParam);
             RoomDAO roomDAO = new RoomDAO();
             Room room = roomDAO.getRoomById(roomId);
-            UtilityDAO utilityDAO = new UtilityDAO();
+UtilityDAO utilityDAO = new UtilityDAO();
 
             if (room == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy phòng.");
                 return;
             }
 
+            // Lấy các thông tin cần thiết
             List<Room> featuredRooms = roomDAO.getFeaturedRooms();
+            List<UtilityType> utilityTypes = utilityDAO.getAllUtilityTypes();
+
+            // ✅ Thêm blockList nếu JSP dùng
+            dao.BlockDAO blockDAO = new dao.BlockDAO();
+            List<model.Block> blockList = blockDAO.getAllBlocks();
+            request.setAttribute("blockList", blockList);
+
+            // ✅ Format ngày đăng nếu cần trong JSP
+            String postDateStr = room.getPostedDate() != null
+                    ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(room.getPostedDate())
+                    : "N/A";
+            request.setAttribute("postDateStr", postDateStr);
+
+            // Đặt thuộc tính để sử dụng ở JSP
             request.setAttribute("room", room);
             request.setAttribute("featuredRooms", featuredRooms);
-            List<UtilityType> utilityTypes = utilityDAO.getAllUtilityTypes();
             request.setAttribute("utilityTypes", utilityTypes);
 
-            // ✅ Kiểm tra nếu khách đã gửi yêu cầu rồi thì không hiện nút "Gửi"
+            // ✅ Kiểm tra yêu cầu thuê
             HttpSession session = request.getSession();
             Customer currentCustomer = (Customer) session.getAttribute("customer");
 
             boolean alreadyRequested = false;
+            boolean hasAnyPendingRequest = false;
             boolean showSuccess = false;
 
             if (currentCustomer != null) {
+                RentalRequestDAO rentalRequestDAO = new RentalRequestDAO();
+
                 if ("true".equals(request.getParameter("success"))) {
-                    alreadyRequested = true;
                     showSuccess = true;
-                } else {
-                    RentalRequestDAO rentalRequestDAO = new RentalRequestDAO();
-                    alreadyRequested = rentalRequestDAO.existsPendingRequest(currentCustomer.getCustomerID(), roomId);
                 }
+
+                alreadyRequested = rentalRequestDAO.existsPendingRequest(currentCustomer.getCustomerID(), roomId);
+                hasAnyPendingRequest = rentalRequestDAO.existsAnyPendingRequest(currentCustomer.getCustomerID());
             }
 
             request.setAttribute("alreadyRequested", alreadyRequested);
+            request.setAttribute("hasAnyPendingRequest", hasAnyPendingRequest);
             request.setAttribute("showSuccess", showSuccess);
 
+            // ✅ Gửi đến JSP
             request.getRequestDispatcher("/customer/room-detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -131,7 +149,7 @@ public class RoomDetailsServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }

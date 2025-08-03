@@ -518,4 +518,102 @@ public class UtilityReadingDAO {
         }
     }
 
+
+
+
+    // Kiểm tra đã ghi tiện ích trong tháng hiện tại hoặc tháng trước
+    public boolean isRecordedThisOrLastMonth(int roomId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM UtilityReadings WHERE RoomID = ? AND " +
+                     "((MONTH(ReadingDate) = MONTH(GETDATE()) AND YEAR(ReadingDate) = YEAR(GETDATE())) " +
+                     "OR (MONTH(ReadingDate) = MONTH(DATEADD(MONTH, -1, GETDATE())) AND YEAR(ReadingDate) = YEAR(DATEADD(MONTH, -1, GETDATE()))))";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        }
+    }
+
+    // Kiểm tra hôm nay có phải ngày ghi chỉ số của hợp đồng
+    public boolean isTodayReadingDate(int roomId) throws SQLException {
+        String sql = "SELECT DAY(StartDate) as ReadingDay FROM Contracts WHERE RoomID = ? AND Status = 'Active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int readingDay = rs.getInt("ReadingDay");
+                int today = LocalDate.now().getDayOfMonth();
+                return today == readingDay;
+            }
+        }
+        return false;
+    }
+
+    // Kiểm tra xem ngày hiện tại có nằm trong khoảng 3 ngày sau ngày ghi tiện ích không
+    public boolean isWithinEditableWindow(int roomId) throws SQLException {
+        String sql = "SELECT MAX(ReadingDate) as LastReadingDate FROM UtilityReadings WHERE RoomID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Date readingDate = rs.getDate("LastReadingDate");
+                if (readingDate != null) {
+                    LocalDate rd = readingDate.toLocalDate();
+                    LocalDate today = LocalDate.now();
+                    return !today.isBefore(rd) && !today.isAfter(rd.plusDays(3));
+                }
+            }
+        }
+        return false;
+    }
+    // Lấy giá áp dụng tại thời điểm đọc chỉ số (giá cũ nếu chưa đủ 30 ngày)
+public BigDecimal getEffectivePrice(int utilityTypeId, LocalDate readingDate) throws SQLException {
+    // Tìm lần gần nhất có sự thay đổi giá từ bảng UtilityReadings (không cần join)
+    String sql = "SELECT TOP 1 PriceUsed, OldPrice, UtilityReadingCreatedAt "
+               + "FROM UtilityReadings "
+               + "WHERE UtilityTypeID = ? AND OldPrice IS NOT NULL "
+               + "ORDER BY UtilityReadingCreatedAt DESC";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, utilityTypeId);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            BigDecimal newPrice = rs.getBigDecimal("PriceUsed");
+            BigDecimal oldPrice = rs.getBigDecimal("OldPrice");
+            LocalDate changeDate = rs.getTimestamp("UtilityReadingCreatedAt").toLocalDateTime().toLocalDate();
+
+            // Nếu ngày ghi chỉ số (readingDate) < ngày thay đổi + 30 ngày => dùng giá cũ
+            if (readingDate.isBefore(changeDate.plusDays(30))) {
+                return oldPrice;
+            } else {
+                return newPrice;
+            }
+        }
+    }
+
+    return BigDecimal.ZERO; // Không tìm thấy bản ghi thay đổi giá nào
+}
+
+
+// Lấy giá cũ từ bảng UtilityReadings (lần gần nhất có oldPrice khác null)
+private BigDecimal getPreviousPrice(int utilityTypeId) throws SQLException {
+    String sql = "SELECT TOP 1 OldPrice FROM UtilityReadings "
+               + "WHERE UtilityTypeID = ? AND OldPrice IS NOT NULL "
+               + "ORDER BY UtilityReadingCreatedAt DESC";
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, utilityTypeId);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getBigDecimal("OldPrice");
+        }
+    }
+    return BigDecimal.ZERO;
+}
+
 }

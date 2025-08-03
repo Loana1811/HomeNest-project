@@ -104,6 +104,32 @@ public class RoomDAO extends DBContext {
         return map;
     }
 
+    public Map<String, List<Object[]>> getRoomsGroupedByBlock(int blockId) throws SQLException {
+        Map<String, List<Object[]>> map = new LinkedHashMap<>();
+        String sql = "SELECT r.RoomID, r.RoomNumber, b.BlockName "
+                + "FROM Rooms r "
+                + "JOIN Blocks b ON r.BlockID = b.BlockID "
+                + "WHERE b.BlockID = ? "
+                + "ORDER BY b.BlockName, r.RoomNumber";
+
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, blockId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String blockName = rs.getString("BlockName");
+                    Object[] roomData = new Object[]{
+                        rs.getInt("RoomID"),
+                        rs.getString("RoomNumber")
+                    };
+
+                    map.computeIfAbsent(blockName, k -> new ArrayList<>()).add(roomData);
+                }
+            }
+        }
+
+        return map;
+    }
+
     public List<Object[]> getAllRoomIdName() throws SQLException {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT RoomID, RoomNumber FROM Rooms";
@@ -128,7 +154,7 @@ public class RoomDAO extends DBContext {
                 room.setLocation(rs.getString("Location"));
                 room.setRoomStatus(rs.getString("RoomStatus"));
                 room.setBlockID(rs.getInt("BlockID"));
-                room.setImagePath(rs.getString("ImagePath"));
+                room.setImagePath(rs.getBytes("ImagePath"));
                 room.setDescription(rs.getString("Description"));
                 room.setPostedDate(rs.getDate("PostedDate"));
 
@@ -158,7 +184,7 @@ public class RoomDAO extends DBContext {
                 room.setLocation(rs.getString("Location"));
                 room.setRoomStatus(rs.getString("RoomStatus"));
                 room.setBlockID(rs.getInt("BlockID"));
-                room.setImagePath(rs.getString("ImagePath"));
+                room.setImagePath(rs.getBytes("ImagePath"));
                 room.setDescription(rs.getString("Description"));
                 room.setPostedDate(rs.getDate("PostedDate"));
                 rooms.add(room);
@@ -186,7 +212,7 @@ public class RoomDAO extends DBContext {
                 room.setLocation(rs.getString("Location"));
                 room.setRoomStatus(rs.getString("RoomStatus"));
                 room.setBlockID(rs.getInt("BlockID"));
-                room.setImagePath(rs.getString("ImagePath"));
+                room.setImagePath(rs.getBytes("ImagePath"));
                 room.setDescription(rs.getString("Description"));
                 room.setPostedDate(rs.getDate("PostedDate"));
 
@@ -218,7 +244,7 @@ public class RoomDAO extends DBContext {
                         rs.getString("location"),
                         rs.getString("roomStatus"),
                         rs.getInt("blockID"),
-                        rs.getString("imagePath"),
+                        rs.getBytes("imagePath"),
                         rs.getString("description"),
                         rs.getDate("postedDate")
                 );
@@ -230,7 +256,7 @@ public class RoomDAO extends DBContext {
     }
 
 // Cập nhật phương thức addRoom để thêm các cột mới
-    public void addRoom(Room room) {
+   public void addRoom(Room room) {
         String query = "INSERT INTO Rooms (roomNumber, rentPrice, area, location, roomStatus, blockID, imagePath, description, postedDate, IsElectricityFree, IsWaterFree, IsWifiFree, IsTrashFree) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -241,7 +267,7 @@ public class RoomDAO extends DBContext {
             ps.setString(4, room.getLocation());
             ps.setString(5, room.getRoomStatus());
             ps.setInt(6, room.getBlockID());
-            ps.setString(7, room.getImagePath());
+            ps.setBytes(7, room.getImagePath());
             ps.setString(8, room.getDescription());
             ps.setDate(9, room.getPostedDate());
 
@@ -269,7 +295,7 @@ public class RoomDAO extends DBContext {
             ps.setString(4, room.getLocation());
             ps.setString(5, room.getRoomStatus());
             ps.setInt(6, room.getBlockID());
-            ps.setString(7, room.getImagePath());
+            ps.setBytes(7, room.getImagePath());
             ps.setString(8, room.getDescription());
             ps.setDate(9, room.getPostedDate());
 
@@ -313,7 +339,7 @@ public class RoomDAO extends DBContext {
                             rs.getString("location"),
                             rs.getString("roomStatus"),
                             rs.getInt("blockID"),
-                            rs.getString("imagePath"),
+                            rs.getBytes("imagePath"),
                             rs.getString("description"),
                             rs.getDate("postedDate")
                     ));
@@ -324,7 +350,6 @@ public class RoomDAO extends DBContext {
         }
         return list;
     }
-
 
     public List<Room> searchRooms(String keyword) {
         List<Room> list = new ArrayList<>();
@@ -345,7 +370,7 @@ public class RoomDAO extends DBContext {
                             rs.getString("location"),
                             rs.getString("roomStatus"),
                             rs.getInt("blockID"),
-                            rs.getString("imagePath"),
+                            rs.getBytes("imagePath"),
                             rs.getString("description"),
                             rs.getDate("postedDate")
                     ));
@@ -604,7 +629,7 @@ public class RoomDAO extends DBContext {
                 rs.getString("Location"),
                 rs.getString("RoomStatus"),
                 rs.getInt("BlockID"),
-                rs.getString("ImagePath"),
+                rs.getBytes("ImagePath"),
                 rs.getString("Description"),
                 rs.getDate("PostedDate")
         );
@@ -764,7 +789,7 @@ public class RoomDAO extends DBContext {
                 room.setLocation(rs.getString("Location"));
                 room.setRoomStatus(rs.getString("RoomStatus"));
                 room.setBlockID(rs.getInt("BlockID"));
-                room.setImagePath(rs.getString("ImagePath"));
+                room.setImagePath(rs.getBytes("ImagePath"));
                 room.setDescription(rs.getString("Description"));
                 room.setPostedDate(rs.getDate("PostedDate"));
                 room.setIsElectricityFree(rs.getInt("IsElectricityFree"));
@@ -814,4 +839,27 @@ public class RoomDAO extends DBContext {
         return list;
     }
 
+    public List<Room> getRoomsByBlock(String blockID) {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms WHERE blockID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, blockID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Room r = new Room();
+                r.setRoomID(rs.getInt("roomID"));
+                r.setRoomNumber(rs.getString("roomNumber"));
+                r.setBlockID(rs.getInt("blockID"));
+                r.setRentPrice(rs.getDouble("rentPrice"));
+                r.setArea(rs.getDouble("area"));
+                r.setLocation(rs.getString("location"));
+                r.setRoomStatus(rs.getString("roomStatus"));
+                r.setImagePath(rs.getBytes("imagePath"));
+                list.add(r);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

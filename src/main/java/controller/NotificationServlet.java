@@ -6,6 +6,7 @@
 package controller;
 
 import dao.NotificationDAO;
+import dao.ReportDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Customer;
 import model.Notification;
+import model.Report;
 
 /**
  *
@@ -63,15 +65,24 @@ public class NotificationServlet extends HttpServlet {
    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+         ReportDAO reportDAO = new ReportDAO();
         HttpSession session = request.getSession();
         Customer customer = (Customer) session.getAttribute("customer");
+         Integer customerID = (Integer) session.getAttribute("idCustomer");
+  
 
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/Login");
             return;
         }
 
+            List<Report> reports = null;
+        try {
+            reports = reportDAO.getReportsByCustomer(customerID);
+        } catch (SQLException ex) {
+            Logger.getLogger(NotificationServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            request.setAttribute("reports", reports);
         NotificationDAO dao = new NotificationDAO();
         List<Notification> notifications = null;
         try {

@@ -22,10 +22,17 @@ public class PaymentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Integer roleId = (session != null) ? (Integer) session.getAttribute("roleID") : null;
+
+        // Kiểm tra quyền admin
+        if (roleId == null || roleId != 1) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
         String billIdRaw = request.getParameter("billId");
 
         if (billIdRaw == null || billIdRaw.trim().isEmpty()) {
-            HttpSession session = request.getSession();
             session.setAttribute("error", "⚠️ Không xác định được hóa đơn cần thu tiền.");
             response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
             return;
@@ -37,6 +44,13 @@ public class PaymentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Integer roleId = (session != null) ? (Integer) session.getAttribute("roleID") : null;
+
+        if (roleId == null || roleId != 1) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
 
         String action = request.getParameter("action");
 
@@ -75,29 +89,17 @@ public class PaymentServlet extends HttpServlet {
             String note = request.getParameter("paymentNote");
             Date paymentDate = Date.valueOf(request.getParameter("paymentDate"));
 
-            Payment payment = new Payment();
-            payment.setBillId(billId);
-            payment.setAmountPaid(amountPaid);
-            payment.setPaymentMethod(method);
-            payment.setPaymentNote(note);
-            payment.setPaymentDate(paymentDate);
-
             PaymentDAO paymentDAO = new PaymentDAO();
             BillDAO billDAO = new BillDAO();
             RevenueDAO revenueDAO = new RevenueDAO();
 
-            // Thêm khoản thanh toán
-            paymentDAO.insertPayment(payment);
-
-            // Tính tổng đã thanh toán
             List<Payment> payments = paymentDAO.getPaymentsByBillId(billId);
             BigDecimal totalPaid = payments.stream()
                     .map(Payment::getAmountPaid)
                     .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // Lấy tổng tiền hóa đơn
-            String selectedMonth = java.time.LocalDate.now().toString().substring(0, 7); // yyyy-MM
+            String selectedMonth = java.time.LocalDate.now().toString().substring(0, 7);
             List<Map<String, Object>> billSummary = billDAO.getBillSummaryByMonth(selectedMonth);
             BigDecimal totalAmount = null;
             for (Map<String, Object> row : billSummary) {
@@ -113,18 +115,41 @@ public class PaymentServlet extends HttpServlet {
                 return;
             }
 
-            // Cập nhật trạng thái hóa đơn
+            BigDecimal remaining = totalAmount.subtract(totalPaid);
+
+            // ✅ Kiểm tra thu đúng số còn lại
+            if (amountPaid.compareTo(remaining) != 0) {
+                request.setAttribute("error", "⚠️ Số tiền nhập vào phải đúng bằng số còn nợ: " + remaining + "đ.");
+                forwardBack(request, response, billId);
+                return;
+            }
+
+            Payment payment = new Payment();
+            payment.setBillId(billId);
+            payment.setAmountPaid(amountPaid);
+            payment.setPaymentMethod(method);
+            payment.setPaymentNote(note);
+            payment.setPaymentDate(paymentDate);
+
+            paymentDAO.insertPayment(payment);
+
+            // Cập nhật lại tổng đã trả
+            payments = paymentDAO.getPaymentsByBillId(billId);
+            totalPaid = payments.stream()
+                    .map(Payment::getAmountPaid)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
             String newStatus = totalPaid.compareTo(totalAmount) >= 0 ? "PAID"
                     : totalPaid.compareTo(BigDecimal.ZERO) > 0 ? "PARTIAL" : "Unpaid";
-            boolean billUpdated = billDAO.updateBillStatus(billId, newStatus);
 
+            boolean billUpdated = billDAO.updateBillStatus(billId, newStatus);
             if (!billUpdated) {
                 request.setAttribute("error", "❌ Không thể cập nhật trạng thái hóa đơn.");
                 forwardBack(request, response, billId);
                 return;
             }
 
-            // Tạo phiếu thu nếu hóa đơn đã thanh toán đủ và chưa có revenue nào
             if ("PAID".equals(newStatus) && !revenueDAO.existsRevenueForBill(billId)) {
                 boolean revenueCreated = revenueDAO.createRevenueForPaidBill(billId, 1);
                 if (!revenueCreated) {
@@ -134,13 +159,7 @@ public class PaymentServlet extends HttpServlet {
                 }
             }
 
-            // Tính số tiền còn lại
-            BigDecimal remaining = totalAmount.subtract(totalPaid);
-            String msg = remaining.compareTo(BigDecimal.ZERO) > 0
-                    ? "💰 Đã thu được " + totalPaid + "đ. Còn nợ: " + remaining + "đ."
-                    : "✅ Khách đã thanh toán đầy đủ.";
-
-            request.getSession().setAttribute("success", msg);
+            request.getSession().setAttribute("success", "✅ Khách đã thanh toán đầy đủ.");
             response.sendRedirect(request.getContextPath() + "/admin/bill?action=list");
 
         } catch (Exception e) {
@@ -165,8 +184,7 @@ public class PaymentServlet extends HttpServlet {
             BillDAO billDAO = new BillDAO();
             PaymentDAO paymentDAO = new PaymentDAO();
 
-            // Lấy thông tin hóa đơn
-            String selectedMonth = java.time.LocalDate.now().toString().substring(0, 7); // yyyy-MM
+            String selectedMonth = java.time.LocalDate.now().toString().substring(0, 7);
             List<Map<String, Object>> billSummary = billDAO.getBillSummaryByMonth(selectedMonth);
             Map<String, Object> billData = null;
             for (Map<String, Object> row : billSummary) {
@@ -183,7 +201,6 @@ public class PaymentServlet extends HttpServlet {
                 return;
             }
 
-            // Tính tổng số tiền đã thanh toán
             List<Payment> payments = paymentDAO.getPaymentsByBillId(billId);
             BigDecimal totalPaid = payments.stream()
                     .map(Payment::getAmountPaid)
@@ -193,7 +210,6 @@ public class PaymentServlet extends HttpServlet {
             BigDecimal totalAmount = (BigDecimal) billData.get("TotalAmount");
             BigDecimal amountRemaining = totalAmount.subtract(totalPaid);
 
-            // Tạo đối tượng Bill
             Bill bill = new Bill();
             bill.setBillID(billId);
             bill.setTotalAmount(totalAmount);

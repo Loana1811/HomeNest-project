@@ -63,7 +63,7 @@ public class BillDAO {
                         bill.setBillDate(rs.getDate("BillDate"));
                         bill.setBillStatus(rs.getString("BillStatus"));
                         bill.setRoomNumber(rs.getString("RoomNumber"));
-                        rentPrice = rs.getBigDecimal("RentPrice");
+                        rentPrice = rs.getBigDecimal("RentPrice");         // 👈 Lấy từ bảng Rooms
                         bill.setRoomRent(rentPrice);
 
                         // lấy trạng thái miễn phí tiện ích
@@ -501,5 +501,22 @@ public class BillDAO {
         }
         return false;
     }
+
+   public boolean markBillAsPaid(int billID) throws SQLException {
+    String sql = "UPDATE Bills " +
+                 "SET BillStatus = 'PAID' " +
+                 "WHERE BillID = ?";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, billID);
+        return ps.executeUpdate() > 0;
+    }
+}
+
+    public List<Bill> getBillsByTenantId(Integer tenantId, String month) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 
 }

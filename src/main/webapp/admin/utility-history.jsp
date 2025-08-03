@@ -4,59 +4,37 @@
 <%@ page import="java.util.*, model.UtilityHistoryView" %>
 
 <%
-     String ctx = request.getContextPath();
-    %>
+    String ctx = request.getContextPath();
+%>
 
-  <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!-- Main Content -->
 <div class="main-content">
     <h3 class="mb-4">📜 Price Change History</h3>
 
     <c:if test="${empty historyList}">
-        <div class="alert alert-warning">⚠️ No history records found.</div>
+        <div class="alert alert-info">There are no pending utility prices.</div>
     </c:if>
 
     <c:if test="${not empty historyList}">
-        <table class="table table-bordered table-hover bg-white">
-            <thead class="table-dark">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
                 <tr>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Old Price</th>
-                    <th>New Price</th>
-                    <th>Changed By</th>
-                    <th>Change Date</th>
+                    <th>Utility type</th>
+                
+                    <th>Prices coming soon</th>
+                    <th>Date changes</th>
+                    <th>Date of application</th>
                 </tr>
             </thead>
             <tbody>
                 <c:forEach var="h" items="${historyList}">
                     <tr>
-                        <td>
-                            <span class="badge bg-primary">
-                                <c:choose>
-                                    <c:when test="${h.isUtility}">
-                                        Utility
-                                    </c:when>
-                                    <c:otherwise>
-                                        Incurred Fee
-                                    </c:otherwise>
-                                </c:choose>
-                            </span>
-                        </td>
-                        <td>
-                            <c:choose>
-                                <c:when test="${empty h.utilityName}">
-                                    <span class="text-danger">[Removed]</span>
-                                </c:when>
-                                <c:otherwise>
-                                    ${h.utilityName}
-                                </c:otherwise>
-                            </c:choose>
-                        </td>
-                        <td><fmt:formatNumber value="${h.oldPrice}" type="number" pattern="#,##0"/>₫</td>
-                        <td><fmt:formatNumber value="${h.newPrice}" type="number" pattern="#,##0"/>₫</td>
-                        <td>${h.changedBy}</td>
+                        <td>${h.utilityName}</td>
+                       
+                        <td><fmt:formatNumber value="${h.newPrice}" pattern="#,##0"/> ₫</td>
                         <td><fmt:formatDate value="${h.createdAt}" pattern="yyyy-MM-dd"/></td>
+                        <td><fmt:formatDate value="${h.applyAt}" pattern="yyyy-MM-dd"/></td>
                     </tr>
                 </c:forEach>
             </tbody>

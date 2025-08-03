@@ -38,7 +38,9 @@ public class TenantDAO extends DBContext {
                 + "c.CustomerPassword, c.CustomerStatus "
                 + "FROM Tenants t "
                 + "JOIN Customers c ON t.CustomerID = c.CustomerID "
-                + "WHERE t.TenantID NOT IN (SELECT TenantID FROM Contracts)";
+                + "LEFT JOIN Contracts ct ON t.TenantID = ct.TenantID "
+                + "     AND ct.ContractStatus IN ('Active', 'Pending') "
+                + "WHERE ct.TenantID IS NULL";
 
         try ( ResultSet rs = this.execSelectQuery(query)) {
             while (rs.next()) {
@@ -153,6 +155,18 @@ public class TenantDAO extends DBContext {
         tenant.setCustomerID(rs.getInt("CustomerID"));
         tenant.setJoinDate(rs.getDate("JoinDate"));
         return tenant;
+    }
+
+    public int getCustomerIdByTenantId(int tenantId) throws SQLException {
+        String sql = "SELECT CustomerID FROM Tenants WHERE TenantID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tenantId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("CustomerID");
+            }
+        }
+        return -1; // hoặc ném ngoại lệ nếu không tìm thấy
     }
 
 }

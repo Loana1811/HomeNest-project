@@ -7,7 +7,7 @@
     String ctx = request.getContextPath();
 %>
 
-<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -16,54 +16,106 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
         <style>
-            body {
-                padding-top: 56px;
-                background-color: #f8f9fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .sidebar {
-                width: 240px;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                bottom: 0;
-                background-color: #ffffff;
-                border-right: 1px solid #e0e0e0;
-                padding: 1rem;
-                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-                z-index: 1030;
-            }
-            .sidebar h5 {
-                font-weight: 700;
-                margin-bottom: 1rem;
-            }
-            .sidebar .nav-link {
-                padding: 10px 14px;
-                margin-bottom: 6px;
-                color: #333;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-            .sidebar .nav-link:hover,
-            .sidebar .nav-link.active {
-                background: #0d6efd;
-                color: white;
-            }
-            main {
-                margin-left: 260px;
-                padding: 2rem 1rem;
-                max-width: 1200px;
-            }
-            @media (max-width: 768px) {
-                .sidebar {
-                    display: none;
-                }
-                main {
-                    margin-left: 0;
-                }
-            }
-        </style>
+    :root {
+        --navy: #1e3b8a;
+        --navy-light: #3f5fa6;
+        --teal: #0d9488;
+        --light-bg: #f4f7fb;
+        --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        padding-top: 56px;
+        background-color: var(--light-bg);
+        font-family: 'Segoe UI', sans-serif;
+        color: #111827;
+    }
+
+    main {
+        margin-left: 260px;
+        padding: 2rem 1rem;
+        max-width: 1200px;
+    }
+
+    h3.fw-bold {
+        color: var(--navy);
+    }
+
+    .btn-success {
+        background-color: var(--navy);
+        border: none;
+        transition: 0.3s ease;
+    }
+
+    .btn-success:hover {
+        background-color: var(--navy-light);
+    }
+
+    .btn-outline-teal {
+        color: var(--teal);
+        border: 1px solid var(--teal);
+        transition: 0.3s ease;
+    }
+
+    .btn-outline-teal:hover {
+        background-color: var(--teal);
+        color: #fff;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .card-header {
+        background-color: var(--navy);
+        color: #ffffff;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        font-size: 1rem;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+        background-color: white;
+    }
+
+    .table th {
+        background-color: #e8eefc;
+        color: var(--navy);
+    }
+
+    .table td, .table th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .btn-warning {
+        background-color: #f59e0b;
+        border: none;
+        color: #fff;
+    }
+
+    .btn-warning:hover {
+        background-color: #d97706;
+    }
+
+    .alert {
+        border-radius: 8px;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+        main {
+            margin-left: 0;
+        }
+    }
+</style>
+
+        <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
     </head>
     <body>
 
@@ -72,7 +124,7 @@
         <main>
             <div class="mb-4">
                 <h3 class="fw-bold text-success">
-                    <i class="bi bi-bar-chart-fill me-2"></i>Tenant Usage in the Month
+                    <i class="bi bi-bar-chart-fill me-2"></i>Usage Management
                 </h3>
                 <p class="text-muted fst-italic">Monthly usage statistics</p>
             </div>
@@ -145,14 +197,14 @@
                                     <td><%= u.getNewIndex() - u.getOldIndex()%></td>
                                     <td><%= u.getPriceUsed()%></td>
                                     <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(u.getReadingDate())%></td>
-                                   <td class="text-center">
-    <% if (!u.isLocked()) { %>
-    <a class="btn btn-sm btn-warning"
-       href="<%= ctx %>/admin/edit-reading?readingId=<%= u.getReadingId() %>">✏️</a>
-    <% } %>
-<!--    <a class="btn btn-sm btn-info"
-       href="<%= ctx %>/admin/edit-history?roomId=<%= u.getRoomId() %>&utilityTypeId=<%= u.getUtilityTypeId() %>&date=<%= u.getReadingDate() %>">🕓</a>-->
-</td>
+                                    <td class="text-center">
+                                        <% if (!u.isLocked()) { %>
+                                        <a class="btn btn-sm btn-warning"
+                                           href="<%= ctx %>/admin/edit-reading?readingId=<%= u.getReadingId() %>">✏️</a>
+                                        <% } %>
+                                        <!--    <a class="btn btn-sm btn-info"
+                                               href="<%= ctx %>/admin/edit-history?roomId=<%= u.getRoomId() %>&utilityTypeId=<%= u.getUtilityTypeId() %>&date=<%= u.getReadingDate() %>">🕓</a>-->
+                                    </td>
 
 
 
