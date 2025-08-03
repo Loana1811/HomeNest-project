@@ -162,6 +162,7 @@
             <a href="CustomerReport" class="btn btn-secondary">Cancel</a>
         </form>
     </c:if>
+          <%@include file = "/WEB-INF/inclu/footer.jsp" %>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

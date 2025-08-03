@@ -57,52 +57,7 @@
             <input type="number" step="0.01" min="0.01" name="price" id="utilityPrice" class="form-control" required />
         </div>
 
-        <!-- Select Rooms -->
-        <div class="mb-3">
-            <label class="form-label fw-bold d-flex justify-content-between align-items-center">
-                <span>✅ Select rooms to apply this utility</span>
-                <span>
-                    <input type="checkbox" id="selectAll" class="form-check-input me-1" onclick="toggleAllRooms(this)">
-                    <label for="selectAll" class="form-check-label">Select all</label>
-                </span>
-            </label>
-
-            <% if (blockRoomMap != null && !blockRoomMap.isEmpty()) {
-                for (Map.Entry<String, List<Object[]>> entry : blockRoomMap.entrySet()) {
-                    String blockName = entry.getKey();
-                    List<Object[]> roomList = entry.getValue();
-                    String blockId = blockName.replaceAll("\\s+", "_");
-            %>
-            <div class="mb-3 border rounded p-3 bg-light">
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="block_<%= blockId %>" onclick="toggleBlock('<%= blockId %>')">
-                    <label class="form-check-label fw-bold" for="block_<%= blockId %>">🏢 Block <%= blockName %></label>
-                </div>
-                <div class="row ms-2">
-                    <% for (Object[] room : roomList) {
-                        int roomId = (Integer) room[0];
-                        String roomName = (String) room[1];
-                        boolean isChecked = (Boolean) room[2];
-                    %>
-                    <div class="col-md-6 mb-2">
-                        <div class="form-check">
-                            <input class="form-check-input block_<%= blockId %> room-checkbox"
-                                   type="checkbox" name="roomIds" value="<%= roomId %>"
-                                   id="room_<%= roomId %>" <%= isChecked ? "checked" : "" %>>
-                            <label class="form-check-label" for="room_<%= roomId %>">
-                                Room <%= roomName %>
-                            </label>
-                        </div>
-                    </div>
-                    <% } %>
-                </div>
-            </div>
-            <% }
-            } else { %>
-            <div class="alert alert-info">⚠️ No rooms found.</div>
-            <% } %>
-        </div>
-    </div>
+       
 
     <div class="modal-footer">
         <button type="submit" class="btn btn-primary">💾 Save Changes</button>

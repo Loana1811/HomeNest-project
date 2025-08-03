@@ -139,12 +139,12 @@ response.sendRedirect(request.getContextPath() + "/manager/manage-requests?error
             notiDAO.insert(noti);
 
             // Gửi thông báo cho admin qua UserNotification
-            UserNotification notifyAdmin = new UserNotification();
+            Notification notifyAdmin = new Notification();
             Tenant tenant = tenantDAO.getTenantByCustomerId(rental.getCustomerID());
 String tenantId = (tenant != null) ? String.valueOf(tenant.getTenantID()) : "N/A";
 
-            notifyAdmin.setUserID(1); // Admin mặc định
-            notifyAdmin.setUserTitle("Yêu cầu thuê mới được duyệt");
+            notifyAdmin.setCustomerID(requestId); // Admin mặc định
+            notifyAdmin.setTitle("Yêu cầu thuê mới được duyệt");
             Customer customers = new CustomerDAO().getCustomerById(rental.getCustomerID());
             System.out.println(customers.getCustomerFullName());
             String customerName = (customers != null) ? customers.getCustomerFullName() : ("ID " + rental.getCustomerID());
@@ -154,14 +154,12 @@ String tenantId = (tenant != null) ? String.valueOf(tenant.getTenantID()) : "N/A
                     roomInfo,
                     tenantId
             );
-            notifyAdmin.setUserMessage(fullMessage);
-
-            notifyAdmin.setUserMessage(fullMessage);
+            notifyAdmin.setMessage(fullMessage);
 
             notifyAdmin.setSentBy(manager.getUserID());
             notifyAdmin.setRead(false);
-            notifyAdmin.setUserNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
-            userNotiDAO.createUserNotification(notifyAdmin);
+            notifyAdmin.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
+            //userNotiDAO.createUserNotification(notifyAdmin);
 
             response.sendRedirect(request.getContextPath() + "/manager/manage-requests?success=approve");
 

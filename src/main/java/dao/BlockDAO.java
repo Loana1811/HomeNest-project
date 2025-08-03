@@ -19,7 +19,7 @@ public class BlockDAO extends DBContext {
     // Lấy tất cả block
     public List<Block> getAllBlocks() {
         List<Block> list = new ArrayList<>();
-        String sql = "SELECT BlockID, BlockName, MaxRoom, RoomCount, BlockStatus FROM Blocks";
+        String sql = "SELECT BlockID, BlockName, RoomCount, AvailableRooms, BlockStatus FROM Blocks";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
@@ -27,8 +27,8 @@ public class BlockDAO extends DBContext {
                 list.add(new Block(
                         rs.getInt("BlockID"),
                         rs.getString("BlockName"),
-                        rs.getInt("MaxRoom"),
                         rs.getInt("RoomCount"),
+                        rs.getInt("AvailableRooms"),
                         rs.getString("BlockStatus")
                 ));
             }
@@ -41,7 +41,7 @@ public class BlockDAO extends DBContext {
 
     // Lấy block theo ID
     public Block getBlockById(int id) {
-        String sql = "SELECT BlockID, BlockName, MaxRoom, RoomCount, BlockStatus FROM Blocks WHERE BlockID = ?";
+        String sql = "SELECT BlockID, BlockName, RoomCount, AvailableRooms, BlockStatus FROM Blocks WHERE BlockID = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -51,8 +51,8 @@ public class BlockDAO extends DBContext {
                     return new Block(
                             rs.getInt("BlockID"),
                             rs.getString("BlockName"),
-                            rs.getInt("MaxRoom"),
                             rs.getInt("RoomCount"),
+                            rs.getInt("AvailableRooms"),
                             rs.getString("BlockStatus")
                     );
                 }
@@ -68,12 +68,11 @@ public class BlockDAO extends DBContext {
         if (isBlockNameExists(block.getBlockName())) {
             return false;
         }
-
-        String sql = "INSERT INTO Blocks (BlockName, MaxRoom, RoomCount, BlockStatus) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Blocks (BlockName, RoomCount, AvailableRooms, BlockStatus) VALUES (?, ?, ?, ?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, block.getBlockName());
-            ps.setInt(2, block.getMaxRooms());
-            ps.setInt(3, block.getRoomCount());
+            ps.setInt(2, block.getRoomCount());
+            ps.setInt(3, block.getAvailableRooms());
             ps.setString(4, block.getBlockStatus());
             ps.executeUpdate();
             return true;
@@ -83,41 +82,10 @@ public class BlockDAO extends DBContext {
         }
     }
 
-    // Cập nhật block
-    public void updateBlock(Block block) {
-        String sql = "UPDATE Blocks SET BlockName = ?, MaxRoom = ?, BlockStatus = ? WHERE BlockID = ?";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, block.getBlockName());
-            ps.setInt(2, block.getMaxRooms());
-            ps.setString(3, block.getBlockStatus());
-            ps.setInt(4, block.getBlockID());
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Xóa block
-    public void deleteBlock(int id) {
-        String sql = "DELETE FROM Blocks WHERE BlockID = ?";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public boolean isBlockNameExists(String blockName) {
         String sql = "SELECT 1 FROM Blocks WHERE BlockName = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, blockName);
+ps.setString(1, blockName);
             try ( ResultSet rs = ps.executeQuery()) {
                 return rs.next(); // có kết quả => tồn tại
             }
@@ -127,18 +95,26 @@ public class BlockDAO extends DBContext {
         return false;
     }
 
-    // Cập nhật số lượng phòng
-    public void updateRoomCount(int blockId) {
-        String sql = "UPDATE Blocks SET RoomCount = (SELECT COUNT(*) FROM Rooms WHERE BlockID = ?) WHERE BlockID = ?";
-
+    public void updateAvailableRooms(int blockId) {
+        String sql = "UPDATE Blocks SET AvailableRooms = (SELECT COUNT(*) FROM Rooms WHERE BlockID = ? AND Status = 'Available') WHERE BlockID = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, blockId);
             ps.setInt(2, blockId);
             ps.executeUpdate();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void updateRoomCount(int blockId) {
+        String sql = "UPDATE Blocks SET RoomCount = (SELECT COUNT(*) FROM Rooms WHERE BlockID = ?) WHERE BlockID = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, blockId);
+            ps.setInt(2, blockId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

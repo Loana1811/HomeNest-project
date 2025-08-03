@@ -25,6 +25,7 @@ import model.Notification;
 import model.RentalRequest;
 import model.Room;
 //nguoi dung gui 
+
 /**
  *
  * @author ADMIN
@@ -98,8 +99,8 @@ public class RentalRequestServlet extends HttpServlet {
 
             RentalRequestDAO requestDAO = new RentalRequestDAO();
 
-            if (requestDAO.existsPendingRequest(customerId, roomId)) {
-                response.sendRedirect("customer/room-detail?id=" + roomId + "&error=already_requested");
+            if (requestDAO.existsAnyPendingRequest(customerId)) {
+                response.sendRedirect("customer/room-detail?id=" + roomId + "&error=already_requested_any_room");
                 return;
             }
 

@@ -9,11 +9,13 @@
     String blockId = request.getParameter("blockId");
     String roomId = request.getParameter("roomId");
     String ctx = request.getContextPath();
+    Boolean isEditable = (Boolean) request.getAttribute("isEditable");
+    Boolean canCreateBill = (Boolean) request.getAttribute("canCreateBill");
 %>
 <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <html>
     <head>
-        <title>Quy trình lập hóa đơn 2 bước</title>
+        <title>2-Step Invoicing Process</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
@@ -176,10 +178,10 @@
                     <c:remove var="error" scope="session" />
                 </c:if>
 
-                <h2>Quy trình lập hóa đơn 2 bước</h2>
+                <h2>2-Step Invoicing Process</h2>
                 <div class="stepper">
-                    <div class="step <%= "1".equals(step) ? "active" : ""%>">1. Chốt dịch vụ</div>
-                    <div class="step <%= "2".equals(step) ? "active" : ""%>">2. Lập hóa đơn</div>
+                    <div class="step <%= "1".equals(step) ? "active" : ""%>">1. Service Closing</div>
+                    <div class="step <%= "2".equals(step) ? "active" : ""%>">2. Invoicing</div>
                 </div>
 
                 <!-- ==== BƯỚC 1 ==== -->
@@ -187,9 +189,9 @@
                     <form method="get" action="${pageContext.request.contextPath}/admin/bill">
                         <input type="hidden" name="action" value="step">
                         <input type="hidden" name="step" value="1">
-                        <label><b>Chọn Block:</b>
+                        <label><b>Select Block:</b>
                             <select name="blockId" onchange="this.form.submit()" class="form-select d-inline w-auto ms-2">
-                                <option value="">--Chọn block--</option>
+                                <option value="">--Select Block--</option>
                                 <c:forEach var="blk" items="${blockList}">
                                     <option value="${blk.blockID}" <c:if test="${blk.blockID == blockId || blk.blockID == param.blockId}">selected</c:if>>
                                         ${blk.blockName}
@@ -197,6 +199,21 @@
                                 </c:forEach>
                             </select>
                         </label>
+                        <form method="get" action="bill">
+    <input type="hidden" name="action" value="step" />
+    <input type="hidden" name="step" value="1" />
+
+    <label for="month">Select Room:</label>
+    <input type="month" name="month" id="month" value="${selectedMonth}" onchange="this.form.submit()"/>
+
+    <label for="blockId">Select Block:</label>
+    <select name="blockId" id="blockId" onchange="this.form.submit()">
+        <c:forEach var="b" items="${blockList}">
+            <option value="${b.blockID}" ${b.blockID == blockId ? 'selected' : ''}>${b.blockName}</option>
+        </c:forEach>
+    </select>
+</form>
+
                     </form>
 
                     <c:if test="${not empty blockId}">
@@ -212,8 +229,9 @@
                                                     <p>
                                                         <span class="badge ${room.hasBill ? 'bg-secondary' : room.hasRecord ? 'bg-success' : 'bg-warning'}">
                                                             <c:choose>
-                                                                <c:when test="${room.hasBill}">Đã lập hóa đơn</c:when>
-                                                                <c:when test="${room.hasRecord}">Đã chốt dịch vụ</c:when>
+                                                                <c:when test="${room.hasBill}">Invoiced</c:when>
+                                                                <c:when test="${room.hasRecord}">
+Service Closed</c:when>
                                                                 <c:otherwise>Chưa chốt</c:otherwise>
                                                             </c:choose>
                                                         </span>
@@ -221,15 +239,15 @@
                                                     <div>
                                                         <c:choose>
                                                             <c:when test="${room.hasBill}">
-                                                                <button class="btn btn-outline-secondary btn-sm" disabled>Đã lập bill</button>
+                                                                <button class="btn btn-outline-secondary btn-sm" disabled>Invoice has been created</button>
                                                             </c:when>
                                                             <c:when test="${room.hasRecord}">
                                                                 <a href="<%= ctx%>/admin/bill?step=2&action=step&blockId=${blockId}&roomId=${room.roomID}&contractId=${room.activeContractCode}&month=${selectedMonth}" 
-                                                                   class="btn btn-success btn-sm">Lập hóa đơn</a>
+                                                                   class="btn btn-success btn-sm">Make an invoice</a>
 
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <a href="<%= ctx%>/admin/utility?action=record&blockId=${blockId}&roomId=${room.roomID}" class="btn btn-primary btn-sm">Chốt</a>
+                                                                <a href="<%= ctx%>/admin/utility?action=record&blockId=${blockId}&roomId=${room.roomID}" class="btn btn-primary btn-sm">Service closure</a>
 
                                                             </c:otherwise>
                                                         </c:choose>
@@ -241,7 +259,7 @@
                                 </div>
                             </c:when>
                             <c:otherwise>
-                                <div class="alert alert-warning mt-4">Không có phòng nào có hợp đồng hoạt động trong block này.</div>
+                                    <div class="alert alert-warning mt-4">There are no rooms with active contracts in this block.</div>
                             </c:otherwise>
                         </c:choose>
                     </c:if>
@@ -258,46 +276,46 @@
                             <input type="hidden" name="contractId" value="${activeContract.contractId}" />
                             <input type="hidden" name="blockId" value="${blockId}" />
 
-                            <h3>Lập hóa đơn cho phòng: <span style="color:#1455b7">${room.roomNumber}</span></h3>
+                            <h3>Billing for rooms: <span style="color:#1455b7">${room.roomNumber}</span></h3>
 
                             <!-- Thông tin chung -->
                             <div class="row g-3 mb-3">
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold">Lý do thu tiền</label>
+                                    <label class="form-label fw-bold">Reason for collection</label>
                                     <select name="reason" class="form-select" required>
-                                        <option value="month">Thu hàng tháng</option>
-                                        <option value="first">Thu tháng đầu</option>
-                                        <option value="last">Thu tháng cuối</option>
+                                        <option value="month">Monthly collection</option>
+                                        <option value="first">Fall first month</option>
+                                        <option value="last">Fall last month</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label fw-bold">Tháng lập phiếu</label>
+                                    <label class="form-label fw-bold">Voting month</label>
                                     <input type="text" readonly class="form-control" value="<%= java.time.LocalDate.now().getMonthValue()%>/<%= java.time.LocalDate.now().getYear()%>">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Ngày lập hóa đơn</label>
+                                    <label class="form-label fw-bold">Invoice date</label>
                                     <input type="date" name="issueDate" class="form-control" value="<%= java.time.LocalDate.now()%>">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Hạn đóng tiền</label>
+                                    <label class="form-label fw-bold">Payment deadline</label>
                                     <input type="date" name="dueDate" class="form-control" value="<%= java.time.LocalDate.now().plusDays(10)%>">
                                 </div>
                             </div>
 
                             <!-- Hợp đồng -->
                             <div class="mb-2">
-                                <b>Giá tiền phòng:</b> <span style="color:#1976d2;font-size:1.15em">${room.rentPrice} đ</span>
+                                <b>Room price:</b> <span style="color:#1976d2;font-size:1.15em">${room.rentPrice} đ</span>
                             </div>
                             <div class="mb-2">
-                                <b>Ngày vào:</b> ${activeContract.startDate} | 
-                                <b>Đến ngày:</b> ${activeContract.endDate}
+                                <b>Entry date:</b> ${activeContract.startDate} | 
+                                <b>Come day:</b> ${activeContract.endDate}
                             </div>
 
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Điện</th>
-                                        <th>Nước</th>
+                                        <th>Electricity</th>
+                                        <th>Water</th>
                                         <th>Wifi</th>
                                         <th>Rác</th>
                                     </tr>
@@ -330,16 +348,16 @@
 
 
                             <!-- Tiện ích -->
-                            <div class="section-title fw-bold mt-3">Chi tiết tiện ích</div>
+                            <div class="section-title fw-bold mt-3">Utility details</div>
                             <table class="table table-bordered align-middle">
                                 <thead>
                                     <tr>
-                                        <th>Dịch vụ</th>
-                                        <th>Đơn giá</th>
-                                        <th>Chỉ số cũ</th>
-                                        <th>Chỉ số mới</th>
-                                        <th>Số sử dụng</th>
-                                        <th>Thành tiền</th>
+                                        <th>Service</th>
+                                        <th>Price</th>
+                                        <th>Old index</th>
+                                        <th>New index</th>
+                                        <th>Usage number</th>
+                                        <th>Make money</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -414,15 +432,15 @@
 
                             <!-- Nút -->
                             <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">Thêm hóa đơn</button>
-                                <a class="btn btn-outline-secondary" href="<%= ctx%>/admin/bill?step=1&action=step&blockId=${blockId}">Quay lại bước 1</a>
+                                <button type="submit" class="btn btn-primary">Create Bill</button>
+                                <a class="btn btn-outline-secondary" href="<%= ctx%>/admin/bill?step=1&action=step&blockId=${blockId}">Back to step 1</a>
                             </div>
                         </form>
 
                     </c:if>
                     <c:if test="${empty room || empty utilityTypes}">
-                        <div class="alert alert-warning">❗ Dữ liệu chưa đủ hoặc không hợp lệ. Vui lòng chọn phòng đã chốt dịch vụ từ bước 1.</div>
-                        <a class="btn btn-secondary" href="${ctx}/admin/bill?step=1&action=step&blockId=${blockId}">Quay lại bước 1</a>
+                        <div class="alert alert-warning">❗ Insufficient or invalid data. Please select the room that has been booked from step 1..</div>
+                        <a class="btn btn-secondary" href="${ctx}/admin/bill?step=1&action=step&blockId=${blockId}">Back to step 1</a>
                     </c:if>
                 </c:if>
             </div>

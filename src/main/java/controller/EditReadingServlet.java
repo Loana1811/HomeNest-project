@@ -13,6 +13,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import model.UtilityReading;
@@ -29,6 +30,19 @@ public class EditReadingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        String ctx = req.getContextPath();
+        if (session == null || session.getAttribute("idUser") == null) {
+            resp.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+        String userType = (String) session.getAttribute("userType");
+        String roleName = (String) session.getAttribute("roleName");
+        if (!"User".equalsIgnoreCase(userType) || !"Admin".equalsIgnoreCase(roleName)) {
+            resp.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+
         try {
             int id = Integer.parseInt(req.getParameter("readingId"));
             UtilityReading ur = dao.getUtilityReadingById(id);
@@ -48,6 +62,19 @@ public class EditReadingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        String ctx = req.getContextPath();
+        if (session == null || session.getAttribute("idUser") == null) {
+            resp.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+        String userType = (String) session.getAttribute("userType");
+        String roleName = (String) session.getAttribute("roleName");
+        if (!"User".equalsIgnoreCase(userType) || !"Admin".equalsIgnoreCase(roleName)) {
+            resp.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+
         try {
             int id = Integer.parseInt(req.getParameter("readingId"));
             double newReading = Double.parseDouble(req.getParameter("newReading"));
@@ -58,29 +85,33 @@ public class EditReadingServlet extends HttpServlet {
                 throw new Exception("Không thể sửa bản ghi này.");
             }
 
-            double oldReading = ur.getOldReading().doubleValue();
-            double used = newReading - oldReading;
+        double oldReading = ur.getOldReading().doubleValue();
+double used = newReading - oldReading;
 
-            // Cập nhật chỉ số mới và giá
-            ur.setNewReading(BigDecimal.valueOf(newReading));
-            ur.setPriceUsed(ur.getPriceUsed().multiply(BigDecimal.valueOf(used)));
+BigDecimal priceToUse = ur.getOldPrice();  // lấy giá đã lưu trước đó
+if (priceToUse == null || priceToUse.compareTo(BigDecimal.ZERO) == 0) {
+    // fallback nếu OldPrice chưa có (do dữ liệu cũ)
+    priceToUse = dao.getEffectivePrice(ur.getUtilityTypeID(), ur.getReadingDate().toLocalDate());
+    ur.setOldPrice(priceToUse); // lưu lại vào DB nếu cần
+}
 
-            // Nếu bạn đã bỏ ChangedBy thì dòng này nên bỏ hoặc comment
-            // ur.setChangedBy(" | Lý do: " + reason);
+BigDecimal priceUsed = BigDecimal.valueOf(used).multiply(priceToUse);
+
+ur.setNewReading(BigDecimal.valueOf(newReading));
+ur.setPriceUsed(priceUsed);
+
+
             dao.updateReading(ur);
             resp.sendRedirect(req.getContextPath() + "/admin/usage");
 
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());
-
-            // ❗️ Sửa lỗi NullPointerException tại JSP
             try {
                 int id = Integer.parseInt(req.getParameter("readingId"));
                 UtilityReading ur = dao.getUtilityReadingById(id);
                 req.setAttribute("reading", ur);
             } catch (Exception ignored) {
             }
-
             req.getRequestDispatcher("/admin/edit-reading.jsp").forward(req, resp);
         }
     }

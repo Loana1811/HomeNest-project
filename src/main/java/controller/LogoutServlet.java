@@ -56,26 +56,14 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession(false); // Get session, don't create new one
+
         if (session != null) {
             session.invalidate();
         }
 
-        // Xoá cookie username nếu có
-        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (jakarta.servlet.http.Cookie cookie : cookies) {
-                if (cookie.getName().equals("username")) {
-                    cookie.setMaxAge(0); // Xoá cookie
-                    cookie.setPath("/"); // Đảm bảo path đúng
-                    response.addCookie(cookie);
-                }
-            }
-        }
-
-        // Chuyển về trang đăng nhập
         response.sendRedirect(request.getContextPath() + "/Login");
-    }
+    } 
     
 
     /** 

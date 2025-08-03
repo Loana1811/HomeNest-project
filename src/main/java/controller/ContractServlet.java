@@ -16,6 +16,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -75,80 +76,254 @@ public class ContractServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
         String action = request.getParameter("action");
+        ContractDAO contractDAO = new ContractDAO();
 
-        if (action == null || action.equals("list")) {
-            ContractDAO contractDAO = new ContractDAO();
-            List<Contract> contracts = contractDAO.getAllContracts();
-            request.setAttribute("contracts", contracts);
-            request.getRequestDispatcher("/admin/listContract.jsp").forward(request, response);
-        } else if (action.equals("create")) {
-            TenantDAO tenantDAO = new TenantDAO();
-            RoomDAO roomDAO = new RoomDAO();
-            List<Tenant> tenants = tenantDAO.getAllTenants();
-            List<Room> rooms = roomDAO.getAllRooms(); // Sử dụng getAllRooms thay vì getAvailableRooms
-            request.setAttribute("tenants", tenants);
-            request.setAttribute("rooms", rooms);
-            request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
-        } else if (action.equals("edit")) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            ContractDAO contractDAO = new ContractDAO();
-            Contract contract = contractDAO.getContractById(id);
-            RoomDAO roomDAO = new RoomDAO();
-            List<Room> rooms = roomDAO.getAllRooms(); // Lấy tất cả phòng để chọn
-            request.setAttribute("rooms", rooms);
-            request.setAttribute("contract", contract);
-            request.getRequestDispatcher("/admin/editContract.jsp").forward(request, response);
-        } else if ("view".equals(action)) {
-            String idParam = request.getParameter("id");
-            if (idParam == null || idParam.isEmpty()) {
-                response.sendRedirect("Contracts");
-                return;
-            }
+        // ✅ Phân quyền truy cập: ADMIN / MANAGER
+        if (session.getAttribute("idUser") != null) {
+            int roleID = (int) session.getAttribute("roleID"); // bạn có thể dùng roleName thay thế
 
-            int contractId = Integer.parseInt(idParam);
-            ContractDAO contractDAO = new ContractDAO();
-            TenantDAO tenantDAO = new TenantDAO();
-            RoomDAO roomDAO = new RoomDAO();
-            CustomerDAO customerDAO = new CustomerDAO();
+            // Các chức năng của ADMIN và MANAGER
+            if (action == null || action.equals("list")) {
+                List<Contract> contracts = contractDAO.getAllContracts();
+                request.setAttribute("contracts", contracts);
+                request.getRequestDispatcher("/admin/listContract.jsp").forward(request, response);
+            } else if (action.equals("create")) {
+                TenantDAO tenantDAO = new TenantDAO();
+                RoomDAO roomDAO = new RoomDAO();
+                List<Tenant> tenants = tenantDAO.getAllTenants();
+                List<Room> rooms = roomDAO.getAllRooms();
+                request.setAttribute("tenants", tenants);
+                request.setAttribute("rooms", rooms);
+                request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
+            } else if (action.equals("edit")) {
+                String idParam = request.getParameter("id");
+                if (idParam == null || idParam.trim().isEmpty()) {
+                    response.sendRedirect("Contracts?action=list");
+                    return;
+                }
+                int id = Integer.parseInt(idParam);
+                Contract contract = contractDAO.getContractById(id);
+                RoomDAO roomDAO = new RoomDAO();
+                List<Room> rooms = roomDAO.getAllRooms();
+                request.setAttribute("rooms", rooms);
+                request.setAttribute("contract", contract);
+                request.getRequestDispatcher("/admin/editContract.jsp").forward(request, response);
+            } else if (action.equals("view")) {
+                String idParam = request.getParameter("id");
+                if (idParam == null || idParam.trim().isEmpty()) {
+                    response.sendRedirect("Contracts");
+                    return;
+                }
 
-            Contract contract = contractDAO.getContractById(contractId);
-            Tenant tenant = tenantDAO.getTenantById(contract.getTenantId());
-            Room room = roomDAO.getRoomById(contract.getRoomId());
-            Customer customer = null;
-            try {
-                customer = customerDAO.getCustomerById(tenant.getCustomerID());
-            } catch (SQLException ex) {
-                Logger.getLogger(ContractServlet.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                int contractId = Integer.parseInt(idParam);
+                TenantDAO tenantDAO = new TenantDAO();
+                RoomDAO roomDAO = new RoomDAO();
+                CustomerDAO customerDAO = new CustomerDAO();
 
-            // Đảm bảo tất cả dữ liệu được truyền
-            if (contract == null || tenant == null || room == null || customer == null) {
-                request.setAttribute("error", "Dữ liệu hợp đồng không đầy đủ.");
-                response.sendRedirect("Contracts");
-                return;
-            }
+                Contract contract = contractDAO.getContractById(contractId);
+                Tenant tenant = tenantDAO.getTenantById(contract.getTenantId());
+                Room room = roomDAO.getRoomById(contract.getRoomId());
+                Customer customer = null;
+                try {
+                    customer = customerDAO.getCustomerById(tenant.getCustomerID());
+                } catch (SQLException ex) {
+                    Logger.getLogger(ContractServlet.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
-            request.setAttribute("contract", contract);
-            request.setAttribute("tenant", tenant);
-            request.setAttribute("room", room);
-            request.setAttribute("customer", customer);
+                if (contract == null || tenant == null || room == null || customer == null) {
+                    request.setAttribute("error", "Dữ liệu hợp đồng không đầy đủ.");
+                    response.sendRedirect("Contracts");
+                    return;
+                }
 
-            request.getRequestDispatcher("/admin/viewDetail.jsp").forward(request, response);
-        } else if ("history".equals(action)) {
-            String tenantIdParam = request.getParameter("tenantId");
-            if (tenantIdParam == null || tenantIdParam.trim().isEmpty()) {
+                request.setAttribute("contract", contract);
+                request.setAttribute("tenant", tenant);
+                request.setAttribute("room", room);
+                request.setAttribute("customer", customer);
+                request.getRequestDispatcher("/admin/viewDetail.jsp").forward(request, response);
+            } else if (action.equals("history")) {
+                String tenantIdParam = request.getParameter("tenantId");
+                if (tenantIdParam == null || tenantIdParam.trim().isEmpty()) {
+                    response.sendRedirect("Contracts?action=list");
+                    return;
+                }
+
+                int tenantId = Integer.parseInt(tenantIdParam);
+                List<Contract> historyContracts = contractDAO.getContractHistoryByTenantId(tenantId);
+                request.setAttribute("contracts", historyContracts);
+                request.getRequestDispatcher("/admin/historyContract.jsp").forward(request, response);
+            } else if ("viewDetail".equals(action)) {
+                int contractId = Integer.parseInt(request.getParameter("id"));
+                Contract contract = contractDAO.getContractById(contractId);
+                request.setAttribute("contract", contract);
+                request.getRequestDispatcher("/customer/viewContracts.jsp").forward(request, response);
+            } else if (action.equals("createFromRequest")) {
+                String customerIdParam = request.getParameter("customerId");
+                String roomIdParam = request.getParameter("roomId");
+
+                if (customerIdParam == null || roomIdParam == null) {
+                    response.sendRedirect("Contracts?action=list");
+                    return;
+                }
+
+                try {
+                    int customerId = Integer.parseInt(customerIdParam);
+                    int roomId = Integer.parseInt(roomIdParam);
+
+                    TenantDAO tenantDAO = new TenantDAO();
+                    RoomDAO roomDAO = new RoomDAO();
+                    CustomerDAO customerDAO = new CustomerDAO();
+
+                    Tenant tenant = tenantDAO.getTenantByCustomerId(customerId);
+                    Room room = roomDAO.getRoomById(roomId);
+                    Customer customer = customerDAO.getCustomerById(customerId);
+
+                    if (tenant == null || room == null || customer == null) {
+                        request.setAttribute("error", "Không thể tạo hợp đồng do thiếu thông tin.");
+                        response.sendRedirect("Contracts?action=list");
+                        return;
+                    }
+
+                    request.setAttribute("tenant", tenant);
+                    request.setAttribute("room", room);
+                    request.setAttribute("customer", customer);
+                    request.getRequestDispatcher("/admin/createContract.jsp").forward(request, response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("Contracts?action=list");
+                }
+            } else {
                 response.sendRedirect("Contracts?action=list");
-                return;
             }
 
-            int tenantId = Integer.parseInt(tenantIdParam);
-            ContractDAO contractDAO = new ContractDAO();
-            List<Contract> historyContracts = contractDAO.getContractHistoryByTenantId(tenantId);
-            request.setAttribute("contracts", historyContracts);
-            request.getRequestDispatcher("/admin/historyContract.jsp").forward(request, response);
-        }
+        } // ✅ Phân quyền: CUSTOMER
+        else if (session.getAttribute("idCustomer") != null) {
+            int customerId = (int) session.getAttribute("idCustomer");
+            String idParam = request.getParameter("id");
 
+            if (session.getAttribute("idCustomer") != null) {
+
+                System.out.println("Customer ID in session: " + customerId);
+            } else if (session.getAttribute("idUser") != null) {
+                System.out.println("User ID in session: " + session.getAttribute("idUser"));
+            } else {
+                System.out.println("No user or customer logged in.");
+            }
+
+            if ("viewCustomer".equals(action)) {
+                try {
+                    int customerIdOrContractId = Integer.parseInt(idParam);
+                    ContractDAO contractDAOs = new ContractDAO();
+                    TenantDAO tenantDAO = new TenantDAO();
+                    CustomerDAO customerDAO = new CustomerDAO();
+
+                    int tenantId = -1;
+                    if (request.getParameter("contractId") != null) {
+                        int contractId = Integer.parseInt(request.getParameter("contractId"));
+                        Contract contract = contractDAOs.getContractById(contractId);
+                        if (contract != null) {
+                            tenantId = contract.getTenantId();
+                            Tenant tenant = tenantDAO.getTenantById(tenantId);
+                            if (tenant != null) {
+                                customerId = tenant.getCustomerID();
+                            }
+                        }
+                    } else {
+                        Tenant tenant = tenantDAO.getTenantByCustomerId(customerId);
+                        if (tenant != null) {
+                            tenantId = tenant.getTenantID();
+                        }
+                    }
+
+                    if (tenantId == -1) {
+                        request.setAttribute("error", "Không tìm thấy khách hàng liên quan.");
+                        request.getRequestDispatcher("/customer/viewContracts.jsp").forward(request, response);
+                        return;
+                    }
+
+                    List<Contract> contracts = contractDAOs.getContractsByCustomerId(customerId);
+                    Customer customer = new CustomerDAO().getCustomerById(customerId);
+                    request.setAttribute("customer", customer);
+                    request.setAttribute("contracts", contracts);
+
+                    if (request.getParameter("contractId") != null) {
+                        int contractId = Integer.parseInt(request.getParameter("contractId"));
+                        request.setAttribute("highlightContractId", contractId);
+                    } else if (contracts != null && !contracts.isEmpty()) {
+                        request.setAttribute("highlightContractId", contracts.get(0).getContractId());
+                    }
+
+                } catch (Exception e) {
+                    request.setAttribute("error", "Lỗi xử lý: " + e.getMessage());
+                }
+
+                request.getRequestDispatcher("/customer/viewContracts.jsp").forward(request, response);
+            } else if ("viewHistoryCustomer".equals(action)) {
+                try {
+                    TenantDAO tenantDAO = new TenantDAO();
+                    Tenant tenant = tenantDAO.getTenantByCustomerId(customerId);
+                    if (tenant == null) {
+                        request.setAttribute("error", "Không tìm thấy người thuê.");
+                        request.getRequestDispatcher("/customer/viewHistoryContract.jsp").forward(request, response);
+                        return;
+                    }
+
+                    int tenantId = tenant.getTenantID();
+                    List<Contract> historyContracts = contractDAO.getContractHistoryByTenantId(tenantId);
+                    Customer customer = new CustomerDAO().getCustomerById(customerId);
+
+                    request.setAttribute("contracts", historyContracts);
+                    request.setAttribute("customer", customer);
+                    request.setAttribute("tenant", tenant);
+                    request.getRequestDispatcher("/customer/viewHistoryContract.jsp").forward(request, response);
+                } catch (SQLException ex) {
+                    Logger.getLogger(ContractServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    request.setAttribute("error", "Không lấy được lịch sử hợp đồng.");
+                    request.getRequestDispatcher("/customer/viewHistoryContract.jsp").forward(request, response);
+                }
+            } else if ("accept".equals(action) || "reject".equals(action)) {
+                int contractId = Integer.parseInt(request.getParameter("id"));
+                String newStatus = "accept".equals(action) ? "Active" : "Terminated";
+
+                try {
+                    boolean updated = contractDAO.updateContractStatus(contractId, newStatus);
+
+                    if (updated) {
+                        Contract contract = contractDAO.getContractById(contractId);
+                        RoomDAO roomDAO = new RoomDAO();
+                        if ("accept".equals(action)) {
+                            roomDAO.updateRoomStatus(contract.getRoomId(), "Occupied");
+                            request.setAttribute("message", "Hợp đồng đã được chấp nhận.");
+                        } else {
+                            request.setAttribute("message", "Hợp đồng đã bị từ chối.");
+                        }
+
+                        // Gửi thông báo
+                        Notification noti = new Notification();
+                        Tenant tenant = new TenantDAO().getTenantById(contract.getTenantId());
+                        noti.setCustomerID(tenant.getCustomerID());
+                        noti.setTitle("Hợp đồng #" + contractId + " đã được " + ("accept".equals(action) ? "chấp nhận" : "từ chối"));
+                        noti.setMessage(noti.getTitle());
+                        noti.setSentBy(1);
+                        noti.setRead(false);
+                        noti.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
+                        new NotificationDAO().insertNotification(noti);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    request.setAttribute("error", "Không thể cập nhật hợp đồng.");
+                }
+
+                request.getRequestDispatcher("/customer/viewContracts.jsp").forward(request, response);
+            }
+
+        } else {
+            // ❌ Không đăng nhập → Redirect đến trang login
+            response.sendRedirect("Login");
+        }
     }
 
     /**
@@ -171,7 +346,6 @@ public class ContractServlet extends HttpServlet {
                 String startDateStr = request.getParameter("startDate");
                 String endDateStr = request.getParameter("endDate");
 
-                // Kiểm tra dữ liệu rỗng
                 if (tenantIdStr == null || tenantIdStr.isEmpty()
                         || roomIdStr == null || roomIdStr.isEmpty()
                         || startDateStr == null || startDateStr.isEmpty()
@@ -186,9 +360,8 @@ public class ContractServlet extends HttpServlet {
                 int tenantId = Integer.parseInt(tenantIdStr);
                 int roomId = Integer.parseInt(roomIdStr);
                 Date startDate = Date.valueOf(startDateStr);
-                Date endDate = Date.valueOf(endDateStr); // endDate là bắt buộc
+                Date endDate = Date.valueOf(endDateStr);
 
-                // Kiểm tra ngày bắt đầu không sau ngày kết thúc
                 if (startDate.after(endDate)) {
                     request.setAttribute("error", "Start date cannot be after end date.");
                     loadContractFormData(request);
@@ -196,9 +369,7 @@ public class ContractServlet extends HttpServlet {
                     return;
                 }
 
-                // Kiểm tra khoảng cách ít nhất 30 ngày
-                long diffMillis = endDate.getTime() - startDate.getTime();
-                long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+                long diffDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
                 if (diffDays < 30) {
                     request.setAttribute("error", "The contract must be at least 30 days long.");
                     loadContractFormData(request);
@@ -206,23 +377,39 @@ public class ContractServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = this.contractDAO.addContract(tenantId, roomId, startDate, endDate);
+                int contractId = this.contractDAO.addContract(tenantId, roomId, startDate, endDate);
+                if (contractId != -1) {
+                    // Gửi thông báo tại đây
+                    Room room = new RoomDAO().getRoomById(roomId);
+                    Tenant tenant = new TenantDAO().getTenantById(tenantId);
 
-                if (success) {
-                    // ✅ Gửi thông báo cho Customer
-                    TenantDAO tenantDAO = new TenantDAO();
-                    Tenant tenant = tenantDAO.getTenantById(tenantId);
+                    if (room != null && tenant != null) {
+                        Notification noti = new Notification();
+                        noti.setCustomerID(tenant.getCustomerID());
+                        noti.setTitle("Hợp đồng mới đang chờ phản hồi");
 
-                    Notification notifyCustomer = new Notification();
-                    notifyCustomer.setCustomerID(tenant.getCustomerID());
-                    notifyCustomer.setTitle("Hợp đồng đã được tạo");
-                    notifyCustomer.setMessage("Hợp đồng thuê phòng " + roomId + " của bạn đã được tạo thành công.");
-                    notifyCustomer.setSentBy(1); // Admin
-                    notifyCustomer.setRead(false);
-                    notifyCustomer.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
+                        String detailLink = String.format(
+                                "<a href='http://localhost:8080/HomeNest/Contracts?action=viewCustomer&id=%d&contractId=%d' target='_blank'>Xem chi tiết hợp đồng</a>",
+                                tenant.getCustomerID(),
+                                contractId
+                        );
+                        noti.setMessage(String.format(
+                                "Hợp đồng thuê phòng %s (Giá: %sđ, Diện tích: %.1fm², Vị trí: %s, Block: %d) đã được tạo. "
+                                + "Vui lòng phản hồi trong vòng 3 ngày. %s",
+                                room.getRoomNumber(),
+                                room.getRentPrice(),
+                                room.getArea(),
+                                room.getLocation(),
+                                room.getBlockID(),
+                                detailLink
+                        ));
 
-                    NotificationDAO notiDAO = new NotificationDAO();
-                    notiDAO.insertNotification(notifyCustomer);
+                        noti.setSentBy(1);
+                        noti.setRead(false);
+                        noti.setNotificationCreatedAt(new Timestamp(System.currentTimeMillis()));
+
+                        new NotificationDAO().insertNotification(noti);
+                    }
 
                     response.sendRedirect(request.getContextPath() + "/Contracts?action=list");
                 } else {
@@ -245,7 +432,6 @@ public class ContractServlet extends HttpServlet {
                 Date startDate = Date.valueOf(request.getParameter("startDate"));
                 String endDateStr = request.getParameter("endDate");
                 String status = request.getParameter("status");
-
                 Date endDate = (endDateStr == null || endDateStr.isEmpty()) ? null : Date.valueOf(endDateStr);
 
                 Contract contract = new Contract();

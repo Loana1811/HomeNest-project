@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import model.User;
 import model.Block;            // THÊM DÒNG NÀY
 
@@ -18,9 +19,25 @@ import java.util.List;         // THÊM DÒNG NÀY
 public class EditUserServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
 
-    @Override
+   @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // ✅ Check quyền truy cập
+        HttpSession session = request.getSession(false);
+        String ctx = request.getContextPath();
+        if (session == null || session.getAttribute("idUser") == null) {
+            response.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+        String userType = (String) session.getAttribute("userType");
+        String roleName = (String) session.getAttribute("roleName");
+        if (!"User".equalsIgnoreCase(userType) || !"Admin".equalsIgnoreCase(roleName)) {
+            response.sendRedirect(ctx + "/error.jsp");
+            return;
+        }
+
+        // ✅ Xử lý logic chỉnh sửa user
         String userIDStr = request.getParameter("userID");
 
         try {
@@ -29,10 +46,9 @@ public class EditUserServlet extends HttpServlet {
                 User user = userDAO.getUserById(userID);
 
                 if (user != null) {
-                    // LẤY DANH SÁCH BLOCKS VÀ TRUYỀN LÊN
                     List<Block> blockList = new BlockDAO().getAllBlocks();
                     request.setAttribute("user", user);
-                    request.setAttribute("blockList", blockList);    // TRUYỀN blockList lên JSP
+                    request.setAttribute("blockList", blockList);
                     request.getRequestDispatcher("/admin/editUser.jsp").forward(request, response);
                     return;
                 }

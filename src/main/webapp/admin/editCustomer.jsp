@@ -5,7 +5,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chỉnh sửa khách hàng</title>
+    <title>Edit Customer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
     <style>
@@ -89,10 +89,10 @@
 </head>
 <body>
    <div class="edit-container">
-        <div class="form-header">
-            <h2><i class="fas fa-user-edit"></i> Chỉnh sửa khách hàng</h2>
-            <p>Cập nhật thông tin và chi tiết khách hàng</p>
-        </div>
+     <div class="form-header">
+<h2><i class="fas fa-user-edit"></i> Edit Customer</h2>
+<p>Update Customer Information and Details</p>
+</div>
 
         <c:if test="${not empty error}">
             <div class="alert alert-danger" role="alert">
@@ -109,7 +109,7 @@
 
             <div class="form-section">
                 <div class="section-title">
-                    <i class="fas fa-user"></i> Thông tin cơ bản
+                    <i class="fas fa-user"></i> Basic info
                 </div>
                 <div class="row">
                     <div class="col-md-6">
@@ -117,7 +117,7 @@
                             <input type="text" id="customerFullName" name="fullName" class="form-control"
                                    placeholder="Họ tên đầy đủ" required 
                                    value="${not empty param.fullName ? param.fullName : (not empty requestScope.formFullName ? requestScope.formFullName : customer.customerFullName)}"/>
-                            <label for="customerFullName">Họ tên đầy đủ <span class="required">*</span></label>
+                            <label for="customerFullName">Full Name <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -126,7 +126,7 @@
                             <input type="email" id="email" name="email" class="form-control"
                                    placeholder="Địa chỉ Email" required 
                                    value="${not empty param.email ? param.email : (not empty requestScope.formEmail ? requestScope.formEmail : customer.email)}"/>
-                            <label for="email">Địa chỉ Email <span class="required">*</span></label>
+                            <label for="email">Email <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
                             <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control"
                                    placeholder="Số điện thoại" required 
                                    value="${not empty param.phoneNumber ? param.phoneNumber : (not empty requestScope.formPhoneNumber ? requestScope.formPhoneNumber : customer.phoneNumber)}"/>
-                            <label for="phoneNumber">Số điện thoại <span class="required">*</span></label>
+                            <label for="phoneNumber">Phone <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
                             <input type="text" id="cccd" name="cccd" class="form-control"
                                    placeholder="Số CCCD" 
                                    value="${not empty param.cccd ? param.cccd : (not empty requestScope.formCCCD ? requestScope.formCCCD : customer.CCCD)}"/>
-                            <label for="cccd">Số CCCD (CMND)</label>
+                            <label for="cccd">CCCD</label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -155,18 +155,18 @@
 
             <div class="form-section">
                 <div class="section-title">
-                    <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                    <i class="fas fa-info-circle"></i> Personal information
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-floating mb-3">
                             <select id="gender" name="gender" class="form-select">
-                                <option value="">Chọn giới tính</option>
-                                <option value="Male" <c:if test="${not empty param.gender and param.gender == 'Male' or not empty requestScope.formGender and requestScope.formGender == 'Male' or customer.gender == 'Male'}">selected</c:if>>Nam</option>
-                                <option value="Female" <c:if test="${not empty param.gender and param.gender == 'Female' or not empty requestScope.formGender and requestScope.formGender == 'Female' or customer.gender == 'Female'}">selected</c:if>>Nữ</option>
-                                <option value="Other" <c:if test="${not empty param.gender and param.gender == 'Other' or not empty requestScope.formGender and requestScope.formGender == 'Other' or customer.gender == 'Other'}">selected</c:if>>Khác</option>
+                                <option value="">Select Gender</option>
+                                <option value="Male" <c:if test="${not empty param.gender and param.gender == 'Male' or not empty requestScope.formGender and requestScope.formGender == 'Male' or customer.gender == 'Male'}">selected</c:if>>Male</option>
+                                <option value="Female" <c:if test="${not empty param.gender and param.gender == 'Female' or not empty requestScope.formGender and requestScope.formGender == 'Female' or customer.gender == 'Female'}">selected</c:if>>Female</option>
+                                <option value="Other" <c:if test="${not empty param.gender and param.gender == 'Other' or not empty requestScope.formGender and requestScope.formGender == 'Other' or customer.gender == 'Other'}">selected</c:if>>Other</option>
                             </select>
-                            <label for="gender">Giới tính</label>
+                            <label for="gender">Gender</label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -175,40 +175,40 @@
                             <input type="date" id="birthDate" name="birthDate" class="form-control"
                                    placeholder="Ngày sinh" 
                                    value="${not empty param.birthDate ? param.birthDate : (not empty requestScope.formBirthDate ? requestScope.formBirthDate : customer.birthDate)}"/>
-                            <label for="birthDate">Ngày sinh</label>
+                            <label for="birthDate">BirthDate</label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-floating mb-3">
                             <select id="customerStatus" name="status" class="form-select" required>
-                                <option value="">Chọn trạng thái</option>
-                                <option value="Active" <c:if test="${not empty param.status and param.status == 'Active' or not empty requestScope.formStatus and requestScope.formStatus == 'Active' or customer.customerStatus == 'Active'}">selected</c:if>>Hoạt động</option>
-                                <option value="Disable" <c:if test="${not empty param.status and param.status == 'Disable' or not empty requestScope.formStatus and requestScope.formStatus == 'Disable' or customer.customerStatus == 'Disable'}">selected</c:if>>Ngưng hoạt động</option>
+                                <option value="">Select Status</option>
+                                <option value="Active" <c:if test="${not empty param.status and param.status == 'Active' or not empty requestScope.formStatus and requestScope.formStatus == 'Active' or customer.customerStatus == 'Active'}">selected</c:if>>Active</option>
+                                <option value="Disable" <c:if test="${not empty param.status and param.status == 'Disable' or not empty requestScope.formStatus and requestScope.formStatus == 'Disable' or customer.customerStatus == 'Disable'}">selected</c:if>>Inactive</option>
                             </select>
-                            <label for="customerStatus">Trạng thái <span class="required">*</span></label>
+                            <label for="customerStatus">Status <span class="required">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="status-question">
                             <i class="fas fa-question-circle"></i>
-                            Đổi trạng thái? Bạn cần nhập lý do khi thay đổi trạng thái.
+                           Change status? You need to enter a reason when changing status.
                         </div>
                     </div>
                 </div>
                 <div class="form-floating mb-3">
                     <textarea id="address" name="address" class="form-control" placeholder="Địa chỉ"
                               style="height: 100px">${not empty param.address ? param.address : (not empty requestScope.formAddress ? requestScope.formAddress : customer.address)}</textarea>
-                    <label for="address">Địa chỉ</label>
+                    <label for="address">Address</label>
                     <div class="invalid-feedback"></div>
                 </div>
             </div>
 
             <div class="btn-group-custom">
                 <button type="submit" class="btn btn-primary btn-custom">
-                    <i class="fas fa-save me-2"></i> Cập nhật khách hàng
+                    <i class="fas fa-save me-2"></i> Edit customer
                 </button>
                 <a href="${pageContext.request.contextPath}/admin/account" class="btn btn-secondary btn-custom">
-                    <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
+                    <i class="fas fa-arrow-left me-2"></i> Back to the list
                 </a>
             </div>
         </form>
@@ -219,19 +219,19 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="reasonModalLabel">Lý Do Thay Đổi Trạng Thái</h5>
+                    <h5 class="modal-title" id="reasonModalLabel">Reason for Status Change</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="statusChangeReason" class="form-label">Lý do</label>
+                        <label for="statusChangeReason" class="form-label">Reason</label>
                         <textarea class="form-control" id="statusChangeReason" name="reason" rows="3" required placeholder="Nhập lý do thay đổi trạng thái (tối thiểu 5 ký tự)"></textarea>
-                        <div class="invalid-feedback">Lý do là bắt buộc và phải có ít nhất 5 ký tự.</div>
+                        <div class="invalid-feedback">Reason is required and must be at least 5 characters.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" id="confirmStatusChange">Xác nhận</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirm</button>
                 </div>
             </div>
         </div>
@@ -242,7 +242,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="errorModalLabel">Lỗi</h5>
+                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body" id="errorModalMessage"></div>

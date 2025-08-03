@@ -38,6 +38,12 @@ public class ManagerNotification extends HttpServlet {
         Integer userId = (Integer) session.getAttribute("idUser");
         Integer roleID = (Integer) session.getAttribute("roleID");
 
+        if (userId == null || roleID == null || roleID != 2) { // Only managers (roleID = 2)
+            LOGGER.warning("Unauthorized access to manager notification, userId: " + userId + ", roleID=" + roleID);
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
+
         // Log session attributes and request parameter
         String idManagerParam = request.getParameter("idManager");
         LOGGER.info("doGet - Session: idUser=" + userId + ", roleID=" + roleID + ", idManagerParam=" + idManagerParam);
@@ -172,6 +178,12 @@ public class ManagerNotification extends HttpServlet {
         Integer userId = (Integer) session.getAttribute("idUser");
         Integer roleID = (Integer) session.getAttribute("roleID");
 
+        if (userId == null || roleID == null || roleID != 2) {
+            LOGGER.warning("Unauthorized access to manager notification post, userId: " + userId + ", roleID=" + roleID);
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
+
         // Log session attributes for POST request
         LOGGER.info("doPost - Session: idUser=" + userId + ", roleID=" + roleID);
 
@@ -239,9 +251,9 @@ public class ManagerNotification extends HttpServlet {
         String title = request.getParameter("title");
         String message = request.getParameter("message");
 
-        if (notificationIDStr == null || notificationIDStr.trim().isEmpty() ||
-            title == null || title.trim().isEmpty() ||
-            message == null || message.trim().isEmpty()) {
+        if (notificationIDStr == null || notificationIDStr.trim().isEmpty()
+                || title == null || title.trim().isEmpty()
+                || message == null || message.trim().isEmpty()) {
             LOGGER.warning("Invalid input for editing notification, userId: " + userId);
             request.setAttribute("error", "Notification ID, title, and message are required.");
             request.getRequestDispatcher("/manager/viewNotification.jsp").forward(request, response);

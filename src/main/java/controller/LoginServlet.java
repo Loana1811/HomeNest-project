@@ -82,72 +82,59 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String username = request.getParameter("_username");
-        String password = request.getParameter("_password");
-        String remember = request.getParameter("remember");
+    String password = request.getParameter("_password");
+    String remember = request.getParameter("remember");
 
-        CustomerDAO customerDAO = new CustomerDAO();
-        UserDAO userDAO = new UserDAO();
-        HttpSession session = request.getSession();
+    System.out.println("Login attempt: username=" + username);
 
-        try {
-            // Try authenticating as a Customer
-            Customer customer = customerDAO.checkLogin(username, password);
-            if (customer != null) {
-                session.setAttribute("idCustomer", customer.getCustomerID());
-                session.setAttribute("userType", "Customer");
-                session.setAttribute("customer", customer);
+    CustomerDAO customerDAO = new CustomerDAO();
+    UserDAO userDAO = new UserDAO();
+    HttpSession session = request.getSession();
 
-                // Handle "Remember Me"
-                if ("on".equals(remember)) {
-                    Cookie usernameCookie = new Cookie("username", username);
-                    usernameCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-                    response.addCookie(usernameCookie);
-                }
-
-                response.sendRedirect(request.getContextPath() + "/customer/room-list");
-                return;
-            }
-
-            // Try authenticating as a User
-            User user = userDAO.login(username, password);
-            if (user != null) {
-                session.setAttribute("idUser", user.getUserID());
-                session.setAttribute("userType", "User");
-               
-                    session.setAttribute("currentUser", user); // ✅ cần thiết nếu muốn dùng key "manager"
-                
-                session.setAttribute("roleID", user.getRoleID()); // ⬅ THÊM DÒNG NÀY
-
-                // Handle "Remember Me"
-                if ("on".equals(remember)) {
-                    Cookie usernameCookie = new Cookie("username", username);
-                    usernameCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-                    response.addCookie(usernameCookie);
-                }
-                System.out.println(user);
-                // Redirect based on role
-                String roleName = user.getRole().getRoleName();
-                if ("Admin".equals(roleName)) {
-                    response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp?idUser=" + user.getUserID());
-                } else if ("Manager".equals(roleName)) {
-                    response.sendRedirect(request.getContextPath() + "/manager/dashboard.jsp?idManager=" + user.getUserID());
-                } else {
-                    request.setAttribute("error", "Invalid user role.");
-                    request.getRequestDispatcher("/Login.jsp").forward(request, response);
-                }
-                return;
-            }
-
-            // Login failed
-            request.setAttribute("error", "Invalid email/phone number or password.");
-            request.getRequestDispatcher("/Login.jsp").forward(request, response);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            request.setAttribute("error", "An error occurred during login. Please try again.");
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
+    try {
+        // Try authenticating as a Customer
+        Customer customer = customerDAO.checkLogin(username, password);
+        if (customer != null) {
+            session.setAttribute("idCustomer", customer.getCustomerID());
+            session.setAttribute("userType", "Customer");
+            session.setAttribute("customer", customer);
+            System.out.println("Customer logged in: idCustomer=" + customer.getCustomerID());
+            response.sendRedirect(request.getContextPath() + "/customer/room-list");
+            return;
         }
+
+        // Try authenticating as a User
+        User user = userDAO.login(username, password);
+        if (user != null) {
+            session.setAttribute("idUser", user.getUserID());
+            session.setAttribute("userType", "User");
+            session.setAttribute("currentUser", user);
+            session.setAttribute("roleID", user.getRoleID());
+            System.out.println("User logged in: idUser=" + user.getUserID() + ", role=" + user.getRole().getRoleName());
+            String roleName = user.getRole().getRoleName();
+            if ("Admin".equals(roleName)) {
+                response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp?idUser=" + user.getUserID());
+            } else if ("Manager".equals(roleName)) {
+                response.sendRedirect(request.getContextPath() + "/manager/dashboard.jsp?idManager=" + user.getUserID());
+            } else {
+                request.setAttribute("error", "Invalid user role.");
+                request.getRequestDispatcher("/Login.jsp").forward(request, response);
+            }
+            return;
+        }
+
+        // Login failed
+        System.out.println("Login failed for username: " + username);
+        request.setAttribute("error", "Invalid email/phone number or password.");
+        request.getRequestDispatcher("/Login.jsp").forward(request, response);
+
+    } catch (SQLException e) {
+        System.out.println("SQLException during login: " + e.getMessage());
+        e.printStackTrace();
+        request.setAttribute("error", "An error occurred during login. Please try again.");
+        request.getRequestDispatcher("/Login.jsp").forward(request, response);
     }
+}
 
     /**
      * Returns a short description of the servlet.

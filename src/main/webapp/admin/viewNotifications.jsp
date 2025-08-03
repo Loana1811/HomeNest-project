@@ -1,3 +1,4 @@
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="model.Notification"%>
 <%@page import="model.UserNotification"%>
@@ -16,291 +17,453 @@ String ctx = request.getContextPath();
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Quản Lý Thông Báo</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            :root {
-                --primary: #007bff;
-                --secondary: #6c757d;
-                --success: #28a745;
-                --danger: #dc3545;
-                --light: #f8f9fa;
-            }
-            body {
-                background-color: #e9ecef;
-                font-family: 'Roboto', sans-serif;
-            }
-            .header {
-                background: linear-gradient(90deg, var(--primary), var(--secondary));
-                color: white;
-                padding: 1.5rem 0;
-                margin-bottom: 1.5rem;
-                border-radius: 0 0 15px 15px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 15px;
-            }
-            .search-bar {
-                margin-bottom: 20px;
-            }
-            .notification-table {
-                margin-top: 20px;
-                background-color: white;
-                border-radius: 10px;
-                overflow: hidden;
-                margin-bottom: 30px;
-            }
-            .notification-table th, .notification-table td {
-                vertical-align: middle;
-                padding: 8px;
-                text-align: left;
-                font-size: 0.9rem;
-            }
-            .notification-table th {
-                background-color: var(--light);
-                color: var(--secondary);
-                font-weight: 600;
-            }
-            .notification-table tbody tr:nth-of-type(odd) {
-                background-color: rgba(0,0,0,0.05);
-            }
-            .alert {
-                margin-bottom: 15px;
-            }
-            .empty-state {
-                text-align: center;
-                padding: 1rem;
-                color: #6c757d;
-            }
-            .empty-state i {
-                font-size: 3rem;
-                margin-bottom: 0.5rem;
-                color: #dee2e6;
-            }
-            .action-buttons {
-                margin-top: 20px;
-            }
-        </style>
+   
+  <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --background-color: #f0f4f8;
+            --hover-color: #3b5cb8;
+            --action-color: #2563eb;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 40px 30px;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+     table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: white;
+  animation: fadeIn 0.6s ease;
+}
+
+th {
+  background-color: #1e3a8a;
+  color: #fff;
+  padding: 16px;
+  text-align: center;
+}
+
+td {
+  padding: 14px;
+  text-align: center;
+  vertical-align: middle;
+  transition: background 0.3s ease;
+}
+
+td:hover {
+  background-color: #f0f4ff;
+}
+
+.action-btn {
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+}
+
+
+        .search-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box input[type="text"] {
+            width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .btn-create {
+            background-color: #10b981;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        .btn-create:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+
+        .action-form {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action {
+            padding: 6px 10px;
+            border-radius: 20px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-edit {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .btn-delete:hover {
+            background-color: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            color: #6b7280;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .message {
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: zoomIn 0.4s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h5 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .modal-body input,
+        .modal-body textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .modal .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
     </head>
     <body>
-        <div class="container">
-            <!-- Tiêu đề -->
-            <div class="header">
-                <h1>Quản Lý Thông Báo</h1>
-            </div>
+        <div class="main-content">
+           <h1>Notification Management</h1>
 
-            <!-- Thông báo thành công -->
-            <c:if test="${not empty success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ${success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-                </div>
-            </c:if>
+<%-- Display success/error messages --%>
+<c:if test="${not empty sessionScope.success}">
+    <div class="message success">
+        ${sessionScope.success}
+    </div>
+    <% session.removeAttribute("success"); %>
+</c:if>
 
-            <!-- Thông báo lỗi -->
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ${error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-                </div>
-            </c:if>
+<c:if test="${not empty sessionScope.error}">
+    <div class="message error">
+        ${sessionScope.error}
+    </div>
+    <% session.removeAttribute("error"); %>
+</c:if>
 
-            <!-- Thanh tìm kiếm -->
-            <div class="search-bar">
-                <form action="${pageContext.request.contextPath}/admin/notification" method="get" class="d-flex">
-                    <input type="hidden" name="action" value="viewNotifications">
-                    <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm theo tiêu đề hoặc nội dung..."
-                           value="${fn:escapeXml(param.search)}">
-                    <button type="submit" class="btn btn-primary">Tìm Kiếm</button>
-                </form>
-            </div>
 
-            <!-- Nút hành động -->
-            <div class="action-buttons">
-                <a href="${pageContext.request.contextPath}/admin/notification?action=createNotification&idUser=${idUser}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Tạo Thông Báo
-                </a>
-            </div>
+    <div class="search-box">
+        <form action="notification" method="get">
+            <input type="hidden" name="action" value="viewNotifications">
+            <input type="text" name="search" placeholder="Search by title or message" value="${param.search}"/>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <a href="notification?action=createNotification" class="btn-create">+ Create Notification</a>
+    </div>
 
-            <!-- Bảng Thông Báo Khách Hàng -->
-            <h3>Thông Báo Khách Hàng</h3>
-            <div class="notification-table">
-                <table class="table table-striped">
-                    <thead>
+<h3>Customer Notifications</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Created At</th>
+            <th>Sender</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <c:choose>
+            <c:when test="${not empty notificationList}">
+                <c:forEach var="notification" items="${notificationList}">
+                    <c:set var="customer" value="${customerMap[notification.customerID]}"/>
+                    <tr>
+                        <td>${customer != null ? customer.customerFullName : 'Unknown Customer'}</td>
+                        <td>${fn:escapeXml(notification.title)}</td>
+                        <td>${fn:escapeXml(notification.message)}</td>
+                        <td><fmt:formatDate value="${notification.notificationCreatedAt}" pattern="dd/MM/yyyy HH:mm" /></td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${notification.sentBy == 1}">Admin</c:when>
+                                <c:when test="${notification.sentBy == 2}">Manager</c:when>
+                                <c:otherwise>Unknown</c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="action-form">
+                            <button type="button" class="btn btn-edit"
+                                    onclick="showEditNotificationModal(${notification.notificationID}, '${fn:escapeXml(notification.title)}', '${fn:escapeXml(notification.message)}')">
+                                <i class="fas fa-edit"></i> 
+                            </button>
+                            <button type="button" class="btn btn-delete"
+                                    onclick="confirmDeleteNotification(${notification.notificationID})">
+                                <i class="fas fa-trash"></i> 
+                            </button>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        No customer notifications found
+                    </td>
+                </tr>
+            </c:otherwise>
+        </c:choose>
+    </tbody>
+</table>
+
+<h3>Manager Notifications</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Manager</th>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Created At</th>
+            <th>Sender</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <c:choose>
+            <c:when test="${not empty userNotificationList}">
+                <c:forEach var="userNotification" items="${userNotificationList}">
+                    <c:set var="manager" value="${userMap[userNotification.userID]}"/>
+                    <c:if test="${manager != null && manager.userStatus == 'Active'}">
                         <tr>
-                            <th>Khách Hàng</th>
-                            <th>Tiêu Đề</th>
-                            <th>Nội Dung</th>
-                            <th>Ngày Tạo</th>
-                            <th>Hành Động</th>
+                            <td>${manager != null ? manager.userFullName : 'Unknown Manager'}</td>
+                            <td>${fn:escapeXml(userNotification.userTitle)}</td>
+                            <td>${fn:escapeXml(userNotification.userMessage)}</td>
+                            <td><fmt:formatDate value="${userNotification.userNotificationCreatedAt}" pattern="dd/MM/yyyy HH:mm" /></td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${userNotification.sentBy == 1}">Admin</c:when>
+                                    <c:when test="${userNotification.sentBy == 2}">Manager</c:when>
+                                    <c:otherwise>Unknown</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="action-form">
+                                <button type="button" class="btn btn-edit"
+                                        onclick="showEditUserNotificationModal(${userNotification.userNotificationID}, '${fn:escapeXml(userNotification.userTitle)}', '${fn:escapeXml(userNotification.userMessage)}')">
+                                    <i class="fas fa-edit"></i> 
+                                </button>
+                                <button type="button" class="btn btn-delete"
+                                        onclick="confirmDeleteUserNotification(${userNotification.userNotificationID})">
+                                    <i class="fas fa-trash"></i> 
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${not empty notificationList}">
-                                <c:forEach var="notification" items="${notificationList}">
-                                    <c:set var="customer" value="${customerMap[notification.customerID]}"/>
-                                    <tr>
-                                        <td>${customer != null ? customer.customerFullName : 'Khách Hàng Không Xác Định'}</td>
-                                        <td>${fn:escapeXml(notification.title)}</td>
-                                        <td>${fn:escapeXml(notification.message)}</td>
-                                        <td><fmt:formatDate value="${notification.notificationCreatedAt}" pattern="dd/MM/yyyy HH:mm" /></td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-outline-success me-2"
-                                                    onclick="showEditNotificationModal(${notification.notificationID}, '${fn:escapeXml(notification.title)}', '${fn:escapeXml(notification.message)}')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                                    onclick="confirmDeleteNotification(${notification.notificationID})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <tr>
-                                    <td colspan="6" class="empty-state">
-                                        <i class="fas fa-bell-slash"></i><br>Không tìm thấy thông báo khách hàng
-                                    </td>
-                                </tr>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
+                    </c:if>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        No manager notifications found
+                    </td>
+                </tr>
+            </c:otherwise>
+        </c:choose>
+    </tbody>
+</table>
+</div>
+
+<!-- Edit Customer Notification Modal -->
+<div id="editNotificationModal" class="modal">
+    <form id="editNotificationForm" method="post" action="${pageContext.request.contextPath}/admin/notification">
+        <input type="hidden" name="action" value="editNotification">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="editNotificationLabel">Edit Notification</h5>
+                <span class="close" onclick="closeModal('editNotificationModal')">×</span>
             </div>
-       
-            <!-- Bảng Thông Báo Quản Lý -->
-            <h3>Thông Báo Quản Lý</h3>
-            <div class="notification-table">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Quản Lý</th>
-                            <th>Tiêu Đề</th>
-                            <th>Nội Dung</th>
-                            <th>Ngày Tạo</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${not empty userNotificationList}">
-                                <c:forEach var="userNotification" items="${userNotificationList}">
-                                    <c:set var="manager" value="${userMap[userNotification.userID]}"/>
-                                    <c:if test="${manager != null && manager.userStatus == 'Active'}">
-                                        <tr>
-                                            <td>${manager != null ? manager.userFullName : 'Quản Lý Không Xác Định'}</td>
-                                            <td>${fn:escapeXml(userNotification.userTitle)}</td>
-                                            <td>${fn:escapeXml(userNotification.userMessage)}</td>
-                                            <td><fmt:formatDate value="${userNotification.userNotificationCreatedAt}" pattern="dd/MM/yyyy HH:mm" /></td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-outline-success me-2"
-                                                        onclick="showEditUserNotificationModal(${userNotification.userNotificationID}, '${fn:escapeXml(userNotification.userTitle)}', '${fn:escapeXml(userNotification.userMessage)}')">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        onclick="confirmDeleteUserNotification(${userNotification.userNotificationID})">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </c:if>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <tr>
-                                    <td colspan="6" class="empty-state">
-                                        <i class="fas fa-bell-slash"></i><br>Không tìm thấy thông báo quản lý
-                                    </td>
-                                </tr>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-secondary">
-                    ← Quay Lại Bảng Điều Khiển
-                </a>
+            <div class="modal-body">
+                <input type="hidden" name="notificationID" id="editNotificationID">
+                <div class="mb-3">
+                    <label for="editNotificationTitle" class="form-label">Title</label>
+                    <input type="text" id="editNotificationTitle" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editNotificationMessage" class="form-label">Message</label>
+                    <textarea id="editNotificationMessage" name="message" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editNotificationModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
             </div>
         </div>
+    </form>
+</div>
 
-        <!-- Modal Sửa Thông Báo Khách Hàng -->
-        <div class="modal fade" id="editNotificationModal" tabindex="-1" aria-labelledby="editNotificationLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <form id="editNotificationForm" method="post" action="${pageContext.request.contextPath}/admin/notification">
-                    <input type="hidden" name="action" value="editNotification">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="card-title" id="editNotificationLabel">Sửa Thông Báo</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="notificationID" id="editNotificationID">
-                            <div class="mb-3">
-                                <label for="editNotificationTitle" class="form-label">Tiêu Đề</label>
-                                <input type="text" class="form-control" id="editNotificationTitle" name="title" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editNotificationMessage" class="form-label">Nội Dung</label>
-                                <textarea class="form-control" id="editNotificationMessage" name="message" rows="3" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-success">Lưu Thay Đổi</button>
-                        </div>
-                    </div>
-                </form>
+<!-- Edit Manager Notification Modal -->
+<div id="editUserNotificationModal" class="modal">
+    <form id="editUserNotificationForm" method="post" action="${pageContext.request.contextPath}/admin/notification">
+        <input type="hidden" name="action" value="editUserNotification">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="editUserNotificationLabel">Edit Manager Notification</h5>
+                <span class="close" onclick="closeModal('editUserNotificationModal')">×</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="userNotificationID" id="editUserNotificationID">
+                <div class="mb-3">
+                    <label for="editUserNotificationTitle" class="form-label">Title</label>
+                    <input type="text" id="editUserNotificationTitle" name="userTitle" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editUserNotificationMessage" class="form-label">Message</label>
+                    <textarea id="editUserNotificationMessage" name="userMessage" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editUserNotificationModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
             </div>
         </div>
+    </form>
+</div>
 
-        <!-- Modal Sửa Thông Báo Quản Lý -->
-        <div class="modal fade" id="editUserNotificationModal" tabindex="-1" aria-labelledby="editUserNotificationLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <form id="editUserNotificationForm" method="post" action="${pageContext.request.contextPath}/admin/notification">
-                    <input type="hidden" name="action" value="editUserNotification">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="card-title" id="editUserNotificationLabel">Sửa Thông Báo Quản Lý</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="userNotificationID" id="editUserNotificationID">
-                            <div class="mb-3">
-                                <label for="editUserNotificationTitle" class="form-label">Tiêu Đề</label>
-                                <input type="text" class="form-control" id="editUserNotificationTitle" name="userTitle" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editUserNotificationMessage" class="form-label">Nội Dung</label>
-                                <textarea class="form-control" id="editUserNotificationMessage" name="userMessage" rows="3" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-success">Lưu Thay Đổi</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             function showEditNotificationModal(id, title, message) {
                 document.getElementById('editNotificationID').value = id;
                 document.getElementById('editNotificationTitle').value = title;
                 document.getElementById('editNotificationMessage').value = message;
-                new bootstrap.Modal(document.getElementById('editNotificationModal')).show();
+                document.getElementById('editNotificationModal').style.display = 'block';
             }
 
             function showEditUserNotificationModal(id, title, message) {
                 document.getElementById('editUserNotificationID').value = id;
                 document.getElementById('editUserNotificationTitle').value = title;
                 document.getElementById('editUserNotificationMessage').value = message;
-                new bootstrap.Modal(document.getElementById('editUserNotificationModal')).show();
+                document.getElementById('editUserNotificationModal').style.display = 'block';
+            }
+
+            function closeModal(modalId) {
+                document.getElementById(modalId).style.display = 'none';
             }
 
             function confirmDeleteNotification(id) {
@@ -315,11 +478,19 @@ String ctx = request.getContextPath();
                 }
             }
 
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            };
+
+            // Auto-dismiss messages after 5 seconds
             document.addEventListener('DOMContentLoaded', function () {
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(alert => {
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(message => {
                     setTimeout(() => {
-                        new bootstrap.Alert(alert).close();
+                        message.style.display = 'none';
                     }, 5000);
                 });
             });

@@ -190,7 +190,7 @@ public class AdminNotificationServlet extends HttpServlet {
             }
         }
 
-        request.setAttribute("success", "Notification(s) created successfully for customers and managers.");
+        request.getSession().setAttribute("success", "Notification(s) created successfully for customers and managers.");
         response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }
 
@@ -233,8 +233,8 @@ public class AdminNotificationServlet extends HttpServlet {
             }
         }
 
-        request.setAttribute("success", "User Notification(s) changed successfully.");
-        response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewUserNotifications&idUser=" + userId);
+        request.getSession().setAttribute("success", "User Notification(s) created successfully.");
+        response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }
 
     private void viewNotifications(HttpServletRequest request, HttpServletResponse response, Integer userId)
@@ -319,12 +319,13 @@ public class AdminNotificationServlet extends HttpServlet {
         String notificationIDStr = request.getParameter("notificationID");
         String title = request.getParameter("title");
         String message = request.getParameter("message");
+        HttpSession session = request.getSession();
 
         if (notificationIDStr == null || notificationIDStr.trim().isEmpty()
                 || title == null || title.trim().isEmpty()
                 || message == null || message.trim().isEmpty()) {
-            request.setAttribute("error", "Notification ID, title, and message are required.");
-            viewNotifications(request, response, userId);
+            session.setAttribute("error", "Notification ID, title, and message are required.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
@@ -332,8 +333,8 @@ public class AdminNotificationServlet extends HttpServlet {
         Notification notification = notificationDAO.getNotificationById(notificationID);
 
         if (notification == null) {
-            request.setAttribute("error", "Notification not found.");
-            viewNotifications(request, response, userId);
+            session.setAttribute("error", "Notification not found.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
@@ -342,13 +343,11 @@ public class AdminNotificationServlet extends HttpServlet {
 
         boolean success = notificationDAO.updateNotification(notification);
         if (!success) {
-            request.setAttribute("error", "Failed to update notification.");
-            viewNotifications(request, response, userId);
-            return;
+            session.setAttribute("error", "Failed to update notification.");
+        } else {
+            session.setAttribute("success", "Notification updated successfully.");
         }
-
-        request.setAttribute("success", "Notification updated successfully.");
-        viewNotifications(request, response, userId);
+        response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }
 
     private void editUserNotification(HttpServletRequest request, HttpServletResponse response, Integer userId)
@@ -356,12 +355,13 @@ public class AdminNotificationServlet extends HttpServlet {
         String userNotificationIDStr = request.getParameter("userNotificationID");
         String userTitle = request.getParameter("userTitle");
         String userMessage = request.getParameter("userMessage");
+        HttpSession session = request.getSession();
 
         if (userNotificationIDStr == null || userNotificationIDStr.trim().isEmpty()
                 || userTitle == null || userTitle.trim().isEmpty()
                 || userMessage == null || userMessage.trim().isEmpty()) {
-            request.setAttribute("error", "Notification ID, title, and message are required.");
-            viewUserNotifications(request, response, userId);
+            session.setAttribute("error", "Notification ID, title, and message are required.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
@@ -369,8 +369,8 @@ public class AdminNotificationServlet extends HttpServlet {
         UserNotification notification = userNotificationDAO.getUserNotificationById(userNotificationID);
 
         if (notification == null) {
-            request.setAttribute("error", "User Notification not found.");
-            viewUserNotifications(request, response, userId);
+            session.setAttribute("error", "User Notification not found.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
@@ -379,31 +379,30 @@ public class AdminNotificationServlet extends HttpServlet {
 
         boolean success = userNotificationDAO.updateUserNotification(notification);
         if (!success) {
-            request.setAttribute("error", "Failed to update user notification.");
-            viewUserNotifications(request, response, userId);
-            return;
+            session.setAttribute("error", "Failed to update user notification.");
+        } else {
+            session.setAttribute("success", "User Notification updated successfully.");
         }
-
-        request.setAttribute("success", "User Notification updated successfully.");
-        viewUserNotifications(request, response, userId);
+        response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }
 
     private void deleteNotification(HttpServletRequest request, HttpServletResponse response, Integer userId)
             throws SQLException, ServletException, IOException {
         String notificationIDStr = request.getParameter("notificationID");
+        HttpSession session = request.getSession();
 
         if (notificationIDStr == null || notificationIDStr.trim().isEmpty()) {
-            request.setAttribute("error", "Notification ID is required for deletion.");
-            viewNotifications(request, response, userId);
+            session.setAttribute("error", "Notification ID is required for deletion.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
         int notificationID = Integer.parseInt(notificationIDStr);
         boolean success = notificationDAO.deleteNotification(notificationID);
         if (success) {
-            request.setAttribute("success", "Notification deleted successfully.");
+            session.setAttribute("success", "Notification deleted successfully.");
         } else {
-            request.setAttribute("error", "Failed to delete notification.");
+            session.setAttribute("error", "Failed to delete notification.");
         }
         response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }
@@ -411,19 +410,20 @@ public class AdminNotificationServlet extends HttpServlet {
     private void deleteUserNotification(HttpServletRequest request, HttpServletResponse response, Integer userId)
             throws SQLException, ServletException, IOException {
         String userNotificationIDStr = request.getParameter("userNotificationID");
+        HttpSession session = request.getSession();
 
         if (userNotificationIDStr == null || userNotificationIDStr.trim().isEmpty()) {
-            request.setAttribute("error", "User Notification ID is required for deletion.");
-            viewUserNotifications(request, response, userId);
+            session.setAttribute("error", "User Notification ID is required for deletion.");
+            response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
             return;
         }
 
         int userNotificationID = Integer.parseInt(userNotificationIDStr);
         boolean success = userNotificationDAO.deleteUserNotification(userNotificationID);
         if (success) {
-            request.setAttribute("success", "User Notification deleted successfully.");
+            session.setAttribute("success", "User Notification deleted successfully.");
         } else {
-            request.setAttribute("error", "Failed to delete user notification.");
+            session.setAttribute("error", "Failed to delete user notification.");
         }
         response.sendRedirect(request.getContextPath() + "/admin/notification?action=viewNotifications&idUser=" + userId);
     }

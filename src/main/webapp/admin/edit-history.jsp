@@ -7,17 +7,17 @@
 
 <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 
-<h3>🔍 Lịch sử chỉnh sửa tiện ích</h3>
+<h3>🔍 Utility Edit History</h3>
 <table class="table table-bordered table-striped">
     <thead class="table-dark text-center">
         <tr>
             <th>#</th>
             <th>Old Reading</th>
             <th>New Reading</th>
-            <th>Giá sử dụng</th>
-            <th>Ghi chú</th>
-            <th>Người chỉnh</th>
-            <th>Thời gian</th>
+            <th>Used Price</th>
+            <th>Note</th>
+            <th>Modified By</th>
+            <th>Modified At</th>
         </tr>
     </thead>
     <tbody>
@@ -36,4 +36,4 @@
     </tbody>
 </table>
 
-<a href="<%= ctx %>/admin/usage" class="btn btn-secondary">🔙 Trở lại</a>
+<a href="<%= ctx %>/admin/usage" class="btn btn-secondary">🔙 Back</a>

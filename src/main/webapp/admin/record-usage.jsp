@@ -1,3 +1,4 @@
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.Map, java.util.List" %>
 <%@ page import="model.UtilityUsageView" %>
@@ -39,39 +40,36 @@
     </style>
 </head>
 <body>
-
- <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">🏠 HomeNest</a>
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#navMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navMenu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <h5 class="text-primary">Admin Menu</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a></li>
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a></li>
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a></li>
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a></li>
-                <li class="nav-item"><a class="nav-link active" href="<%= ctx%>/admin/utility?action=list">Utilities</a></li>
-            
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a></li>
-                <li class="nav-item"><a class="nav-link" href="<%= ctx%>/Contracts">Contract</a></li>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">🏠 HomeNest</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="<%= ctx%>/admin/logout">Logout</a>
+                </li>
             </ul>
         </div>
+    </div>
+</nav>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h5 class="text-primary">Admin Menu</h5>
+    <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/viewListAccount">Accounts</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/rooms?action=list">Rooms</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/tenant?action=list">Tenants</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/bill?action=list">Bills</a></li>
+        <li class="nav-item"><a class="nav-link active" href="<%= ctx%>/admin/utility?action=list">Utilities</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/admin/usage">View Usage List</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= ctx%>/Contracts">Contract</a></li>
+    </ul>
+</div>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
@@ -149,7 +147,6 @@ function openRecordModal() {
     var typeId = document.getElementById('typeId')?.value || '';
     var readingMonth = '';
 
-    // Nếu usage list không có input readingMonth thì ép lấy tháng hiện tại
     try {
         readingMonth = document.getElementById('readingMonth')?.value;
     } catch (e) { readingMonth = ''; }
@@ -172,9 +169,6 @@ function openRecordModal() {
         })
         .catch(() => alert('Failed to load record form!'));
 }
-
-
-
 </script>
 </body>
 </html>

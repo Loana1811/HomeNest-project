@@ -1,41 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-/**
- *
- * @author ThanhTruc
- */
+import java.sql.Date;
+
 public class BillDetail {
-    private int billDetailID;
     private int billID;
-    private float roomrent;
-    private float electricityCost;
-    private float waterCost;
-     private float wifiCost;
-
-    public BillDetail(int billDetailID, int billID, float roomrent, float electricityCost, float waterCost, float wifiCost) {
-        this.billDetailID = billDetailID;
-        this.billID = billID;
-        this.roomrent = roomrent;
-        this.electricityCost = electricityCost;
-        this.waterCost = waterCost;
-        this.wifiCost = wifiCost;
-    }
-
-    public BillDetail() {
-       
-    }
-
-    public int getBillDetailID() {
-        return billDetailID;
-    }
-
-    public void setBillDetailID(int billDetailID) {
-        this.billDetailID = billDetailID;
-    }
+    private int contractID;
+    private Date billDate;
+    private String billStatus;
+    private boolean isSent;
+    private Integer replacedBillID;
 
     public int getBillID() {
         return billID;
@@ -45,36 +18,43 @@ public class BillDetail {
         this.billID = billID;
     }
 
-    public float getRoomrent() {
-        return roomrent;
+    public int getContractID() {
+        return contractID;
     }
 
-    public void setRoomrent(float roomrent) {
-        this.roomrent = roomrent;
+    public void setContractID(int contractID) {
+        this.contractID = contractID;
     }
 
-    public float getElectricityCost() {
-        return electricityCost;
+    public Date getBillDate() {
+        return billDate;
     }
 
-    public void setElectricityCost(float electricityCost) {
-        this.electricityCost = electricityCost;
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
     }
 
-    public float getWaterCost() {
-        return waterCost;
+    public String getBillStatus() {
+        return billStatus;
     }
 
-    public void setWaterCost(float waterCost) {
-        this.waterCost = waterCost;
+    public void setBillStatus(String billStatus) {
+        this.billStatus = billStatus;
     }
 
-    public float getWifiCost() {
-        return wifiCost;
+    public boolean getIsSent() {
+        return isSent;
     }
 
-    public void setWifiCost(float wifiCost) {
-        this.wifiCost = wifiCost;
+    public void setIsSent(boolean isSent) {
+        this.isSent = isSent;
     }
-     
+
+    public Integer getReplacedBillID() {
+        return replacedBillID;
+    }
+
+    public void setReplacedBillID(Integer replacedBillID) {
+        this.replacedBillID = replacedBillID;
+    }
 }

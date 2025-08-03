@@ -1,193 +1,123 @@
-<%-- 
-    Document   : dashboard
-    Created on : Jun 14, 2025, 6:10:42 PM
-    Author     : kloane
---%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
 <%
-    Integer totalRooms = (Integer) request.getAttribute("totalRooms");
-    Integer totalTenants = (Integer) request.getAttribute("totalTenants");
-    Integer unpaidBills = (Integer) request.getAttribute("unpaidBills");
-    Integer readings30 = (Integer) request.getAttribute("readings30");
-    List<String> chartLabels = (List<String>) request.getAttribute("chartLabels");
-    List<Number> chartData = (List<Number>) request.getAttribute("chartData");
     String ctx = request.getContextPath();
-
-    StringBuilder lblJs = new StringBuilder();
-    StringBuilder dataJs = new StringBuilder();
-    if (chartLabels != null) {
-        for (int i = 0; i < chartLabels.size(); i++) {
-            lblJs.append("\"").append(chartLabels.get(i)).append("\"");
-            if (i < chartLabels.size() - 1) {
-                lblJs.append(",");
-            }
-        }
-    }
-    if (chartData != null) {
-        for (int i = 0; i < chartData.size(); i++) {
-            dataJs.append(chartData.get(i));
-            if (i < chartData.size() - 1) {
-                dataJs.append(",");
-            }
-        }
-    }
-    
 %>
 
 <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>🏠 HomeNest - Admin Dashboard</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <style>
-          
+<head>
+    <meta charset="UTF-8">
+    <title>🏠 HomeNest - Admin Panel</title>
+    <!-- Bootstrap + Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+       :root {
+  --primary-color: #1e3b8a;         /* ✅ Màu chủ đạo: xanh navy đậm – dùng cho header, button, title */
+  --secondary-color: #c7d2fe;       /* ✅ Màu phụ: xanh pastel nhạt – dùng cho background nhẹ, nhấn phụ */
+  --accent-color: #2a4d69;          /* ✅ Màu nhấn: xanh đen xám – dùng hover, viền, icon */
+  --text-color: #111827;            /* ✅ Màu chữ chính: gần đen – độ tương phản cao, dễ đọc */
+  --white: #ffffff;                 /* ✅ Trắng chuẩn – nền hoặc chữ khi contrast cao */
+  --background-color: #f5f9fc;      /* ✅ Nền chung: trắng xanh nhạt – tạo cảm giác sáng, sạch */
+  --sidebar-color: #003459;         /* ✅ Sidebar: xanh navy sẫm – dùng cho nền sidebar cố định */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* ✅ Bóng nhẹ – dùng cho card, box */
+  --border-radius: 12px;            /* ✅ Bo góc chuẩn – dùng cho card, nút, khung input */
+}
 
-            /* Card Stats */
-            .card-stat {
-                border-radius: 16px;
-                color: white;
-                padding: 1.25rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: start;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-                transition: transform 0.2s;
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 240px;
+            position: fixed;
+            height: 100vh;
+            background-color: var(--primary-color);
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        #sidebar .nav-link {
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        #sidebar .nav-link:hover,
+        #sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: #fff !important;
+        }
+
+        #sidebar .nav-link i {
+            width: 20px;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 40px;
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                display: none;
             }
 
-            .card-stat:hover {
-                transform: scale(1.02);
+            .main-content {
+                margin: 0;
+                padding: 20px;
             }
+        }
 
-            .bg-gradient-primary {
-                background: linear-gradient(135deg, #007bff, #0056b3);
-            }
-            .bg-gradient-success {
-                background: linear-gradient(135deg, #28a745, #218838);
-            }
-            .bg-gradient-warning {
-                background: linear-gradient(135deg, #ffc107, #e0a800);
-                color: #212529;
-            }
-            .bg-gradient-info {
-                background: linear-gradient(135deg, #17a2b8, #117a8b);
-            }
+        .dropdown-toggle::after {
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
 
-            .card-stat h5 {
-                margin-bottom: 0.3rem;
-                font-weight: 500;
-            }
+<!-- SIDEBAR -->
+<nav id="sidebar" class="d-flex flex-column text-white">
+    <a href="${ctx}/admin/dashboard" class="d-flex align-items-center mb-4 text-white text-decoration-none">
+        <i class="fas fa-home me-2"></i><span class="fs-5 fw-bold">HomeNest Admin</span>
+    </a>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li><a href="${ctx}/admin/dashboard" class="nav-link active"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
+        <li><a href="${ctx}/admin/rooms" class="nav-link"><i class="fas fa-door-open me-2"></i> Rooms</a></li>
+        <li><a href="${ctx}/admin/tenants" class="nav-link"><i class="fas fa-users me-2"></i> Tenants</a></li>
+        <li><a href="${ctx}/admin/bills" class="nav-link"><i class="fas fa-file-invoice-dollar me-2"></i> Bills</a></li>
+        <li><a href="${ctx}/admin/usage" class="nav-link"><i class="fas fa-bolt me-2"></i> Usage</a></li>
+        <li><a href="${ctx}/admin/settings" class="nav-link"><i class="fas fa-cogs me-2"></i> Settings</a></li>
+    </ul>
+    <hr>
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+            <img src="https://via.placeholder.com/32" alt="" class="rounded-circle me-2">
+            <strong>Admin</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="${ctx}/Logout">Sign out</a></li>
+        </ul>
+    </div>
+</nav>
 
-            .card-stat h2 {
-                font-weight: 700;
-                font-size: 2.2rem;
-            }
+<!-- MAIN CONTENT -->
+<main class="main-content">
+    <h2>👋 Welcome to HomeNest Admin Panel</h2>
+    <p class="text-muted">Use the sidebar to navigate through the system.</p>
+</main>
 
-            /* Button */
-            .btn-gradient {
-                background: linear-gradient(135deg, #4a90e2, #357abd);
-                border: none;
-                color: white;
-                font-weight: 500;
-                padding: 0.6rem 1.4rem;
-                border-radius: 8px;
-            }
-
-            .btn-gradient:hover {
-                background: linear-gradient(135deg, #357abd, #4a90e2);
-                color: #eaf4ff;
-            }
-
-            /* Chart Card */
-            .card-chart {
-                border-radius: 14px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-                border: 1px solid #e0e0e0;
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                .sidebar {
-                    display: none;
-                }
-
-                main {
-                    margin-left: 0;
-                }
-            }
-        </style>
-
-
-    </head>
-    <body>
-      
-        <main>
-            <h2>📊 Admin Dashboard</h2>
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-primary p-3">
-                        <h5>Total Rooms</h5>
-                        <h2><%= totalRooms != null ? totalRooms : 0%></h2>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-success p-3">
-                        <h5>Tenants</h5>
-                        <h2><%= totalTenants != null ? totalTenants : 0%></h2>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-dark bg-warning p-3">
-                        <h5>Unpaid Bills</h5>
-                        <h2><%= unpaidBills != null ? unpaidBills : 0%></h2>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-info p-3">
-                        <h5>Readings (30d)</h5>
-                        <h2><%= readings30 != null ? readings30 : 0%></h2>
-                    </div>
-                </div>
-
-                <a href="${pageContext.request.contextPath}/admin/usage"
-                   class="btn btn-primary mb-4">
-                    🚰📊 View Usage
-                </a>
-
-            </div>
-
-            <div class="card">
-                <div class="card-header">📈 Electricity Usage (Last 7 days)</div>
-                <div class="card-body">
-                    <canvas id="usageChart" style="width:100%; height:300px;"></canvas>
-                </div>
-            </div>
-        </main>
-
-        <script>
-            const labels = [<%= lblJs%>];
-            const data = [<%= dataJs%>];
-
-            const ctx2 = document.getElementById('usageChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                            label: 'kWh used',
-                            data: data,
-                            fill: true,
-                            tension: 0.3
-                        }]
-                },
-                options: {scales: {y: {beginAtZero: true}}}
-            });
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

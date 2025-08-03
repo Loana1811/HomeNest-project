@@ -162,6 +162,8 @@
         </c:choose>
         </tbody>
     </table>
+        <a href="<%= request.getContextPath() %>/customer/room-list" class="btn btn-primary mb-3">Back to Notification</a>
+          <%@include file = "/WEB-INF/inclu/footer.jsp" %>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

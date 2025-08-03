@@ -57,21 +57,24 @@ public class ViewProfileServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
- 
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false); // tránh tạo session mới
-        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
 
-        if (customer == null) {
-            response.sendRedirect(request.getContextPath() + "/Login.jsp");
+        // ✅ Kiểm tra xem có phải Customer hợp lệ không
+        Object userObj = (session != null) ? session.getAttribute("customer") : null;
+
+        if (userObj == null || !(userObj instanceof Customer)) {
+            // ❌ Không đăng nhập hoặc không phải customer → chuyển tới error.jsp
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
             return;
         }
 
-        request.setAttribute("customer", customer); // optional nếu jsp đã dùng session
+        Customer customer = (Customer) userObj;
+
+        request.setAttribute("customer", customer);
         request.getRequestDispatcher("view-profile.jsp").forward(request, response);
     }
 

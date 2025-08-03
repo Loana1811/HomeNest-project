@@ -76,7 +76,7 @@ public class CancelRequestServlet extends HttpServlet {
         Customer customer = (Customer) session.getAttribute("customer");
 
         if (customer == null) {
-            response.sendRedirect("Login");
+response.sendRedirect("Login");
             return;
         }
 

@@ -1,7 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
+<%
+String ctx = request.getContextPath();
+%>
+<%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -9,18 +12,94 @@
         <title>Create New Contract</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
-            .container {
-                max-width: 800px;
-                margin-top: 40px;
-            }
-            .room-details {
-                display: none;
-                margin-top: 10px;
-                padding: 15px;
-                background-color: #f8f9fa;
-                border-radius: 5px;
-            }
-        </style>
+    :root {
+        --primary: #1e3b8a;
+        --secondary: #3f5fa6;
+        --bg-light: #f9fbfc;
+        --text-dark: #1f2937;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        max-width: 720px;
+        background-color: #fff;
+        padding: 30px 40px;
+        border-radius: 16px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2 {
+        color: var(--primary);
+        font-weight: bold;
+        margin-bottom: 30px;
+    }
+
+    label.form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    select.form-select,
+    input.form-control {
+        border-radius: 8px;
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        transition: border-color 0.2s;
+    }
+
+    select.form-select:focus,
+    input.form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(30, 59, 138, 0.2);
+    }
+
+    .room-details {
+        display: none;
+        margin-top: 15px;
+        padding: 15px 20px;
+        background-color: #f1f5f9;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
+        color: #374151;
+    }
+
+    .btn-success {
+        background-color: #22c55e;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+
+    .btn-success:hover {
+        background-color: #16a34a;
+    }
+
+    .btn-secondary {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+
+    .alert {
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(10px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+</style>
+
         <script>
             function showRoomDetails(select) {
                 const roomDetailsDiv = document.getElementById('roomDetails');
@@ -28,17 +107,8 @@
                 if (selectedOption.value) {
                     const details = JSON.parse(selectedOption.getAttribute('data-details'));
                     roomDetailsDiv.innerHTML = `
-                        <h5>Room Details</h5>
-                        <p><strong>Room Number:</strong> ${details.roomNumber}</p>
-                        <p><strong>Rent Price:</strong> ${details.rentPrice}đ</p>
-                        <p><strong>Area:</strong> ${details.area}m²</p>
-                        <p><strong>Location:</strong> ${details.location}</p>
-                        <p><strong>Block ID:</strong> ${details.blockId}</p>
-                        <p><strong>Description:</strong> ${details.description || 'None'}</p>
-                        <p><strong>Electricity Free:</strong> ${details.isElectricityFree ? 'Yes' : 'No'}</p>
-                        <p><strong>Water Free:</strong> ${details.isWaterFree ? 'Yes' : 'No'}</p>
-                        <p><strong>Wifi Free:</strong> ${details.isWifiFree ? 'Yes' : 'No'}</p>
-                        <p><strong>Trash Free:</strong> ${details.isTrashFree ? 'Yes' : 'No'}</p>
+                     
+
                     `;
                     roomDetailsDiv.style.display = 'block';
                 } else {
@@ -84,7 +154,6 @@
                                     "rentPrice": "${room.rentPrice}",
                                     "area": "${room.area}",
                                     "location": "${room.location}",
-                                    "blockId": "${room.blockId}",
                                     "description": "${room.description != null ? room.description : ''}",
                                     "isElectricityFree": ${room.isElectricityFree},
                                     "isWaterFree": ${room.isWaterFree},

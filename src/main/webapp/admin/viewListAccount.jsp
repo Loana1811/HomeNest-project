@@ -9,361 +9,315 @@ String ctx = request.getContextPath();
 %>
 <%@ include file="/WEB-INF/inclu/header_admin.jsp" %>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Quản Lý Tài Khoản</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <title>Account Management</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            :root {
-                --primary: #3498db;
-                --secondary: #2c3e50;
-                --success: #28a745;
-                --info: #17a2b8;
-                --warning: #ffc107;
-                --danger: #dc3545;
-                --light: #f8f9fa;
-                --dark: #343a40;
-                --gradient-primary: linear-gradient(135deg, #007bff, #0056b3);
-                --gradient-success: linear-gradient(135deg, #28a745, #218838);
-                --gradient-warning: linear-gradient(135deg, #ffc107, #e0a800);
-                --gradient-info: linear-gradient(135deg, #17a2b8, #117a8b);
-            }
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
-            body {
-                background-color: #f5f7fa;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
-            }
+       <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
-            .container {
-                max-width: 1200px;
-                margin: 2rem auto;
-                padding: 20px;
-                background-color: white;
-                border-radius: 14px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            }
+    :root {
+        --primary: #1d4ed8;
+        --success: #28a745;
+        --danger: #dc3545;
+        --light-bg: #f1f5fb;
+        --card-bg: #ffffff;
+        --header-bg: #eaf3ff;
+        --border: #cddfee;
+        --text-dark: #1e3a8a;
+        --text-muted: #6b7280;
+        --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
 
-            .header {
-                background: var(--gradient-primary);
-                color: white;
-                padding: 2rem;
-                margin-bottom: 2rem;
-                border-radius: 0 0 20px 20px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--light-bg);
+        color: var(--text-dark);
+        margin: 0;
+    }
 
-            .header h1 {
-                margin: 0;
-                font-size: 2rem;
-                font-weight: 600;
-            }
+    .container {
+        max-width: 1200px;
+        margin: 80px auto 30px 260px;
+        padding: 30px;
+        background: var(--card-bg);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.5s ease;
+    }
 
-            .dashboard-stats {
-                display: flex;
-                gap: 32px;
-                justify-content: flex-start;
-                margin-bottom: 32px;
-                flex-wrap: wrap;
-            }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-            .stat-card {
-                background: white;
-                border-radius: 18px;
-                box-shadow: 0 2px 24px rgba(169, 184, 200, 0.13);
-                min-width: 210px;
-                padding: 28px 24px 20px 24px;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                transition: transform 0.2s, box-shadow 0.15s;
-            }
+    .header {
+        background-color: var(--header-bg);
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+        margin-bottom: 35px;
+        box-shadow: var(--shadow);
+    }
 
-            .stat-card:hover {
-                transform: translateY(-5px) scale(1.03);
-                box-shadow: 0 8px 32px rgba(41, 150, 218, 0.1), 0 2px 12px rgba(180, 198, 247, 0.2);
-            }
+    .header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
 
-            .stat-icon {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 12px;
-                width: 52px;
-                height: 52px;
-                font-size: 2rem;
-                margin-bottom: 18px;
-            }
+    .dashboard-stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 35px;
+    }
 
-            .stat-blue {
-                background: #e1f1fb;
-                color: #2596e0;
-            }
+    .stat-card {
+        background: var(--header-bg);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        flex: 1;
+        min-width: 200px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        cursor: default;
+    }
 
-            .stat-green {
-                background: #e2f9ea;
-                color: #1fb865;
-            }
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    }
 
-            .stat-grey {
-                background: #e7e9ed;
-                color: #75797d;
-            }
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 12px;
+        color: var(--primary);
+    }
 
-            .stat-number {
-                font-size: 2rem;
-                font-weight: 700;
-                color: #222c23;
-                margin-bottom: 3px;
-                margin-left: 4px;
-            }
+    .stat-number {
+        font-size: 1.9rem;
+        font-weight: 600;
+    }
 
-            .stat-label {
-                font-size: 1.08rem;
-                color: #868e96;
-                font-weight: 500;
-                margin-left: 4px;
-                letter-spacing: 0.2px;
-            }
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-top: 4px;
+        font-weight: 500;
+    }
 
-            .create-buttons {
-                text-align: center;
-                margin: 20px 0;
-            }
+    .create-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+        margin: 25px 0;
+    }
 
-            .btn-create {
-                background: var(--gradient-success);
-                color: white;
-                padding: 10px 20px;
-                margin: 0 10px;
-                border-radius: 8px;
-                font-weight: 500;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                transition: background 0.3s, color 0.3s;
-            }
+    .btn-create {
+        background: linear-gradient(to right, #1d4ed8, #2563eb);
+        color: white;
+        padding: 10px 24px;
+        font-weight: 500;
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
 
-            .btn-create:hover {
-                background: linear-gradient(135deg, #218838, #28a745);
-                color: #eaf4ff;
-            }
+    .btn-create:hover {
+        background: linear-gradient(to right, #1944c5, #1e3fa0);
+        transform: scale(1.03);
+    }
 
-            .section-title {
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: var(--dark);
-                margin: 1.5rem 0 1rem;
-            }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background: white;
-                border-radius: 8px;
-                overflow: hidden;
-            }
+    th, td {
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        text-align: left;
+        font-size: 0.95rem;
+    }
 
-            th, td {
-                border: 1px solid #e0e0e0;
-                padding: 12px;
-                text-align: left;
-            }
+    th {
+        background-color: var(--header-bg);
+        font-weight: 600;
+        color: var(--text-dark);
+    }
 
-            th {
-                background: var(--gradient-primary);
-                color: white;
-                font-weight: 600;
-            }
+    tr:nth-child(even) {
+        background-color: #f8fbff;
+    }
 
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
+    tr:hover {
+        background-color: rgba(29, 78, 216, 0.05);
+    }
 
-            tr:hover {
-                background-color: rgba(52, 152, 219, 0.1);
-            }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
 
-            .status-badge {
-                padding: 0.4em 0.8em;
-                border-radius: 20px;
-                font-size: 0.85em;
-                font-weight: 500;
-                display: inline-block;
-            }
+    .status-active {
+        background-color: rgba(40, 167, 69, 0.12);
+        color: var(--success);
+    }
 
-            .status-active {
-                background-color: rgba(40, 167, 69, 0.15);
-                color: var(--success);
-            }
+    .status-inactive {
+        background-color: rgba(220, 53, 69, 0.12);
+        color: var(--danger);
+    }
 
-            .status-inactive {
-                background-color: rgba(220, 53, 69, 0.15);
-                color: var(--danger);
-            }
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+    }
 
-            .btn-sm {
-                padding: 5px 10px;
-                font-size: 0.875rem;
-                border-radius: 5px;
-            }
+    .btn-outline-success {
+        color: var(--success);
+        border: 1px solid var(--success);
+        background: none;
+    }
 
-            .btn-outline-success {
-                border-color: var(--success);
-                color: var(--success);
-            }
+    .btn-outline-success:hover {
+        background: var(--success);
+        color: white;
+    }
 
-            .btn-outline-success:hover {
-                background: var(--gradient-success);
-                color: white;
-            }
+    .btn-info {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+    }
 
-            .btn-info {
-                background: var(--gradient-info);
-                color: white;
-                border: none;
-            }
+    .btn-info:hover {
+        background-color: #1e40af;
+    }
 
-            .btn-info:hover {
-                background: linear-gradient(135deg, #117a8b, #17a2b8);
-                color: #eaf4ff;
-            }
+    .btn-outline-warning {
+        color: #ffc107;
+        border: 1px solid #ffc107;
+        background: none;
+    }
 
-            .btn-outline-warning {
-                border-color: var(--warning);
-                color: var(--warning);
-            }
+    .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: white;
+    }
 
-            .btn-outline-warning:hover {
-                background: var(--gradient-warning);
-                color: #212529;
-            }
+    .section-title {
+        margin-top: 45px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 10px;
+        margin-bottom: 18px;
+    }
 
-            .modal-content {
-                border-radius: 10px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
+    @media (max-width: 768px) {
+        .container {
+            margin-left: 0;
+            margin-top: 60px;
+            padding: 20px;
+        }
 
-            .modal-header {
-                background: var(--gradient-primary);
-                color: white;
-                border-radius: 10px 10px 0 0;
-            }
+        .dashboard-stats {
+            flex-direction: column;
+        }
 
-            .modal-footer .btn-warning {
-                background: var(--gradient-warning);
-                color: #212529;
-                border: none;
-            }
+        .stat-card {
+            width: 100%;
+        }
 
-            .modal-footer .btn-warning:hover {
-                background: linear-gradient(135deg, #e0a800, #ffc107);
-            }
+        .create-buttons {
+            flex-direction: column;
+        }
 
-            .no-data {
-                text-align: center;
-                padding: 2rem;
-                color: #6c757d;
-                font-style: italic;
-            }
+        .section-title {
+            font-size: 1.3rem;
+        }
 
-            @media (max-width: 900px) {
-                .dashboard-stats {
-                    gap: 18px;
-                }
+        th, td {
+            font-size: 0.9rem;
+        }
+    }
+ .action-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+}
 
-                .stat-card {
-                    min-width: 140px;
-                    padding: 16px 14px 10px 14px;
-                }
+.action-buttons .btn {
+    white-space: nowrap;
+    padding: 4px 8px;
+}
 
-                .stat-icon {
-                    width: 42px;
-                    height: 42px;
-                    font-size: 1.5rem;
-                    margin-bottom: 11px;
-                }
 
-                .stat-number {
-                    font-size: 1.28rem;
-                }
+</style>
 
-                .container {
-                    margin: 1rem;
-                    padding: 15px;
-                }
 
-                .header {
-                    padding: 1.5rem;
-                }
-            }
-
-            @media (max-width: 768px) {
-                .sidebar {
-                    display: none;
-                }
-
-                main {
-                    margin-left: 0;
-                }
-
-                table {
-                    font-size: 0.9rem;
-                }
-
-                th, td {
-                    padding: 8px;
-                }
-            }
-
-        </style>
     </head>
     <body>
         <div class="container">
-            <!-- Tiêu đề -->
+            <!-- Header -->
             <div class="header">
-                <h1>Quản Lý Tài Khoản</h1>
+                <h1>Account Management</h1>
             </div>
 
-            <!-- Thống kê bảng điều khiển -->
+            <!-- Dashboard Stats -->
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-icon stat-green"><i class="fas fa-user-tie"></i></div>
                     <div class="stat-number">${totalCustomers}</div>
-                    <div class="stat-label">Tổng Khách Hàng</div>
+                    <div class="stat-label">Total Customers</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon stat-blue"><i class="fas fa-user-check"></i></div>
                     <div class="stat-number">${activeCustomers}</div>
-                    <div class="stat-label">Hoạt Động</div>
+                    <div class="stat-label">Active</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon stat-grey"><i class="fas fa-user-slash"></i></div>
                     <div class="stat-number">${inactiveCustomers}</div>
-                    <div class="stat-label">Không Hoạt Động</div>
+                    <div class="stat-label">Inactive</div>
                 </div>
             </div>
 
-            <!-- Nút Tạo -->
+            <!-- Create Button -->
             <div class="create-buttons">
                 <a href="${pageContext.request.contextPath}/admin/account?action=createManager" class="btn btn-create text-white">
-                    <i class="fas fa-user-plus me-2"></i> Tạo Quản Lý
+                    <i class="fas fa-user-plus me-2"></i> Create Manager
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/account?action=createCustomer" class="btn btn-create text-white">
-                    <i class="fas fa-user-plus me-2"></i> Tạo Khách Hàng
+                    <i class="fas fa-user-plus me-2"></i> Create Customer
                 </a>
             </div>
 
-            <!-- Bảng Người Dùng -->
-            <h2 class="section-title">Danh Sách Người Dùng Hệ Thống</h2>
+            <!-- Users Table -->
+            <h2 class="section-title">System Users List</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th><th>Họ và Tên</th><th>Email</th><th>Số Điện Thoại</th>
-                        <th>Vai Trò</th><th>Khu</th><th>Trạng Thái</th><th>Ngày Tạo</th><th>Hành Động</th>
+                        <th>ID</th><th>Full Name</th><th>Email</th><th>Phone Number</th>
+                        <th>Role</th><th>Block</th><th>Status</th><th>Created Date</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -387,10 +341,10 @@ String ctx = request.getContextPath();
                                     <td>
                                         <c:choose>
                                             <c:when test="${user.userStatus eq 'Active'}">
-                                                <span class="status-badge status-active">Hoạt Động</span>
+                                                <span class="status-badge status-active">Active</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="status-badge status-inactive">Không Hoạt Động</span>
+                                                <span class="status-badge status-inactive">Inactive</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -399,34 +353,27 @@ String ctx = request.getContextPath();
                                         <c:if test="${user.role.roleID == 2}">
                                             <a href="${pageContext.request.contextPath}/admin/account?action=editUser&userID=${user.userID}"
                                                class="btn btn-sm btn-outline-success">
-                                                <i class="fas fa-pen-to-square"></i>
+                                                <i class="fas fa-edit"></i>
                                             </a>
-                                            <c:if test="${user.userStatus eq 'Active'}">
-                                                <button type="button" class="btn btn-sm btn-outline-warning"
-                                                        onclick="showDisableUserModal(${user.userID}, '${user.userFullName}')">
-                                                    <i class="fas fa-user-xmark"></i>
-                                                </button>
-                                            </c:if>
                                         </c:if>
                                     </td>
-
                                 </tr>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <tr><td colspan="9" class="no-data">Không có dữ liệu người dùng</td></tr>
+                            <tr><td colspan="9" class="no-data">No user data available</td></tr>
                         </c:otherwise>
                     </c:choose>
                 </tbody>
             </table>
 
-            <!-- Bảng Khách Hàng -->
-            <h2 class="section-title">Danh Sách Khách Hàng</h2>
+            <!-- Customers Table -->
+            <h2 class="section-title">Customers List</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th><th>Họ và Tên</th><th>Số Điện Thoại</th><th>Email</th>
-                        <th>CCCD</th><th>Giới Tính</th><th>Trạng Thái</th><th>Hành Động</th>
+                        <th>ID</th><th>Full Name</th><th>Phone Number</th><th>Email</th>
+                        <th>ID Card</th><th>Gender</th><th>Status</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -443,145 +390,146 @@ String ctx = request.getContextPath();
                                     <td>
                                         <c:choose>
                                             <c:when test="${customer.customerStatus eq 'Active'}">
-                                                <span class="status-badge status-active">Hoạt Động</span>
+                                                <span class="status-badge status-active">Active</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="status-badge status-inactive">Không Hoạt Động</span>
+                                                <span class="status-badge status-inactive">Inactive</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/admin/account?action=editCustomer&customerID=${customer.customerID}"
-                                           class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-pen-to-square"></i>
-                                        </a>
-                                        <a href="${pageContext.request.contextPath}/admin/account?action=viewDetail&customerID=${customer.customerID}"
-                                           class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <c:if test="${customer.customerStatus eq 'Active'}">
-                                            <button type="button" class="btn btn-sm btn-outline-warning"
-                                                    onclick="showDisableCustomerModal(${customer.customerID}, '${customer.customerFullName}')">
-                                                <i class="fas fa-user-xmark"></i>
-                                            </button>
-                                        </c:if>
-
-
-                                    </td>
+    <div class="action-buttons">
+        <a href="${pageContext.request.contextPath}/admin/account?action=editCustomer&customerID=${customer.customerID}"
+           class="btn btn-sm btn-outline-success">
+            <i class="fas fa-edit"></i>
+        </a>
+        <a href="${pageContext.request.contextPath}/admin/account?action=viewDetail&customerID=${customer.customerID}"
+           class="btn btn-info btn-sm">
+            <i class="fas fa-eye"></i>
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-warning"
+                onclick="showDisableCustomerModal(${customer.customerID}, '${customer.customerFullName}')">
+            <i class="fas fa-user-slash"></i>
+        </button>
+    </div>
+</td>
+    
                                 </tr>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <tr><td colspan="8" class="no-data">Không có dữ liệu khách hàng</td></tr>
+                            <tr><td colspan="8" class="no-data">No customer data available</td></tr>
                         </c:otherwise>
                     </c:choose>
                 </tbody>
             </table>
         </div>
 
-        <!-- Modal Vô Hiệu Hóa Người Dùng -->
+        <!-- Disable User Modal -->
         <div class="modal fade" id="disableUserModal" tabindex="-1" aria-labelledby="disableUserLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <form id="disableUserForm" method="post">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="disableUserLabel">Vô Hiệu Hóa Người Dùng</h5>
+                            <h5 class="modal-title" id="disableUserLabel">Disable User</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="userID" id="disableUserID">
-                            <p><b>Người Dùng:</b> <span id="disableUserName"></span></p>
+                            <p><b>User:</b> <span id="disableUserName"></span></p>
                             <div class="mb-2">
-                                <label for="disableUserReason" class="form-label">Lý Do</label>
+                                <label for="disableUserReason" class="form-label">Reason</label>
                                 <textarea class="form-control" id="disableUserReason" name="reason" rows="3" required></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-warning">Vô Hiệu Hóa</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Disable</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Modal Vô Hiệu Hóa Khách Hàng -->
+        <!-- Disable Customer Modal -->
         <div class="modal fade" id="disableCustomerModal" tabindex="-1" aria-labelledby="disableCustomerLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <form id="disableCustomerForm" method="post">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="disableCustomerLabel">Vô Hiệu Hóa Khách Hàng</h5>
+                            <h5 class="modal-title" id="disableCustomerLabel">Disable Customer</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="customerID" id="disableCustomerID">
-                            <p><b>Khách Hàng:</b> <span id="disableCustomerName"></span></p>
+                            <p><b>Customer:</b> <span id="disableCustomerName"></span></p>
                             <div class="mb-2">
-                                <label for="disableCustomerReason" class="form-label">Lý Do</label>
+                                <label for="disableCustomerReason" class="form-label">Reason</label>
                                 <textarea class="form-control" id="disableCustomerReason" name="reason" rows="3" required></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-warning">Vô Hiệu Hóa</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Disable</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Toast Container -->
-        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-            <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header">
-                    <strong class="me-auto">Thông báo</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                                                        // Hiển thị/xử lý logic cho modal
-                                                        function showDisableUserModal(id, name) {
-                                                            document.getElementById('disableUserID').value = id;
-                                                            document.getElementById('disableUserName').innerText = name;
-                                                            document.getElementById('disableUserForm').action = '${pageContext.request.contextPath}/admin/account?action=disableUser';
-                                                            new bootstrap.Modal(document.getElementById('disableUserModal')).show();
-                                                        }
-                                                        function showDisableCustomerModal(id, name) {
-                                                            document.getElementById('disableCustomerID').value = id;
-                                                            document.getElementById('disableCustomerName').innerText = name;
-                                                            document.getElementById('disableCustomerForm').action = '${pageContext.request.contextPath}/admin/account?action=disableCustomer';
-                                                            new bootstrap.Modal(document.getElementById('disableCustomerModal')).show();
-                                                        }
+                                                    // Show/submit logic for modals
+                                                    function showDisableUserModal(id, name) {
+                                                        document.getElementById('disableUserID').value = id;
+                                                        document.getElementById('disableUserName').innerText = name;
+                                                        document.getElementById('disableUserForm').action =
+                                                                '${pageContext.request.contextPath}/admin/account?action=disableUser';
+                                                        new bootstrap.Modal(document.getElementById('disableUserModal')).show();
+                                                    }
+                                                    function showDisableCustomerModal(id, name) {
+                                                        document.getElementById('disableCustomerID').value = id;
+                                                        document.getElementById('disableCustomerName').innerText = name;
+                                                        document.getElementById('disableCustomerForm').action =
+                                                                '${pageContext.request.contextPath}/admin/account?action=disableCustomer';
+                                                        new bootstrap.Modal(document.getElementById('disableCustomerModal')).show();
+                                                    }
 
-                                                        // Hiển thị toast nếu có error hoặc success
-                                                        window.addEventListener('load', function () {
-                                                            var toastEl = document.getElementById('notificationToast');
-                                                            var toastBody = toastEl.querySelector('.toast-body');
-                                                            var toastHeader = toastEl.querySelector('.toast-header strong');
-                                                            var error = "${param.error}";
-                                                            var success = "${param.success}";
+                                                    window.addEventListener('load', function () {
+                                                        var toastEl = document.getElementById('notificationToast');
+                                                        var toastBody = toastEl.querySelector('.toast-body');
+                                                        var toastHeader = toastEl.querySelector('.toast-header strong');
+                                                        var error = "${param.error}";
+                                                        var success = "${param.success}";
 
-                                                            if (error) {
-                                                                toastEl.classList.add('text-bg-danger');
-                                                                toastHeader.innerText = "Lỗi";
-                                                                toastBody.innerText = error;
-                                                                var toast = new bootstrap.Toast(toastEl);
-                                                                toast.show();
-                                                            } else if (success) {
-                                                                toastEl.classList.add('text-bg-success');
-                                                                toastHeader.innerText = "Thành công";
-                                                                toastBody.innerText = success;
-                                                                var toast = new bootstrap.Toast(toastEl);
-                                                                toast.show();
-                                                            }
-                                                        });
+                                                        if (error) {
+                                                            toastEl.classList.add('text-bg-danger');
+                                                            toastHeader.innerText = "Lỗi";
+                                                            toastBody.innerText = error;
+                                                            var toast = new bootstrap.Toast(toastEl);
+                                                            toast.show();
+                                                        } else if (success) {
+                                                            toastEl.classList.add('text-bg-success');
+                                                            toastHeader.innerText = "Thành công";
+                                                            toastBody.innerText = success;
+                                                            var toast = new bootstrap.Toast(toastEl);
+                                                            toast.show();
+                                                        }
+                                                    });
+
+
+
         </script>
+    
+<div id="notificationToast" class="toast position-fixed bottom-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+        <strong class="me-auto"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+       
+    </div>
+</div>
+
     </body>
-  
 </html>

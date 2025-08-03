@@ -66,7 +66,7 @@ public class CustomerDAO extends DBContext {
                      "r.RoomStatus, " +
                      "r.BlockID, " +
                      "b.BlockName, " +
-                     "b.MaxRoom, " +
+                     "b.AvailableRooms, " +
                      "b.RoomCount, " +
                      "b.BlockStatus, " +
                      "bill.BillID, " +
@@ -130,21 +130,22 @@ public class CustomerDAO extends DBContext {
         return list;
     }
 
-    public boolean createCustomer(Customer customer) throws SQLException {
-        String query = "INSERT INTO Customers (CustomerFullName, PhoneNumber, CCCD, Gender, BirthDate, Address, Email, CustomerStatus, CustomerPassword) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        int result = execUpdateQuery(query,
-                customer.getCustomerFullName(),
-                customer.getPhoneNumber(),
-                customer.getCCCD(),
-                customer.getGender(),
-                customer.getBirthDate(),
-                customer.getAddress(),
-                customer.getEmail(),
-                customer.getCustomerStatus() != null ? customer.getCustomerStatus() : "Active",
-                customer.getCustomerPassword()
-        );
-        return result > 0;
-    }
+  public boolean createCustomer(Customer customer) throws SQLException {
+    String query = "INSERT INTO Customers (CustomerFullName, PhoneNumber, CCCD, Gender, BirthDate, Address, Email, CustomerStatus, CustomerPassword) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    int result = execUpdateQuery(query,
+            customer.getCustomerFullName(),
+            customer.getPhoneNumber(),
+            customer.getCCCD(),
+            customer.getGender(),
+            customer.getBirthDate(),
+            customer.getAddress(),
+            customer.getEmail(),
+            customer.getCustomerStatus() != null ? customer.getCustomerStatus() : "Active",
+            hashMD5(customer.getCustomerPassword()) // <-- HASH tại đây, không truyền hash từ Controller!
+    );
+    return result > 0;
+}
+
 
     public Customer getCustomerById(int customerId) throws SQLException {
         String query = "SELECT * FROM Customers WHERE CustomerID = ?";
@@ -160,7 +161,7 @@ public class CustomerDAO extends DBContext {
         return null;
     }
 
-    public boolean updateCustomer(Customer customer) throws SQLException {
+   public boolean updateCustomer(Customer customer) throws SQLException {
         String query = "UPDATE Customers SET CustomerFullName = ?, PhoneNumber = ?, CCCD = ?, Gender = ?, BirthDate = ?, Address = ?, Email = ?, CustomerStatus = ? WHERE CustomerID = ?";
         int result = execUpdateQuery(query,
                 customer.getCustomerFullName(),
@@ -175,6 +176,7 @@ public class CustomerDAO extends DBContext {
         );
         return result > 0;
     }
+
 
     public boolean updateCustomerStatus(int customerID, String status) throws SQLException {
         String query = "UPDATE Customers SET CustomerStatus = ? WHERE CustomerID = ?";

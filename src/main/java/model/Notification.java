@@ -92,4 +92,8 @@ public class Notification {
     public void setSenderName(String senderName) {
         this.senderName = senderName;
     }
+
+    public void setRedirectUrl(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

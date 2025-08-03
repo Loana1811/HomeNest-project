@@ -73,7 +73,7 @@ public class StatisticalServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>Servlet StatisticalServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
-out.println("</html>");
+            out.println("</html>");
         }
     }
 
@@ -89,6 +89,13 @@ out.println("</html>");
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Integer roleId = (session != null) ? (Integer) session.getAttribute("roleID") : null;
+        if (roleId == null || roleId != 1) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
+
         try {
             // Lấy tham số lọc
             String filterType = request.getParameter("filterType");
@@ -135,7 +142,7 @@ out.println("</html>");
                     for (Revenue r : allRevenues) {
                         if ("all".equalsIgnoreCase(filterCategoryId)
                                 || r.getRevenueCategoryID() == Integer.parseInt(filterCategoryId)) {
-revenueItems.add(r);
+                            revenueItems.add(r);
                         }
                     }
                     break;
@@ -195,7 +202,7 @@ revenueItems.add(r);
                     List<Revenue> revenues = revenueDAO.getRevenuesBetween(startDate, endDate);
                     for (Revenue r : revenues) {
                         if ("all".equalsIgnoreCase(filterCategoryId)
-|| (isNumeric(filterCategoryId)
+                                || (isNumeric(filterCategoryId)
                                 && r.getRevenueCategoryID() == Integer.parseInt(filterCategoryId))) {
                             revenueItems.add(r);
                         }
@@ -253,6 +260,13 @@ revenueItems.add(r);
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Integer roleId = (session != null) ? (Integer) session.getAttribute("roleID") : null;
+        if (roleId == null || roleId != 1) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
+        }
+
         String target = request.getParameter("target");   // expenseCategory | revenueCategory | expenseItem | revenueItem
         String action = request.getParameter("action");   // add
 
@@ -316,7 +330,7 @@ revenueItems.add(r);
                         }
                     } catch (NumberFormatException e) {
                         response.setStatus(400);
-out.print("{\"status\":\"error\",\"message\":\"Số tiền phải là số dương hợp lệ\"}");
+                        out.print("{\"status\":\"error\",\"message\":\"Số tiền phải là số dương hợp lệ\"}");
                         return;
                     }
 
@@ -380,7 +394,7 @@ out.print("{\"status\":\"error\",\"message\":\"Số tiền phải là số dươ
                     try {
                         amount = Double.parseDouble(amountStr);
                         if (amount <= 0) {
-throw new NumberFormatException();
+                            throw new NumberFormatException();
                         }
                     } catch (NumberFormatException e) {
                         response.setStatus(400);
@@ -449,7 +463,7 @@ throw new NumberFormatException();
         if (type == null || type.isEmpty()) {
             type = "month"; // default
         }
-BigDecimal totalIncome = BigDecimal.ZERO;
+        BigDecimal totalIncome = BigDecimal.ZERO;
         BigDecimal totalExpense = BigDecimal.ZERO;
 
         LocalDate startDate = null;
@@ -520,7 +534,7 @@ BigDecimal totalIncome = BigDecimal.ZERO;
                 }
                 startDate = LocalDate.parse(fromDate);
                 endDate = LocalDate.parse(toDate);
-request.setAttribute("fromDate", fromDate);
+                request.setAttribute("fromDate", fromDate);
                 request.setAttribute("toDate", toDate);
 
                 totalIncome = statisticalDAO.getIncomeByDateRange(fromDate, toDate);
@@ -593,7 +607,7 @@ request.setAttribute("fromDate", fromDate);
             XWPFTableRow header = table.getRow(0);
             header.getCell(0).setText("Tên chi");
             header.addNewTableCell().setText("Số tiền");
-header.addNewTableCell().setText("Người chi");
+            header.addNewTableCell().setText("Người chi");
             header.addNewTableCell().setText("Ngày");
             header.addNewTableCell().setText("Ghi chú");
 
@@ -660,7 +674,7 @@ header.addNewTableCell().setText("Người chi");
                 row.createCell(1).setCellValue(e.getAmount());
                 row.createCell(2).setCellValue(e.getPayer());
                 row.createCell(3).setCellValue(e.getExpenseDate().toString());
-row.createCell(4).setCellValue(e.getNotes());
+                row.createCell(4).setCellValue(e.getNotes());
             }
         }
 
